@@ -1,0 +1,491 @@
+---
+title: "F11. Analysis of variance and statistical models in practice"
+format: 
+  html:
+    embed-resources: true
+---
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(emmeans)
+```
+
+# Analysis of variance
+
+> An analysis of variance test the null hypothesis that three or more populations have the same expected value 
+
+**Model:** We have $r$ independent random variables  $Y_1, Y_2, \dots, Y_r$ with expected values  $E(Y_i)=\mu_i$ and equal variance $V(Y_i)=\sigma^2$
+
+**Hypoteses:** $H_0: \mu_1 = \mu_2 = \dots = \mu_r$
+
+$H_1: \text{At least two of the expected values are different}$
+
+> The larger difference in expected in populations with the same variance, the larger will the variation between populations be compared to the variation within the populations. 
+
+**Assumption:** $Y_1, Y_2, \dots, Y_r$ are normally distributed.
+
+**Test rule:**
+
+Test quantity $F = \frac{\text{"estimation of variance between groups"}}{\text{"estimation of variance within groups"}} = \frac{\frac{SS_{Between}}{r-1}}{\frac{SS_{Within}}{n-r}}$
+
+Under $H_0$ then $F = \frac{\frac{SS_{Between}}{r-1}}{\frac{SS_{Within}}{n-r}} \sim F(r-1,n-r)$.
+
+Reject $H_0$ if $F > F_{\alpha}(r-1,n-r)$
+
+::: callout-note
+### Simulation example 
+
+We simulate samples with 10 values in each from three groups (populations) with the same expected value and equal variances. It is useful to become familiar with how data can look under the null hypothesis. 
+
+```{r}
+r = 3
+ni = c(10,10,10)
+sigma = 1
+mui = c(0,0,0)
+i=1
+y1 <- rnorm(ni[i],mui[i],sigma)
+i=2
+y2 <- rnorm(ni[i],mui[i],sigma)
+i=3
+y3 <- rnorm(ni[i],mui[i],sigma)
+(df <- data.frame(y = c(y1,y2,y3), group = c(rep("A",ni[1]),rep("B",ni[2]),rep("C",ni[3]))))
+```
+
+
+```{r}
+ggplot(df,aes(y=y,x=group, col = group)) +
+  geom_boxplot() +
+  #geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+  #geom_point() +
+  geom_jitter(width = 0.1) +
+  ggtitle("Three groups ")
+```
+:::
+
+
+## Introduction of sums of squares
+
+Analysis of variance is based on dividing the variation in a variable after the sources. For a one sided analysis of variance, you divide the variation into variation between and within groups. This is done by creating sums of squares: 
+
+$$SS_{Total} = SS_{Between} + SS_{Within}$$
+
+## Sum of square for the total variance
+
+$$SS_{Total} = \sum_{i=1}^{r}\sum_{j=1}^{n_i}(y_{ij}-\bar{y}_{..})^2$$
+
+::: callout-note
+### Simulation example (cont.)
+
+Here we calculate the sum of squares for the total variance in two ways
+
+```{r}
+(n = nrow(df))
+
+(m = mean(df$y))
+
+(ss_tot = sum((df$y-m)^2))
+```
+
+where we estimate the variance by dividing the sum of square with a suitable number of degrees of freedom.
+
+```{r}
+ss_tot/(n-1)
+```
+
+We see that this gives the same value as the sample variance  
+
+```{r}
+var(df$y)
+```
+
+This means that if we can derive the total sum of square from the sample variance
+
+```{r}
+var(df$y)*(n-1)
+```
+
+
+:::
+
+
+## Sum of square for the variance within groups 
+
+$$SS_{Within} = \sum_{i=1}^{r}\sum_{j=1}^{n_i}(y_{ij}-\bar{y}_{i.})^2 = \sum_{j=1}^{n_1} (y_{1j}-\bar{y}_{1.})^2+\sum_{j=1}^{n_2} (y_{2j}-\bar{y}_{2.})^2+\dots \sum_{j=1}^{n_r} (y_{rj}-\bar{y}_{r.})^2$$
+
+::: callout-note
+### Simulation example (cont.)
+
+Here we first calculate the sample means per group
+
+```{r}
+(ma = mean(df$y[df$group=="A"]))
+(mb = mean(df$y[df$group=="B"]))
+(mc = mean(df$y[df$group=="C"]))
+```
+
+then the sum of square for the variance within groups as the pooled estimate of the variance
+
+```{r}
+(ss_within = (sum((df$y[df$group=="A"]-ma)^2)+sum((df$y[df$group=="B"]-mb)^2)+sum((df$y[df$group=="C"]-mc)^2)))
+```
+
+We can estimate the variance by dividing the sum of square by a suitable number of degrees of freedom
+
+```{r}
+ss_within/(n-r)
+```
+::: 
+
+
+## Sum of square for the variance between groups 
+
+$$SS_{Between} = \sum_{i=1}^{r} n_i (\bar{y}_{i.}-\bar{y}_{..})^2$$ 
+A simple way to derive the last sum of square is  $SS_{Between} = SS_{Total}-SS_{Within}$
+
+::: callout-note
+### Simulation example (cont.)
+
+```{r}
+(ss_between = ni[1]*(ma - m)^2 + ni[2]*(mb - m)^2 +ni[3]*(mc - m)^2)
+
+ss_tot - ss_within
+```
+
+Here, we can estimate the variance by dividing the sum of square with a suitable number of degrees of freedom
+
+```{r}
+ss_between/(r-1)
+
+```
+:::
+
+
+## Test quantity 
+
+Under $H_0$ all groups have equal expected values, and the variance within and between groups are equal. Then the test quantity $F = \frac{\frac{SS_{Between}}{r-1}}{\frac{SS_{Within}}{n-r}} \sim F(r-1,n-r)$.
+
+::: callout-note
+### Simulation example (cont.)
+
+We derive the test quantity as 
+
+```{r}
+((ss_between/(r-1))/(ss_within/(n-r)))
+```
+It is compared to a quantile 
+
+```{r}
+qf(1-0.05,r-1,n-r)
+#qf(1-0.01,r-1,n-r)
+
+```
+$H_0$ cannot be rejected at the chosen significance level of 0.05
+
+::: 
+
+## Sampling distribution for the test quantity in analysis of variance
+
+Let us hypothetically do repeated observations and derive the value of the test quantity many times. 
+
+```{r}
+testquantity <- replicate(1000,{
+r = 3
+ni = c(10,10,10)
+sigma = 1
+mui = c(0,0,0)
+i=1
+y1 <- rnorm(ni[i],mui[i],sigma)
+i=2
+y2 <- rnorm(ni[i],mui[i],sigma)
+i=3
+y3 <- rnorm(ni[i],mui[i],sigma)
+df_sim <- data.frame(y = c(y1,y2,y3), group = c(rep("A",ni[1]),rep("B",ni[2]),rep("C",ni[3])))
+n = nrow(df_sim)
+m = mean(df_sim$y)
+ss_tot = sum((df_sim$y-m)^2)
+ma = mean(df_sim$y[df_sim$group=="A"])
+mb = mean(df_sim$y[df_sim$group=="B"])
+mc = mean(df_sim$y[df_sim$group=="C"])
+ss_within = (sum((df_sim$y[df$group=="A"]-ma)^2)+sum((df_sim$y[df$group=="B"]-mb)^2)+sum((df_sim$y[df$group=="C"]-mc)^2))
+ss_between = ss_tot - ss_within
+(ss_between/(r-1))/(ss_within/(n-r))
+})
+```
+
+We make an histogram of the simulated test quantities and compare to an F distribution with $r-1$ and $n-r$ degrees of freedom
+
+```{r}
+r = 3
+n = 30
+hist(testquantity, probability = TRUE, breaks = 20)
+ff = seq(0,max(testquantity),length.out = 200)
+dd = df(ff,r-1,n-r)
+lines(ff,dd,col='blue')
+```
+
+The quantile we compare to denote the border to the critical area where we are to reject the null hypothesis. 
+
+```{r, fig.height=3}
+#| echo: false
+
+fill = "H0 is rejected"
+ggplot(data.frame(ff = ff, dd = dd),
+  aes(x=ff,y=dd)) +
+  geom_ribbon(data=. %>% filter(ff > qf(1-0.05,r-1,n-r)), 
+              aes(ymin=0, ymax=dd, fill=fill)) +
+  geom_line(col = 'blue') +
+  theme_bw() + 
+  xlab("Test quantity F") + 
+  ylab("density")  +
+  ggtitle("Sampling distribution for F and critical area")
+```
+
+## Analysis of variance with statistical programs 
+
+In R you can get the sum of squares by the functions `lm` and `anova`.  It also generates the p-value for the F-test. 
+
+```{r}
+mod <- lm(y~group,df)
+summary(mod)
+anova(mod)
+```
+
+```{r}
+TukeyHSD(aov(mod), conf.level=.95)
+```
+
+# ANOVA table 
+
+An ANOVA can be summarised into a table:
+
+| Source for variation | Sum of square | Degrees of freedom| Mean sum of square        |
+|----------------------|---------------|-------------------|---------------------------|
+| Between groups       | $SS_{Between}$| r-1               | $\frac{SS_{Between}}{r-1}$|
+| Within groups        | $SS_{Within}$ | n-r               | $\frac{SS_{Within}}{n-r}$ |
+| Total                | $SS_{Total}$  | n-1               | $\frac{SS_{Total}}{n-1}$  |
+
+
+**Test rule:** (cont.)
+
+Under $H_0$ then $F = \frac{\frac{SS_{Between}}{r-1}}{\frac{SS_{Within}}{n-r}} \sim F(r-1,n-r)$.
+
+Reject $H_0$ if $F > F_{\alpha}(r-1,n-r)$
+
+Alternatively, one can derive the probability that the test quantity takes the value we got or worse under the null hypothesis, i.e. the p-value. 
+
+::: callout-note
+## Example. Urea in mouse blood
+
+Concentrations of urea in the blood $\mu g/l$ were measures at four weeks old mice on three different diets. 
+The results for 12 mice (four on each diet) were summarised into a table. 
+
+|      |      |     |     |      |                        |
+|------|------|-----|-----|------|------------------------|
+| Diet |      |     |     |      | $\bar{y}_{i.}$         |
+| A    | 2.9  | 3.9 | 2.5 | 4.3  | 3.4                    |
+| B    | 6.4  | 5.1 | 5.9 | 7.0  | 6.1                    |
+| C    | 10.0 | 8.4 | 9.8 | 11.0 | 9.8                    |
+|      |      |     |     |      | $\bar{y}_{..} = 6.433$ |
+:::
+
+```{r}
+(df <- data.frame(y=c(2.9,3.9,2.5,4.3, 6.4,5.1,5.9,7.0,10.0, 8.4,9.8,11.0),group=rep(c("A","B","C"),each = 4)))
+```
+
+```{r}
+df %>%
+  group_by(group) %>%
+  summarise(
+    m = mean(y),
+    s2 = var(y)
+  )
+```
+
+```{r}
+ggplot(df,aes(y=y,x=group, col = group)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1) +
+  ggtitle("Urea in blood for three diets")
+```
+
+```{r}
+#| echo: false
+#| results: false
+
+(SS_tot = var(df$y)*(length(df$y)-1))
+summary(aov(y~group,df))
+```
+
+**Assumption:** Observations are from normal distributions. 
+
+**Hypothesis:**
+
+$H_0: \mu_A = \mu_B =\mu_C$ against $H_1: \text{at least one expected value is different}$
+
+Test on the significance level $\alpha = 0.05$
+
+
+| Source for variation | Sum of square    | Degrees of freedom| Mean sum of square |
+|----------------------|------------------|-------------------|--------------------|
+|Between groups        | 82.587           | 3-1 = 2           | 41.29              |
+| Within groups        | 7.500            | 12-3 = 9          |0.83                |
+| Total                | 90.08667         | 12-1 = 11         |                    |
+
+$F = \frac{\frac{SS_{Between}}{r-1}}{\frac{SS_{Within}}{n-r}} = \frac{41.29}{0.83} = 49.55$
+
+```{r}
+#| echo: false
+#| results: false
+
+41.29/0.83
+qf(1-0.05,2,9)
+```
+
+$H_0$ is rejected since $F > F_{0.05}(2,9) = 4.26$ 
+
+The conclusion is that there is a difference between the expected concentrations of urea between the three diets. 
+
+# Analysis of variance is regression with categorical explanatory variables 
+
+$y_{ij} = \mu + \alpha_i + \varepsilon_{ij}$ där $\varepsilon_{ij} \sim N(0,\sigma)$
+
+$\alpha_i$ is a group-specific fix effect
+
+
+```{r}
+mod <- lm(y ~ group,data=df)
+summary(mod)
+anova(mod)
+```
+
+## Visualise estimated expected values for the groups
+
+```{r}
+(EMM.source <- emmeans(mod, "group"))
+```
+
+
+```{r}
+ggplot(data.frame(EMM.source),aes(y=emmean,x=group, col = group)) +
+  geom_point() +
+  geom_errorbar(aes(ymin=lower.CL, ymax=upper.CL, width = 0.3)) +
+  ggtitle("Urea in blood for three diets") +
+  ylab("y")
+```
+
+## Continued testing
+
+If the null hypothesis on equal expected values is rejected, one can continue to investigate which groups that differs. There are several tests for this. 
+
+One example is Tukey's test which is used when we have the same number of observations in each group. This test creates confidence intervals for all pair-wise differences, but divides the signficance level between the pairs such that the total confidence level seen over all the intervals is 95\%.   
+
+```{r}
+TukeyHSD(aov(mod), conf.level=.95)
+```
+
+> It is good practice to adjust the significance level to the number of tests performed, so called multiple testing correction. 
+
+# More about regression 
+
+## Logistic regression 
+
+When observations are 0 or 1, we can specify a model where the response is the logarithm of the odds-ratio
+
+$$log(\frac{P(Y_i = 1)}{P(Y_i=0)}) = \beta_0 + \beta_1 x_i$$
+
+## Generalised models
+
+In this course, the response variable is continuous. We can write the simple linear regression as  
+
+$$Y_i\sim N(\beta_0 + \beta_1 x_i, \sigma)$$
+
+It is common to have observations that are discrete or categorical. Then is generalised models for regression are suitable.   
+
+- Poisson regression - when observations are counts 
+
+$$Y_i\sim Po(\mu_i)$$
+where  $log(\mu_i) = \beta_0+\beta_1 x_i$
+
+There are several possible choices for the probability distribution of the response variable  (ex $Po$) and choice of function to link the expected value $\mu_i$ to the linear predictor  $\beta_0+\beta_1 x_i$. 
+
+Parameters are usually estimated as the values that maximises the probability for data given the model (*maximum likelihood*), in some cases by minimising ordinary least squares (*OLS*), or by *Bayesian inference*.
+
+## Non-linear models
+
+Non-linear models are used when then there is a reason to suspect that the relationship has a certain form, e.g. to increase up to a limit. 
+
+## Hierarchical models
+
+It can be suitable to assign variation to several sources. Hierarchical models contains more than one source for random variation. 
+
+In simple linear regression we have one variance term
+
+$$y_i = \beta_0 + \beta_1 x_i + \varepsilon_i$$
+where $\varepsilon_i \sim N(0,\sigma)$
+
+
+As an exampel, measurements could have been collected from sites with different intercepts  
+
+$$y_{is} =  \beta_s + \beta_1 x_i + \varepsilon_i$$
+where $\beta_s \sim N(\beta_0,\sigma_s)$ and $\varepsilon_i \sim N(0,\sigma_\varepsilon)$
+
+The intercept $\beta_s$ has now in itself a random variation that depends on the group  $s$ and is called a random effect *random effect*. 
+
+The slope $\beta_1$ is a fixed effect that is common for all sites. 
+
+A model like this is also known as a linear mixed model.
+
+# Solution to the exercise
+
+```{r}
+#| results: false
+library(readxl)
+df <- read_excel("data/12.4-one-way-anova.xlsx")
+View(df)
+```
+
+```{r}
+#| results: false
+boxplot(Concerts~grupp,data=df)
+```
+
+```{r}
+#| results: false
+ggplot(df,aes(y=Concerts,x=grupp, col = grupp)) +
+  #geom_boxplot() +
+  geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+  geom_jitter(width = 0.1) +
+  ggtitle("Antal konserter per år") +
+  xlab("Instrument") +
+  ylab("Konserter")
+```
+
+```{r}
+#| results: false
+mod <- lm(Concerts~grupp,df)
+anova(mod)
+```
+
+
+```{r}
+#| results: false
+df %>%
+  group_by(grupp) %>%
+  summarise(
+    m = mean(Concerts),
+    s2 = var(Concerts),
+    n = length(Concerts)
+  )
+```
+
+```{r}
+#| results: false
+TukeyHSD(aov(mod), conf.level=.95)
+```
+
+

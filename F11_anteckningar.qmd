@@ -1,0 +1,486 @@
+---
+title: "F11. Variansanalys och statistiska modeller i praktiken"
+format: 
+  html:
+    embed-resources: true
+---
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(emmeans)
+```
+
+# Variansanalys
+
+> I en variansanalys testas nollhypotesen att tre eller fler populationer har samma medelvärde
+
+**Modell:** Vi har $r$ oberoende slumpvariabler $Y_1, Y_2, \dots, Y_r$ med väntevärden $E(Y_i)=\mu_i$ och lika varians $V(Y_i)=\sigma^2$
+
+**Hypoteser:** $H_0: \mu_1 = \mu_2 = \dots = \mu_r$
+
+$H_1: \text{Minst två av väntevärderna är olika}$
+
+> Desto större skillnad i medelvärde som råder mellan olika populationer med samma varians, desto större kommer variationen mellan populationerna att vara jämfört med variationen inom populationerna.
+
+**Antagande:** $Y_1, Y_2, \dots, Y_r$ är normalfördelade.
+
+**Testregel:**
+
+Teststorhet $F = \frac{\text{"skattning av varians mellan grupper"}}{\text{"skattning av varians inom grupper"}} = \frac{\frac{SS_{Mellan}}{r-1}}{\frac{SS_{Inom}}{n-r}}$
+
+Under $H_0$ är $F = \frac{\frac{SS_{Mellan}}{r-1}}{\frac{SS_{Inom}}{n-r}} \sim F(r-1,n-r)$.
+
+Förkasta $H_0$ om $F > F_{\alpha}(r-1,n-r)$
+
+::: callout-note
+### Simuleringsexempel 
+
+Här simulerar vi stickprov med 10 värden i varje från tre grupper (populationer) som har samma väntvärde och lika varians. Det är nyttigt att se hur data kan se ut under nollhypotesen. 
+
+```{r}
+r = 3
+ni = c(10,10,10)
+sigma = 1
+mui = c(0,0,0)
+i=1
+y1 <- rnorm(ni[i],mui[i],sigma)
+i=2
+y2 <- rnorm(ni[i],mui[i],sigma)
+i=3
+y3 <- rnorm(ni[i],mui[i],sigma)
+df <- data.frame(y = c(y1,y2,y3), grupp = c(rep("A",ni[1]),rep("B",ni[2]),rep("C",ni[3])))
+```
+
+
+```{r}
+ggplot(df,aes(y=y,x=grupp, col = grupp)) +
+  #geom_boxplot() +
+  geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+  geom_jitter(width = 0.1) +
+  ggtitle("Tre grupper ")
+```
+:::
+
+
+## Introduktion av kvadratsummor
+
+Variansanalys tar sin utgångspunkt i att man delar upp variation utifrån var den kommer ifrån. För ensidig variansanalys delar man upp variationen i variation mellan grupper och inom grupper. Detta görs genom att skapa kvadratsummer: 
+
+$$SS_{Total} = SS_{Mellan} + SS_{Inom}$$
+
+## Kvadratsumma för total varians
+
+$$SS_{Total} = \sum_{i=1}^{r}\sum_{j=1}^{n_i}(y_{ij}-\bar{y}_{..})^2$$
+
+::: callout-note
+### Simuleringsexempel (forts.)
+
+Här beräknar vi kvadratsumman för total varians på två sätt
+
+```{r}
+(n = nrow(df))
+
+(m = mean(df$y))
+
+(ss_tot = sum((df$y-m)^2))
+```
+
+där vi skattar variansen genom att dela kvadratsumman med lämpligt antal frihetsgrader
+
+```{r}
+ss_tot/(n-1)
+```
+
+Vi konstaterar att detta ger samma värde som stickprovsvariansen. 
+
+```{r}
+var(df$y)
+```
+
+Vilket betyder att om man känner till den, så kan man härleda kvadratsumman för den totala variationen
+
+```{r}
+var(df$y)*(n-1)
+```
+
+
+:::
+
+
+## Kvadratsumma för varians inom grupper
+
+$$SS_{Inom} = \sum_{i=1}^{r}\sum_{j=1}^{n_i}(y_{ij}-\bar{y}_{i.})^2 = \sum_{j=1}^{n_1} (y_{1j}-\bar{y}_{1.})^2+\sum_{j=1}^{n_2} (y_{2j}-\bar{y}_{2.})^2+\dots \sum_{j=1}^{n_r} (y_{rj}-\bar{y}_{r.})^2$$
+
+::: callout-note
+### Simuleringsexempel (forts.)
+
+Här beräknar vi först medelvärden inom grupper 
+
+```{r}
+(ma = mean(df$y[df$grupp=="A"]))
+(mb = mean(df$y[df$grupp=="B"]))
+(mc = mean(df$y[df$grupp=="C"]))
+```
+
+därefter kvadratsumman för variation inom grupper som en poolad skattning av variansen
+
+```{r}
+(ss_inom = (sum((df$y[df$grupp=="A"]-ma)^2)+sum((df$y[df$grupp=="B"]-mb)^2)+sum((df$y[df$grupp=="C"]-mc)^2)))
+```
+
+Vi kan skatta variansen genom att dela kvadratsumman med lämpligt antal frihetsgrader
+
+```{r}
+ss_inom/(n-r)
+```
+::: 
+
+
+## Kvadratsumma för varians mellan grupper
+
+$$SS_{Mellan} = \sum_{i=1}^{r} n_i (\bar{y}_{i.}-\bar{y}_{..})^2$$ 
+Ett enkelt sätt att beräkna den sista kvadratsumman är $SS_{Mellan} = SS_{Total}-SS_{Inom}$
+
+::: callout-note
+### Simuleringsexempel (forts.)
+
+```{r}
+(ss_mellan = ni[1]*(ma - m)^2 + ni[2]*(mb - m)^2 +ni[3]*(mc - m)^2)
+
+ss_tot - ss_inom
+```
+
+Även här kan vi skatta variansen genom att dela kvadratsumman med lämpligt antal frihetsgrader
+
+```{r}
+ss_mellan/(r-1)
+
+```
+:::
+
+
+## Teststorhet 
+
+Under $H_0$ att alla grupper har lika väntevärden och därmed lika stor varians inom som mellan grupper är teststorheten $F = \frac{\frac{SS_{Mellan}}{r-1}}{\frac{SS_{Inom}}{n-r}} \sim F(r-1,n-r)$.
+
+::: callout-note
+### Simuleringsexempel (forts.)
+
+Vi beräknar teststorheten som
+
+```{r}
+((ss_mellan/(r-1))/(ss_inom/(n-r)))
+```
+Den jämförs med kvantil
+
+```{r}
+qf(1-0.05,r-1,n-r)
+```
+$H_0$ kan inte förkastas på vald signifikansnivå 0.05
+::: 
+
+## Samplingsfördelningen för teststorheten i variansanalys
+
+Låt oss göra hypotetiska upprepade observationer och beräkna teststorheten många gånger.  
+
+```{r}
+teststorhet <- replicate(1000,{
+r = 3
+ni = c(10,10,10)
+sigma = 1
+mui = c(0,0,0)
+i=1
+y1 <- rnorm(ni[i],mui[i],sigma)
+i=2
+y2 <- rnorm(ni[i],mui[i],sigma)
+i=3
+y3 <- rnorm(ni[i],mui[i],sigma)
+df_sim <- data.frame(y = c(y1,y2,y3), grupp = c(rep("A",ni[1]),rep("B",ni[2]),rep("C",ni[3])))
+n = nrow(df_sim)
+m = mean(df_sim$y)
+ss_tot = sum((df_sim$y-m)^2)
+ma = mean(df_sim$y[df_sim$grupp=="A"])
+mb = mean(df_sim$y[df_sim$grupp=="B"])
+mc = mean(df_sim$y[df_sim$grupp=="C"])
+ss_inom = (sum((df_sim$y[df$grupp=="A"]-ma)^2)+sum((df_sim$y[df$grupp=="B"]-mb)^2)+sum((df_sim$y[df$grupp=="C"]-mc)^2))
+ss_mellan = ss_tot - ss_inom
+(ss_mellan/(r-1))/(ss_inom/(n-r))
+#mod <- lm(y~grupp,df)
+#anova(mod)$`F value`[1]
+})
+```
+
+Vi gör ett histogram av teststorheter och jämför med en F-fördelning med $r-1$ och $n-r$ frihetsgrader 
+
+```{r}
+r = 3
+n = 30
+hist(teststorhet, probability = TRUE, breaks = 20)
+ff = seq(0,max(teststorhet),length.out = 200)
+dd = df(ff,r-1,n-r)
+lines(ff,dd,col='blue')
+```
+
+Kvantilen vi jämför med markerar gränsen för det kritiska området där vi ska förkasta nollhypotesen. 
+
+```{r, fig.height=3}
+#| echo: false
+
+fill = "H0 förkastas"
+ggplot(data.frame(ff = ff, dd = dd),
+  aes(x=ff,y=dd)) +
+  geom_ribbon(data=. %>% filter(ff > qf(1-0.05,r-1,n-r)), 
+              aes(ymin=0, ymax=dd, fill=fill)) +
+  geom_line(col = 'blue') +
+  theme_bw() + 
+  xlab("Teststorhet F") + 
+  ylab("täthet")  +
+  ggtitle("Samplingsfördelning för F och kritiskt område")
+```
+
+## Variansanalys med statistiskprogram
+
+I R kan man få fram kvadratsummor genom att använda funktionerna `lm` och `anova`.  De ger även p-värden för F-testet. 
+
+```{r}
+mod <- lm(y~grupp,df)
+anova(mod)
+```
+
+
+# Variansanalystabell
+
+En ANOVA brukar sammanfattas i en **Variansanalystabell:**
+
+| Källa till variation | Kvadratsumma  | frihetsgrader | Medelkvadratsumma         |
+|----------------------|---------------|---------------|---------------------------|
+| Mellan grupper       | $SS_{Mellan}$ | r-1           | $\frac{SS_{Mellan}}{r-1}$ |
+| Inom grupper         | $SS_{Inom}$   | n-r           | $\frac{SS_{Inom}}{n-r}$   |
+| Totalt               | $SS_{Total}$  | n-1           | $\frac{SS_{Total}}{n-1}$  |
+
+
+**Testregel:** (forts.)
+
+Under $H_0$ är $F = \frac{\frac{SS_{Mellan}}{r-1}}{\frac{SS_{Inom}}{n-r}} \sim F(r-1,n-r)$.
+
+Förkasta $H_0$ om $F > F_{\alpha}(r-1,n-r)$
+
+Alternativt, kan man beräkna sannolikheten att teststorheten antar värdet man fick eller värre givet att nollhypotesen är sann - d.v.s. p-värdet. 
+
+::: callout-note
+## Exempel. Urea i musblod
+
+Ureakoncentrationen i blodet $\mu g/l$ uppmättes vid fyra veckors ålder för möss som uppfötts på tre olika dieter. Resultat för tolv möss (fyra för varje diet) sammanställdes i en tabell.
+
+|      |      |     |     |      |                        |
+|------|------|-----|-----|------|------------------------|
+| Diet |      |     |     |      | $\bar{y}_{i.}$         |
+| A    | 2.9  | 3.9 | 2.5 | 4.3  | 3.4                    |
+| B    | 6.4  | 5.1 | 5.9 | 7.0  | 6.1                    |
+| C    | 10.0 | 8.4 | 9.8 | 11.0 | 9.8                    |
+|      |      |     |     |      | $\bar{y}_{..} = 6.433$ |
+:::
+
+```{r}
+(df <- data.frame(y=c(2.9,3.9,2.5,4.3, 6.4,5.1,5.9,7.0,10.0, 8.4,9.8,11.0),grupp=rep(c("A","B","C"),each = 4)))
+```
+
+```{r}
+df %>%
+  group_by(grupp) %>%
+  summarise(
+    m = mean(y),
+    s2 = var(y)
+  )
+```
+
+```{r}
+ggplot(df,aes(y=y,x=grupp, col = grupp)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1) +
+  ggtitle("Urea i blod för tre dieter")
+```
+
+```{r}
+#| echo: false
+#| results: false
+
+(SS_tot = var(df$y)*(length(df$y)-1))
+summary(aov(y~grupp,df))
+```
+**Antagande:** Observationer kommer från normalfördelningar. 
+
+**Hypoteser:**
+
+$H_0: \mu_A = \mu_B =\mu_C$ mot $H_1: \text{minst ett väntevärde skiljer sig åt}$
+
+Testas på en signifikansnivå $\alpha = 0.05$
+
+
+| Källa till variation | Kvadratsumma     | frihetsgrader | Medelkvadratsumma  |
+|----------------------|------------------|---------------|--------------------|
+| Mellan grupper       | 82.587           | 3-1 = 2       | 41.29              |
+| Inom grupper         | 7.500            | 12-3 = 9      |0.83                |
+| Totalt               | 90.08667         | 12-1 = 11     |                    |
+
+$F = \frac{\frac{SS_{Mellan}}{r-1}}{\frac{SS_{Inom}}{n-r}} = \frac{41.29}{0.83} = 49.55$
+
+```{r}
+#| echo: false
+#| results: false
+
+41.29/0.83
+qf(1-0.05,2,9)
+```
+
+$H_0$ förkastas eftersom $F > F_{0.05}(2,9) = 4.26$ 
+
+Slutsatsen är att det finns en skillnad mellan den förväntade mängden urea mellan de tre dieterna. 
+
+# Variansanalys är regression med kategoriska förklarande variabler 
+
+$y_{ij} = \mu + \alpha_i + \varepsilon_{ij}$ där $\varepsilon_{ij} \sim N(0,\sigma)$
+
+$\alpha_i$ är grupp-specifik fix effekt 
+
+
+```{r}
+mod <- lm(y ~ grupp,data=df)
+summary(mod)
+anova(mod)
+```
+
+## Visualisera skattade väntevärden för grupper 
+
+```{r}
+(EMM.source <- emmeans(mod, "grupp"))
+```
+
+
+```{r}
+ggplot(data.frame(EMM.source),aes(y=emmean,x=grupp, col = grupp)) +
+  geom_point() +
+  geom_errorbar(aes(ymin=lower.CL, ymax=upper.CL, width = 0.5)) +
+  ggtitle("Urea i blod för tre dieter") +
+  ylab("y")
+```
+
+## Fortsatta tester 
+
+Om nollhypotesen om lika väntvärden förkastas, kan man gå vidare och undersöka mellan vilka grupper det finns en skillnad. Det finns flertalet tester för detta. 
+
+Ett exempel är Tukeys test som används när man har lika många observationer i varje grupp. Detta test bildar konfidensintervall för alla parvisa skillnader, men delar upp signifikansnivån mellan paren där den totala konfidensgraden för intervallen är 95\%.   
+
+```{r}
+TukeyHSD(aov(mod), conf.level=.95)
+```
+
+> Det är god sed att anpassa signifikansnivå till hur många test man gör, så kallad korrektion för multipla tester. 
+
+# Mer om regression 
+
+## Logistisk regression 
+
+När man har observationer som är 0 eller 1 kan man formulera en modell där responsen är logaritmen av odds-kvoten
+
+$$log(\frac{P(Y_i = 1)}{P(Y_i=0)}) = \beta_0 + \beta_1 x_i$$
+
+## Generaliserade modeller 
+
+I denna kurs är responsvariabeln kontinuerlig. Vi kan skriva enkel linjär regression som 
+
+$$Y_i\sim N(\beta_0 + \beta_1 x_i, \sigma)$$
+
+Det är vanligt att man har observationer som är diskreta eller kategoriska variabler. Då är det lämpligt att använda generaliserade modeller för regression.   
+
+- Poissonregression - när man har observationer som är ett räknat antal 
+
+$$Y_i\sim Po(\mu_i)$$
+där $log(\mu_i) = \beta_0+\beta_1 x_i$
+
+Det finns flera möjliga val av sannolikhetsfördelning för responsvariabeln (ex $Po$) och val av funktion för att länka väntevärdet $\mu_i$ till en linjär prediktor $\beta_0+\beta_1 x_i$. 
+
+Parametrar skattas vanligtvis som de värden som maximerar sannolikheten för observationerna (data) enligt modellen (på engelska *maximum likelihood*), i en del fall genom minska kvadratmetoden (*OLS*) eller med *Bayesiansk inferens*.
+
+## Icke-linjära modeller 
+
+Icke-linjära modeller används när det finns anledning att misstänka att sambandet ser ut på ett visst sätt, exempelvis ökar upp till en viss nivå. 
+
+## Hierariska modeller 
+
+Det kan vara lämpligt att ange flera källor till variation i mätvärden. Hierarkiska modeller innehåller mer än en källa till slumpmässig variation.
+
+I enkel linjär regression har vi en variansterm 
+
+$$y_i = \beta_0 + \beta_1 x_i + \varepsilon_i$$
+där $\varepsilon_i \sim N(0,\sigma)$
+
+
+Till exempel skulle mävärden vara insamlade från olika lokaler som har olika intercept 
+
+$$y_{is} = \beta_s + \beta_1 x_i + \varepsilon_i$$
+där $\beta_s \sim N(0,\sigma_s)$ och $\varepsilon_i \sim N(0,\sigma_\varepsilon)$
+
+Interceptet $\beta_s$ har nu is sig själv en egen slumpmässig variation som beror på grupp $s$ och kallas för en slumpmässig effect (på engelska *random effect*). 
+
+Lutningen $\beta_1$ är en fix effekt som är densamma oberoende av lokal. 
+
+En modell av detta slag kallas för linjär mixad modell.
+
+# Statistisk analys i praktiken
+
+# Lösning för övningen
+
+```{r}
+#| results: false
+library(readxl)
+df <- read_excel("data/12.4-one-way-anova.xlsx")
+View(df)
+```
+
+```{r}
+#| results: false
+boxplot(Concerts~grupp,data=df)
+```
+
+```{r}
+#| results: false
+ggplot(df,aes(y=Concerts,x=grupp, col = grupp)) +
+  #geom_boxplot() +
+  geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+  geom_jitter(width = 0.1) +
+  ggtitle("Antal konserter per år") +
+  xlab("Instrument") +
+  ylab("Konserter")
+```
+
+```{r}
+#| results: false
+mod <- lm(Concerts~grupp,df)
+anova(mod)
+```
+
+
+```{r}
+#| results: false
+df %>%
+  group_by(grupp) %>%
+  summarise(
+    m = mean(Concerts),
+    s2 = var(Concerts),
+    n = length(Concerts)
+  )
+```
+
+```{r}
+#| results: false
+TukeyHSD(aov(mod), conf.level=.95)
+```
+
+
+

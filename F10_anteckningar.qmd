@@ -1,0 +1,693 @@
+---
+title: "F10. Korrelations- och regressionsanalys"
+format: 
+  html:
+    embed-resources: true
+---
+
+```{r}
+#| echo: false 
+#| warning: false
+#| message: false
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(gganimate)
+```
+
+# Kovarians
+
+-   (Teoretisk) kovarians för två slumpvariabler $X$ och $Y$
+
+$$\sigma_{XY}=Cov(X,Y)=E[(X-E(X))(Y-E(Y))] = E(XY) - E(X)E(Y)$$
+
+-   (Empirisk) kovarians för parade stickprov från $X$ respektive $Y$
+
+$$c_{xy}= \frac{\sum_{i=1}^n (x_i- \bar{x})
+(y_i- \bar{y})} {n-1}= \frac{1}{n-1}
+\left[\sum_{i=1}^n x_i y_i- n \bar{x} \bar{y}\right]$$
+
+# Korrelation
+
+-   (Teoretisk) \[Pearson\]-korrelation beskriver linjärt samband mellan $X$ och $Y$ på en enhetslös skala
+
+$$\rho = \frac{Cov(X,Y)}{\sqrt{V(X)}\sqrt{V(Y)}}$$
+
+Korrelationen $\rho$ (grekisk bokstav som uttalas *råå*) ligger mellan $-1 \leq \rho \leq 1$, där -1 motsvarar perfekt negativt linjärt samband och 1 perfekt positivt samband.
+
+-   (Empirisk) korrelationskoefficient $r_{xy}$ eller bara $r$ skattar det linjära sambandet mellan stickprov $x_1,\dots,x_n$ och stickprov $y_1,\dots,y_n$
+
+$$r_{xy}= \frac{c_{xy}}{s_x s_y} = \frac{\sum_{i=1}^n (x_i- \bar{x})
+(y_i- \bar{y})}{\sqrt{\sum_{i=1}^n (x_i- \bar{x})^2} \sqrt{\sum_{i=1}^n
+(y_i- \bar{y})^2}} = \frac{SS_{xy}}{\sqrt{SS_x}\sqrt{SS_y}}$$
+
+> Var noga med att skilja på korrelationen och korrelationskoefficienten $\hat{\rho}=r$
+
+# Korrelationsanalys
+
+::: callout-note
+### Exempel. Vin
+
+Flertalet röda viner har genomgått kemisk analys. Vi är intresserade av att undersöka om det finns något samband mellan vinets täthet och halt av sulfater.
+
+<!-- https://archive.ics.uci.edu/dataset/186/wine+quality -->
+
+<!-- Cortez,Paulo, Cerdeira,A., Almeida,F., Matos,T., and Reis,J.. (2009). Wine Quality. UCI Machine Learning Repository. https://doi.org/10.24432/C56S3T. -->
+
+```{r}
+#| warning: false
+#| message: false
+#| eval: false
+#| echo: false 
+
+winequality_red <- read_delim("data/winequality/winequality-red.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE, show_col_types = FALSE)
+
+df_sam <- winequality_red[sample.int(nrow(winequality_red),30),]
+save(df_sam, file="data/winequality/winequality_small.Rdata")
+```
+
+```{r}
+#| warning: false
+#| message: false
+
+load("data/winequality/winequality_small.Rdata")
+ggplot(df_sam,aes(x=density,y=sulphates)) +
+   geom_point()
+```
+:::
+
+## Hypotestest av korrelation
+
+**Modell:** Låt $X = \text{"täthet"}$ och $Y = \text{"sulfathalt"}$.
+
+**Hypoteser:** $H_0: \rho = 0$ (inget linjärt samband)
+
+$H_1: \rho \neq 0$ (något linjärt samband)
+
+**Antagande:** $X$ och $Y$ kommer från en bivariat normalfördelning
+
+**Testregel:** Teststorheten är $t=r\sqrt{\frac{n-2}{1-r^2}}$. Samplingsfördelningen för $t$ under $H_0$ är en t-fördelning med $n-2$ frihetsgrader. Förkasta $H_0$ om $|t| > t_{\alpha/2}$
+
+## Korrelationstest i R
+
+I R använder vi funktionen `cor.test` som genererar teststorheten $t$, frihetsgrader för t-fördelningen (df), p-värdet (d.v.s. sannolikheten att teststorheten antar värdet vi fått eller värre givet att nollhypotesen är sann), konfidensintervall för korrelationen $I_\rho$
+
+```{r}
+cor.test(df_sam$density,df_sam$sulphates)
+```
+
+Man kan specificera
+
+-   typ av mothypotes
+
+-   sätt att skatta korrelationen (Pearson är förvald)
+
+-   konfidensnivå $1-\alpha$
+
+## Undersökning av antagande
+
+Om $X$ och $Y$ kommer från bivariat normalfördelning så är både $X$ och $Y$ normalfördelade.
+
+::: columns
+::: {.column width="70%"}
+```{r}
+qqnorm(df_sam$sulphates)
+qqline(df_sam$sulphates)
+```
+
+```{r}
+qqnorm(df_sam$density)
+qqline(df_sam$density)
+```
+:::
+
+::: {.column width="30%"}
+Det finns ingen stark anledning att inte anta en bivariat normalfördelning.
+:::
+:::
+
+## Icke-parametriskt alternativ
+
+Ett alternativ som inte bygger på antagande om fördelning för $X$ och $Y$ är att göra ett rangkorrelationstest. Då beräknas korrelationen baserat på ranger av värden och man använder en annan teststorhet.
+
+```{r}
+cor.test(df_sam$density,df_sam$sulphates, method = "spearman")
+```
+
+Liksom förut är det icke-parametriska testet ett svagare test.
+
+Det tredje alternativet kendall - skattar korrelation på ett annat sätt.
+
+# Korrelationsanalys exempel 2
+
+::: callout-note
+## Exempel. Kolesterol och triglyceridhalt
+
+I en studie från Italien mätte man kolesterolhalt (mmol/l) och triglyceridhalt (mmol/l) på tio män med höga fetthalter i blodet.
+
+| Patient $i$       | 1    | 2    | 3    | 4    | 5    | 6    | 7    | 8    | 9     | 10    |
+|-------------------|------|------|------|------|------|------|------|------|-------|-------|
+| Kolesterol $x_i$  | 5.12 | 6.18 | 6.77 | 6.65 | 6.36 | 5.90 | 5.48 | 8.02 | 10.34 | 8.51  |
+| Triglycerid $y_i$ | 2.30 | 2.54 | 2.95 | 3.77 | 4.18 | 5.31 | 5.53 | 8.83 | 9.48  | 14.20 |
+
+```{r}
+#| echo: false 
+
+df = data.frame(x=c(5.12,6.18,6.77,6.65,6.36,5.90,5.48,8.02,10.34,8.51), y = c(2.30,2.54,2.95,3.77,4.18,5.31,5.53,8.83,9.48,14.20))
+
+ggplot(df,aes(x=x,y=y)) +
+  geom_point() +
+  xlab("Kolesterol") +
+  ylab("Triglycerid")
+```
+
+-   Finns de ett samband mellan de två variablerna?
+:::
+
+## Specificering av modell, hypoteser och antagande
+
+**Signfikansnivå:** Vi väljer signifikansnivå $\alpha = 0.05$
+
+**Modell:** Låt $X = \text{"Kolesterol"}$ och $Y = \text{"Triglycerid"}$.
+
+**Hypoteser:** $H_0: \rho = 0$ mot $H_1: \rho \neq 0$
+
+**Antagande:** $X$ och $Y$ kommer från en bivariat normalfördelning
+
+## Beräkning av kvadratsummor och produktsumma för skattning av korrelation
+
+Baserat på 10 mätningar $\{x_1,y_1\},\{x_2,y_2\},\dots,\{x_{10},y_{10}\}$ skattar vi korrelationskoefficienten genom att först beräkna kvadratsummor:
+
+```{r}
+#| echo: false
+
+n = 10
+spxy = sum(df$x*df$y)-n*mean(df$x)*mean(df$y)
+ssx = sum(df$x^2) - n*mean(df$x)^2
+ssy = sum(df$y^2) - n*mean(df$y)^2
+r = spxy/sqrt(ssx)/sqrt(ssy)
+tstor = r*sqrt((n-2)/(1-r^2))
+tkvant <- qt(1-0.025,8)
+```
+
+$$SS_{xy} = `r spxy`$$
+
+$$SS_{x} = `r ssx`$$
+
+$$SS_{y} = `r ssy`$$
+
+Därefter skattar vi korrelationen $\hat{\rho}$ med stickprovskorrelationskoefficienten $$r_{xy}= \frac{SS_{xy}}{\sqrt{SS_x}\sqrt{SS_y}} = `r r` $$
+
+## Jämförelse av teststorhet med kvantil
+
+Efter det, beräknar vi teststorheten:
+
+$$t = `r r`\sqrt{\frac{10-2}{1-`r r`^2}} = `r tstor`$$
+
+**Testregel:** Nollhypotesen $H_0$ förkastas eftersom teststorheten $t>t_{0.025}(10-2) = `r tkvant`$
+
+## Undersökning av antagande
+
+Innan vi kan dra slutsats ska vi kolla att antagandet om normalfördelning för $X$ och $Y$ stämmer.
+
+::: columns
+::: {.column width="50%"}
+```{r}
+qqnorm(df$x)
+qqline(df$x)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+qqnorm(df$y)
+qqline(df$y)
+```
+:::
+:::
+
+Utifrån jämförelser av empiriska och teoretiska kvantiler finns det ingen anledning att ifrågasätta detta antagande.
+
+## Slutsats
+
+Eftersom vi förkastar nollhypotesen att korrelationen är noll och att antagande som ligger till grund för testet verkar stämma, drar vi slutasten att det finns ett linjärt samband Kolesterol och Triglycerid.
+
+> Notera att ett statistiskt samband ej medför ett orsaksamband! Med andra ord, vi kan inte dra slutsatsen att nivån på kolesterol påverkar nivån av triglycerid eller tvärtom.
+
+## Utskrifter från statistiskprogram
+
+Här kan ni jämföra med vad man får när man använder funktionen `cor.test`
+
+```{r}
+cor.test(df$x,df$y)
+```
+
+# Regressionsanalys
+
+::: callout-note
+## Exempel. Ålder och vilopuls
+
+I en studie mättes ålder och vilopuls hos ett slumpmässigt urval av patienter för att undersöka om vilopuls påverkas av ålder.
+
+-   Finns det ett linjärt samband mellan ålder och vilopuls?
+
+```{r}
+#| echo: false 
+#| warning: false
+#| message: false
+
+heart <- read_csv("data/Heart.csv", show_col_types = FALSE)
+```
+
+```{r}
+ggplot(heart,aes(x=Age,y=RestBP)) +
+   geom_point() 
+```
+:::
+
+Regressionsanalys tar sin utgångspunkt i en modell där den ena variabeln är en funktion av den andra plus en slumpmässig variation
+
+**Modell:** $y_i = \text{funktion av}(x_i) + \text{slumpmässigt fel}$ där $i=1,\dots,n$
+
+-   Enkel linjär regression gäller när funktionen är av formen $\beta_0 + \beta_1 x$
+
+$\beta_0$ kallas för intercept
+
+$\beta_1$ kallas för lutning
+
+-   $Y$ är responsvariabel eller beroende variabel
+
+-   $X$ är förklarande variabel eller oberoende variabel
+
+Regressionen kallas för **enkel** när det finns **en** förklarande variabel och *multipel* när det finns *flera* (inte i denna kurs).
+
+Här fokuserar vi på en kontinuerlig responsvariabel där vi antar att de slumpmässiga felen $\varepsilon_i$ (residualer, avvikelserna från den linjära modellen) är oberoende och följer en normalfördelning med lika varians $\sigma^2$.
+
+Modellen för enkel linjär regression är således:
+
+$$y_i = \beta_0+\beta_1x_i+\varepsilon_i$$ där residualer för observation $i = 1, ...,n$ är oberoende och likafördelade enligt $\varepsilon_i \sim N(0,\sigma)$
+
+## Minsta kvadratmetoden
+
+Ett sätt att bestämma vilka värden parametrarna ska ha är att minimera summan av de kvadratiska avstånden från linjen till varje datapunkt, **Minsta kvadratmetoden** (på engelska *Ordinary Least Square (OLS) regression*).
+
+$$Q(\beta_0,\beta_1)=\sum \varepsilon_i^2 = \sum (y_i - (\beta_0 + \beta_1 x_i))^2$$
+
+Vi vill hitta värden på $\beta_0$ och $\beta_1$ så att kvadratsumman $Q(\beta_0,\beta_1)$ är så liten som möjligt!
+
+Parametrarna skattas genom att
+
+(1) Beräkna $\bar{x}$, $\bar{y}$, $SS_x$, $SS_y$ och $SS_{xy}$
+
+(2) Skatta parametrarna enligt
+
+$$\hat{\beta}_1=b_1 = \frac{SS_{xy}}{SS_x}$$
+
+$$\hat{\beta}_0=b_0 = \bar{y} - b_1 \bar{x}$$
+
+Om linjen skattas på detta sätt kan vi även skatta variationen runt linjen på följande sätt
+
+$$\hat{\sigma}^2=s_e^2 = \frac{\sum (y_i - \hat{y}_i)^2}{n-2} =\frac{\sum (y_i - (b_0+b_1x_i))^2}{n-2}  = \frac{1}{n-2}\left( SS_y - \frac{(SS_{xy})^2}{SS_x}\right)$$
+
+Vi kan även skatta variansen på skattningarna som
+
+$$\hat{V}(b_1) = \frac{s_e^2}{SS_x}$$
+
+$$\hat{V}(b_0) = s_e^2\left(\frac{1}{n}+\frac{\bar{x}^2}{SS_x}\right)$$
+
+## Inferens vid enkel linjär regression
+
+Det är vanligt att vi vill dra slutsatser genom att ta fram konfidensintervall för
+
+-   parametrarna
+
+-- lutningen på linjen $\beta_1$
+
+-- interceptet $\beta_0$ - mer ovanligt
+
+-   prognoser
+
+-- det förväntade värdet på responsvariabeln givet ett visst värde på den förklarande variablen $\beta_0 + \beta_1 x_0$
+
+-- en framtida observation (enskilt värde) av responsvariabeln givet ett visst värde på den förklarande variablen $y(x_0)$
+
+::: callout-note
+## Exempel. Ålder och vilopuls (forts.)
+
+Vi gör ett hypotestest för att svara på om det finns ett linjärt samband mellan ålder och vilopuls
+
+**Hypoteser:** $H_0: \beta_1 = 0$ (lutningen är noll, det finns inget linjärt samband)
+
+$H_1: \beta_1 \neq 0$ (lutningen är inte noll, det går inte att utesluta ett linjärt samband)
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+
+ggplot(heart,aes(x=Age,y=RestBP)) +
+   geom_point() +
+  geom_smooth(method=lm)
+```
+:::
+
+## Kvadrat- och produktsummor samt stickprovsmedelvärden
+
+Så här räknar Ullrika ut sammanfattande mått för att kunna fortsätta. En del miniräknare har inbyggda funktioner för att utföra dessa beräkningar. Använd miniräknare eller R för att göra övningarna. Ni kommer få beräknade kvadrat- och produktsummor samt stickprovsmedelvärden på den skriftliga tentan.
+
+```{r}
+df <- data.frame(x=heart$Age, y = heart$RestBP)
+n = nrow(df)
+spxy = sum(df$x*df$y)-n*mean(df$x)*mean(df$y)
+ssx = sum(df$x^2) - n*mean(df$x)^2
+ssy = sum(df$y^2) - n*mean(df$y)^2
+m_y = mean(df$y)
+m_x = mean(df$x)
+
+b1 = spxy/ssx
+b0 = m_y-b1*m_x
+se2 = (ssy-(spxy)^2/ssx)/(n-2)
+```
+
+## Konfidensintervall för lutningen
+
+För att kunna testa om lutningen är skild från noll, ökar eller minskar, bildar vi ett konfidensintervall för lutningen.
+
+Givet modellen för linjär regression och om antagandet om oberoende och normalfördelade residualer med samma varians stämmer, kan vi använda en t-kvantil för att skapa konfidensintervall för lutningen på linjen
+
+$$I_{\beta_1} = b_1 \pm t_{\alpha/2}(n-2)\sqrt{\hat{V}(b_1)}$$
+
+$b_1 = \frac{SS_{xy}}{SS_x} = \frac{`r spxy`}{`r ssx`} = `r round(b1,3)`$
+
+$n=`r n`$
+
+$\hat{V}(b_1) = \frac{s_e^2}{SS_x} = \frac{`r se2`}{`r ssx`} = `r round(se2/ssx,3)`$
+
+Ett 95%-igt konfidensintervall blir
+
+```{r}
+lb = b1-qt(1-0.025,n-2)*sqrt(se2/ssx) #lower bound
+ub = b1+qt(1-0.025,n-2)*sqrt(se2/ssx) #upper bound
+```
+
+$I_{\beta_1} = `r round(b1,3)` \pm t_{0.025}(`r n`-2)\sqrt{`r round(se2/ssx,3)`} = (`r round(lb,3)`,`r round(ub,3)`)$
+
+## Residualanalys - Undersök om antagande gäller
+
+Innan vi kan dra någon slutsats behöver vi undersöka om modellen verkar rimlig. Är residualerna normalfördelade och oberoende? Man kan undersöka detta genom att rita residualer mot $x$ samt undersöka om de följer en normalfördelning.
+
+För att beräkna residualerna behöver jag skatta interceptet
+
+$$b_0 = \bar{y} - b_1 \bar{x} = `r round(m_y,1)` - `r round(b1,1)`\cdot `r round(m_x,1)` = `r round(m_y-b1*m_x,1)`$$
+
+där varje residual är
+
+$$e_i = y_i - b_0 - b_1x_i$$
+
+```{r}
+res = df$y - b0 - b1*df$x 
+```
+
+::: columns
+::: {.column width="50%"}
+```{r}
+qqnorm(res)
+qqline(res)
+```
+
+⇒ Det finns ingen anledning att inte anta normalfördelning
+:::
+
+::: {.column width="50%"}
+```{r}
+# om oberoende och lika varians - inget mönster
+plot(df$x,res)
+```
+
+⇒ Det finns ingen anledning att inte anta oberoende och lika varians
+:::
+:::
+
+## Dra slutsats från hypotes-testet
+
+Eftersom intervallet $I_{\beta_1}$ inte täcker noll, förkastar vi nollhypotesen på signifikansnivå $\alpha = 0.05$.
+
+## Utskrifter från statistiskprogram
+
+I R kan man göra linjär regression med funktionen `lm`. Funktionen `summary` genererar en utskrift av diverse saker, där man behöver förstå vad det är man behöver för att kunna göra den analys man vill göra.
+
+```{r}
+mod = lm(formula = RestBP ~ Age, data = heart)
+summary(mod)
+```
+
+Konfidensintervall beräknas med funktionen `confint` där man kan ange konfidensgrad (95% är förvald)
+
+```{r}
+confint(mod)
+```
+
+Man kan också be programmet att rita upp residualer. När du gör detta, kommer du ut flera plottar med begrepp som vi inte går på djupet i inom denna kurs.
+
+```{r}
+plot(mod)
+```
+
+Du kan få fram residualer genom funktionen `residuals` och undersöka om residualerna är normalfördelade, oberoende och har lika varians på ditt eget sätt.
+
+```{r}
+res = residuals(mod)
+```
+
+# Konfidensintervall vid en regressionsanalys
+
+-   Lutningen på linjen
+
+$$I_{\beta_1} = b_1 \pm t_{\alpha/2}(n-2)\sqrt{s_e^2\frac{1}{SS_x}}$$
+
+-   Intercept för linjen
+
+$$I_{\beta_0} = b_0 \pm t_{\alpha/2}(n-2)\sqrt{s_e^2\left(\frac{1}{n}+\frac{\bar{x}^2}{SS_x}\right)}$$
+
+-   Förväntat värde på responsvariabeln givet att den förklarade variabeln är $x_0$
+
+$$I_{\beta_0+\beta_1x_0} = b_0+b_1x_0 \pm t_{\alpha/2}(n-2)\sqrt{s_e^2\left(\frac{1}{n}+\frac{(x_0-\bar{x})^2}{SS_x}\right)}$$
+
+-   En framtida observation (eller enskilt värde) av responsvariabeln givet att den förklarade variabeln är $x_0$
+
+$$I_{\beta_0+\beta_1x_0+\varepsilon} = b_0+b_1x_0 \pm t_{\alpha/2}(n-2)\sqrt{s_e^2\left(1 + \frac{1}{n}+\frac{(x_0-\bar{x})^2}{SS_x}\right)}$$
+
+# Regressionsanalys exempel 2
+
+::: {callout-note}
+## Exempel. Lungkapacitet
+
+I en undersökning ville man studera hur lungkapaciteten (i liter, mätt med spirometer) påverkas av personers vikt (i kg). På 20 slumpmässigt utvalda kvinnor i åldern 17 till 19 år mättes de två variablerna.
+
+| Person   | 1    | 2    | 3    | 4    | 5    | 6    | 7    | 8    | 9    | 10   |
+|----------|------|------|------|------|------|------|------|------|------|------|
+| vikt     | 54.4 | 56.2 | 49.0 | 63.5 | 60.8 | 59.9 | 62.6 | 62.1 | 52.2 | 50.8 |
+| lungkap. | 3.87 | 3.26 | 2.14 | 4.13 | 3.44 | 2.78 | 2.91 | 3.33 | 3.20 | 2.17 |
+
+| Person   | 11   | 12   | 13   | 14   | 15   | 16   | 17   | 18   | 19   | 20   |
+|----------|------|------|------|------|------|------|------|------|------|------|
+| vikt     | 57.2 | 48.1 | 54.0 | 50.8 | 49.9 | 46.3 | 59.0 | 56.2 | 61.2 | 53.1 |
+| lungkap. | 3.13 | 2.47 | 3.03 | 2.88 | 2.65 | 2.03 | 3.21 | 3.45 | 3.61 | 2.53 |
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+
+df <- data.frame(x = c(54.4,56.2,49.0,63.5,60.8,59.9, 62.6, 62.1, 52.2,50.8, 57.2,48.1, 54.0, 50.8, 49.9, 46.3, 59.0, 56.2, 61.2, 53.1), y = c(3.87,3.26, 2.14, 4.13, 3.44, 2.78, 2.91, 3.33, 3.20, 2.17, 3.13, 2.47, 3.03, 2.88, 2.65, 2.03, 3.21, 3.45, 3.61, 2.53)) 
+
+n = nrow(df)
+spxy = sum(df$x*df$y)-n*mean(df$x)*mean(df$y)
+ssx = sum(df$x^2) - n*mean(df$x)^2
+ssy = sum(df$y^2) - n*mean(df$y)^2
+m_y = mean(df$y)
+m_x = mean(df$x)
+
+b1 = spxy/ssx
+b0 = m_y-b1*m_x
+se2 = (ssy-(spxy)^2/ssx)/(n-2)
+
+ggplot(df,aes(x=x,y=y)) +
+  geom_point() +
+  xlab("Vikt (kg)") +
+  ylab("Lungkapacitet (l)") +
+  ggtitle("Lungkapacitet mot vikt")
+```
+
+## Intressanta frågeställningar
+
+-   Finns det ett samband mellan vikt och lungkapacitet?
+
+-   Kan sambandet tänkas vara linjärt, d.v.s. om $Y = \text{lungkapacitet}$ och $X=\text{vikt}$, $$y = \beta_0+\beta_1x$$
+
+-   Vad innebär det i modellbeskrivningen ovan om $\beta_1=0$?
+
+-   Hur mycket ökar lungkapaciteten i genomsnitt när vikten ökas med ett kilo?
+
+-   Vilken är den genomsnittsliga lungkapaciteten för kvinnor som väger 60 kg - d.v.s. vad är den **förväntade** lungkapaciteten för kvinnor med vikt 60 kg?
+
+-   Vilken lungkapacitetet kan en kvinna ha som väger 60 kg - d.v.s. vad skulle vi **prediktera** för lungkapacitet på en slumpmässigt vald kvinna?
+
+-   Hur mycket av variationen i lungkapacitet förklaras av vikt?
+:::
+
+## Hypotestest - Finns det ett samband mellan vikt och lungkapacitet?
+
+**Modell:** $Y = \text{lungkapacitet}$ och $X=\text{vikt}$ och sambandet mellan dem är linjärt
+
+$$y_i = \beta_0+\beta_1x_i+\varepsilon_i$$
+
+**Antagande:** Vi antar att residualerna är oberoende och likafördelade enligt $\varepsilon_i \sim N(0,\sigma)$
+
+**Hypoteser:** $H_0: \beta_1 = 0$ mot $H_1: \beta_1 \neq 0$ testas med signifikansnivå $\alpha = 0.05$
+
+## Beräkna sammanfattande mått utifrån stickproven
+
+$n = `r n`$, $\bar{x} = `r m_x`$, $\bar{y} = `r m_x`$
+
+$SS_{xy} = `r spxy`$, $SS_x = `r ssx`$, $SS_y = `r ssy`$
+
+## Beräkna konfidensintervall för lutningen
+
+```{r}
+#| echo: false
+
+lb = b1-qt(1-0.025,n-2)*sqrt(se2/ssx) #lower bound
+ub = b1+qt(1-0.025,n-2)*sqrt(se2/ssx) #upper bound
+```
+
+$$I_{\beta_1} = b_1 \pm t_{0.025}(`r n-2`)\sqrt{\frac{s_e^2}{SS_x}} = `r round(b1,3)` \pm `r round(qt(1-0.025,n-2),3)`\sqrt{`r round(se2/ssx,5)`} = (`r round(lb,3)`,`r round(ub,3)`) $$ Nollhypotesen förkastas på signifikansnivå $\alpha=0.05$ eftersom intervallet inte täcker noll.
+
+⇒ Det finns stöd för ett linjärt samband som säger att lungkapacitet ökar med vikt. Lungkapaciteten ökar genomsnitt `r b1` när vikten ökas med ett kilo?
+
+## Gör prognoser
+
+### Förväntat värde av responsvariabeln
+
+-   Vilken är den genomsnittsliga lungkapaciteten för kvinnor som väger $x_0=60$ kg - d.v.s. vad är den **förväntade** lungkapaciteten för kvinnor med vikt 60 kg?
+
+```{r}
+#| echo: false
+x0 = 60
+
+y_x0 = b0+b1*x0
+lb = b0+b1*x0-qt(1-0.025,n-2)*sqrt(se2*(1/n + (x0-m_x)^2/ssx)) #lower bound
+ub = b0+b1*x0+qt(1-0.025,n-2)**sqrt(se2*(1/n + (x0-m_x)^2/ssx)) #upper bound
+```
+
+Det förväntade värdet är $\mu(60) = b_0+b_1\cdot 60 = `r round(b0,2)`+`r round(b1,2)` \cdot 60 = `r round(y_x0,2)`$
+
+Ett 95%-igt konfidensintervall för det förväntade värdet är
+
+$$\begin{split} & I_{\beta_0+\beta_1x_0} = b_0+b_1\cdot 60 \pm t_{0.025}(`r n-2`)\sqrt{s_e^2\left(\frac{1}{n}+\frac{(x_0-\bar{x})^2}{SS_x}\right)} = \\ & `r round(b0,2)`+`r round(b1,2)` \cdot 60 \pm `r round(qt(1-0.025,n-2),3)` \sqrt{`r round(se2,3)`\left(\frac{1}{`r n`}+\frac{(60-`r round(m_x,1)`)^2}{`r round(ssx,2)`}\right)} = \\ & (`r round(lb,2)`,`r round(ub,2)`) \end{split}$$
+
+### Illustration av konfidensintervall för förväntat värde
+
+```{r}
+mod = lm(y~x,data=df)
+newdf = data.frame(x=seq(min(df$x),max(df$x),length.out=50))
+konf = data.frame(predict(mod,newdata=newdf,interval = "confidence"))
+
+plot(y~x,data=df,ylim=c(1,5),xlab = 'vikt', ylab='lungkapacitet')
+lines(newdf$x,konf$fit,col='darkred')
+lines(newdf$x,konf$lwr,col = 'blue',lty=2)
+lines(newdf$x,konf$upr,col = 'blue',lty=2)
+```
+
+### En framtida observation (eller enskilt värde) av responsvariabeln
+
+-   Vilken lungkapacitetet kan en kvinna ha som väger 60 kg - d.v.s. vad skulle vi **prediktera** för lungkapacitet på en slumpmässigt vald kvinna?
+
+```{r}
+#| echo: false
+x0 = 60
+
+y_x0 = b0+b1*x0
+lb = b0+b1*x0-qt(1-0.025,n-2)*sqrt(se2*(1+1/n + (x0-m_x)^2/ssx)) #lower bound
+ub = b0+b1*x0+qt(1-0.025,n-2)**sqrt(se2*(1+1/n + (x0-m_x)^2/ssx)) #upper bound
+```
+
+Ett 95%-igt konfidensintervall för prediktionen är
+
+$$\begin{split} & I_{\beta_0+\beta_1x_0+\varepsilon} = b_0+b_1\cdot 60 \pm t_{0.025}(`r n-2`)\sqrt{s_e^2\left(1+\frac{1}{n}+\frac{(x_0-\bar{x})^2}{SS_x}\right)} = \\ & `r round(b0,2)`+`r round(b1,2)` \cdot 60 \pm `r round(qt(1-0.025,n-2),3)` \sqrt{`r round(se2,3)`\left(1+\frac{1}{`r n`}+\frac{(60-`r round(m_x,1)`)^2}{`r round(ssx,2)`}\right)} = \\ & (`r round(lb,2)`,`r round(ub,2)`) \end{split}$$
+
+> Konfidensintervallet för prediktionen (även kallad prediktionsintervallet) är bredare än konfidensintervallet för det förväntade värdet.
+
+> Tänk på att modellen gäller i intervallet för x-värden. Det innebär att prognoser har sämre tillförlitlighet för x-värden utanför detta intervall.
+
+### Illustration av prediktions- och konfidensintervall för responsvariabeln
+
+```{r}
+mod = lm(y~x,data=df)
+newdf = data.frame(x=seq(min(df$x),max(df$x),length.out=50))
+konf = data.frame(predict(mod,newdata=newdf,interval = "confidence"))
+
+pred = data.frame(predict(mod,newdata=newdf,interval = "prediction"))
+
+plot(y~x,data=df,ylim=c(1,5),xlab = 'vikt', ylab='lungkapacitet')
+lines(newdf$x,konf$fit,col='darkred')
+lines(newdf$x,konf$lwr,col = 'blue',lty = 2)
+lines(newdf$x,konf$upr,col = 'blue',lty = 2)
+lines(newdf$x,pred$lwr,lty = 2)
+lines(newdf$x,pred$upr,lty = 2)
+```
+
+## Förklaringsgrad
+
+-   Hur mycket av variationen i lungkapacitet förklaras av vikt?
+
+Determinationskoefficienten ($R^2$) är en koefficient som anger hur stor del av variationerna i den beroende variabeln ($Y$) som kan förklaras av variationer i den oberoende variabeln ($X$) under förutsättning att sambandet mellan $X$ och $Y$ är linjärt.
+
+```{r}
+#| echo: false
+
+icke_var = sum((df$y - (b0 + b1*df$x))^2)
+tot_var = sum((df$y - m_y)^2)
+r2 = 1-icke_var/tot_var
+```
+
+$$R^2 = 1 - \frac{\sum (y_i-\hat{y}_i)^2}{\sum (y_i-\bar{y})^2} = `r round(100*r2,1)`\%$$
+
+där täljaren motsvarar icke-förklarad variation $\sum (y_i-\hat{y}_i)^2 = `r icke_var`$ och nämnaren motsvarar total variation $\sum (y_i-\bar{y})^2 = `r tot_var`$
+
+I detta fall förklarar vikt $`r round(100*r2,1)`\%$ av variationen i lungkapacitet.
+
+> Förklaringsgraden är samma sak som kvadraten på korrelationskoefficienten när modellen är linjär d.v.s. $R^2 = r^2$
+
+> Förklaringsgraden säger inget om hur bra modellen är. Man bör alltid visualisera modellen och data.
+
+# Vikten av att visualisera data och modell
+
+[Anscombes dataset](https://en.wikipedia.org/wiki/Anscombe%27s_quartet) har samma beskrivande statistika mått (medelvärden,korrelationskoefficient, skattad regressionslinje, förklaringsgrad) men uppvisar olika mönster när man visualiserar data grafiskt.
+
+![](img/anscombe.png)
+
+# Korrelations- eller regressionsanalys
+
+-   Korrelationsanalys
+
+-- Både $X$ och $Y$ varierar
+
+-- Ingen av variablerna kan anses vara beroende av den andra
+
+-- $X$ och $Y$ antas vara variabler från en bivariat normalfördelning
+
+-   Regressionsanalys
+
+-- Värden på $X$ är mätta med relativt litet fel
+
+-- $Y$ kan anses vara beroende av $X$
+
+-- Syftet med den statistiska analysen kan vara att man vill göra prognoser av $Y$ givet specifica värden på $X$
+
+-- Residualerna kan antas komma från en normalfördelning
+
+> Välj den analys som är mest lämmpligt för ditt problem. Undvik använda båda analyserna för samma problem!
+
+> Var noga med att ställa upp hypoteser och undersöka modell-antagande för båda formerna av analyser!

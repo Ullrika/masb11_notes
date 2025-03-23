@@ -1,0 +1,233 @@
+---
+title: "Föreläsningar MASB11"
+subtitle: "Swedish and English"
+author: "Ullrika Sahlin"
+format:
+  html:
+    embed-resources: true
+---
+
+# F0. Beskrivande statistik (självstudier)/Descriptive statistics (self studies)
+
+Kvalitativa och kvantitativa data/Qualitative and quantitative data
+
+Median/Median
+
+Medelvärde/Mean
+
+Varians/Variance
+
+Standardavvikelse/Standard deviation
+
+Kvantil/Quantile
+
+Stapeldiagram/Bar chart
+
+Histogram/Histogram
+
+Lådadiagram/Boxplot
+
+Korrelationskoefficient/Coefficient of correlation
+
+Kvantil-kvantil plot/Quantile-quantile plot
+
+# F1. Grunderna i sannolikhetslära
+
+Sannolikhet/Probability
+
+Slumpmässigt försök/Random experiment
+
+Utfall/Outcome
+
+Utfallsrum/Outcome space
+
+Händelse/Event
+
+Regler för sannolikhet/Probability rules
+
+Venn-diagram/Venn diagram
+
+Komplementhändelse/Complementary event
+
+Uteslutande händelse/Complementary event
+
+Additionssatsen/The additive theorem of probability
+
+Oberoende händelser/Independent events
+
+Betingad sannolikhet/Conditional probability
+
+Multiplikationssatsen/The multiplication theorem of probability
+
+Total sannolikhet/The law of total probability
+
+Bayes sats/Bayes' theorem (Bayes' rule)
+
+Kombinatorik/Combinatorics
+
+# F2. Diskreta slumpvariabler/Discrete random variables
+
+Slumpvariabler/Random variables
+
+Diskreta och kontinuerliga slumpvariabler/Discrete and continuous r.v.
+
+Sannolikhetsfunktion/Probability function
+
+Fördelningsfunktion/Distribution function
+
+Bernoullifördelning/Bernoulli distribution
+
+Likformig heltalsfördelning/Discrete uniform distribution
+
+Väntevärde, varians, standardavvikelse /Expected value, variance, standard deviation
+
+Väntevärde för en diskret s.v./Expected value of a discrete r.v.
+
+Variansen för en diskret s.v./Variance of a discrete r.v.
+
+Poissonfördelning/Poisson distribution
+
+Binomialfördelning/Binomial distribution
+
+Väntevärde av en funktion av en slumpvariabel/Expected value of a function of a random variable
+
+# F3. Diskreta och kontinuerliga slumpvariabler/Discrete and continuous random variables
+
+Kontinuerliga slumpvariabler/Continuous random variables
+
+Likformig fördelning/Uniform distribution
+
+Täthetsfunktion/Density function
+
+Fördelningsfunktion för en kontinuerlig s.v./Distribution function for a continuous random variable
+
+Komplementhändelse för kontinuerlig s.v./Complementary event for a continuous r.v.
+
+Väntevärde och varians för en kontinuerlig s.v./Expected value of a continuous r.v.
+
+Varians för en kontinuerlig s.v./Variance of a continuous r.v.
+
+Exponentialfördelning/Exponential distribution
+
+Normalfördelning/Normal distribution
+
+# F4. Kontinuerliga slumpvariabler, normalfördelning/Continuous random variables, normal distribution
+
+Lognormalfördelning/Lognormal distribution
+
+Standardiserad normalfördelning/Standardised normal distribution
+
+Normalkvantil/Normal quantiles
+
+Väntevärde och varians av en linjärkombination av en slumpvariabel/Expected value and variance of a linear combination of a random variable
+
+Väntevärde och varians för summor av slumpvariabler/Expected value and variance for sums of random variables
+
+Fördelningen för en summa av normalfördelade slumpvariabler/Distribution of a sum of normally distributed random variables
+
+Population/parametrar – Stickprov/statistiska (stickprovsmått)/Population/parameters - Sample/statistica
+
+# F5. Stickprovsfördelningar, Centrala gränsvärdessatsen/Sampling distributions, Central Limit Theorem
+
+Statistisk modell / Statistical model
+
+Fördelning för stickprov / Sampling distributions
+
+Centrala gränsvärdessatsen (CGS)/Central Limit Theorem
+
+CGS och binomialfördelningen/CGS and the binomial distribution
+
+Normalapproximationer/Normal approximations
+
+Från sannolikhetsteori till statistisk inferens/From probability theory to statistical inference
+
+Skattningar av parameter (estimator)/Parameter estimation (estimates)
+
+Väntevärdesriktig och effektiv estimator/Unbiased and effective estimator
+
+t-fördelning/t-distribution
+
+# F6. Skattning, Konfidensinterval/Estimation, confidence interval
+
+Stickprovsfördelningar för känd och okänd varians/Sampling distributions for known and unknown variance
+
+Skattning och konfidensintervall/Estimation and confidence interval
+
+Konfidensintervall känd och okänd varians t-fördelning/Confidence interval with known and unknown variance
+
+Skattning av parametrar i en lognormalfördelning/Parameter estimation in a lognormal distribution
+
+# F7. Hypotestest/Hypothesis testing
+
+Hypotestest på tre sätt/Hypothesis testing in three ways
+
+-   Teststorhet och kritiskt område/Test statistic with critical area
+
+-   Konfidensintervall/Confidence interval
+
+-   Med ett p-värde (direktmetoden)/P-value (direct method)
+
+Möjliga felslut/Possible errors
+
+Styrka på ett hypotestest/Power of an hypothesis test
+
+
+# F8. Två stickprov/Two random samples
+
+$\chi^2$-fördelningen/$\chi^2$ distribution
+
+Hypotestest för varians/Hypothesis test for variance
+
+Jämföra två populationer/Compare populations
+
+Stickprov i par/Paired samples
+
+Två oberoende stickprov/Indpendent samples
+
+Lika och olika varians/Equal and non-equal variance
+
+Testa om lika varians/Test if variances are equal
+
+F-fördelningen/F distribution
+
+# F9. Inferens för diskret och kategorisk data/Inference of discrete and categorical data
+
+Direkt-metoden och Normalapproximation/Direct method and normal approximation
+
+Icke-parametriskt test/Non-parametric test
+
+Inferens om en proportion/Inference of a proportion
+
+Inferens om skillnad mellan två proportioner/Inference on the difference between to proportions
+
+Analys av kategoriska data:/Analsyis of categorical data
+
+-   Testa modellanpassning/Test model fit
+
+-   Homogenitetstest/Testing homogeneity
+
+-   Oberoendetest/Independence test
+
+Parametriskt vs Icke-parametriskt test/Parametric vs non-parametric test
+
+# F10. Enkel linjär regression/Simple linear regression
+
+Bivariat normalfördelning/Bivariate normal distribution
+
+Kovarians/Covariance
+
+Korrelation/Correlation
+
+Korrelationsanalys/Correlation analysis
+
+Regressionsanalys/Regression analysis
+
+# F11. Variansanalys/Analysis of variance
+
+Variansanalys/Analysis of variance
+
+Repetition
+
+# F12. Reserv och repetition
+
+Repetition

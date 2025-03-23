@@ -1,0 +1,44 @@
+project:
+  type: website
+
+website:
+  title: "MASB11 Lecture notes"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Föreläsningsanteckningar (in Swedish)
+      - href: index_eng.qmd
+        text: Lecture notes in English
+      # - href: F1_anteckningar.qmd
+      #   text: F1
+      # - href: F2_anteckningar.qmd
+      #   text: F2
+      # - href: F3_anteckningar.qmd
+      #   text: F3
+      # - href: F4_anteckningar.qmd
+      #   text: F4
+      # - href: F5_anteckningar.qmd
+      #   text: F5
+      # - href: F6_anteckningar.qmd
+      #   text: F6
+      # - href: F7_anteckningar.qmd
+      #   text: F7
+      # - href: F8_anteckningar.qmd
+      #   text: F8
+      # - href: F9_anteckningar.qmd
+      #   text: F9
+      # - href: F10_anteckningar.qmd
+      #   text: F10
+      # - href: F11_anteckningar.qmd
+      #   text: F11
+        
+        
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+
+
+

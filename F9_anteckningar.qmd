@@ -1,0 +1,504 @@
+---
+title: "F9. Statistisk inferens på diskreta och kategoriska data"
+author: "Ullrika Sahlin"
+format: 
+  html:
+    embed-resources: true
+editor: source
+---
+
+# Parametriska och icke-parametriska tester
+
+Testa genom att anta eller inte anta en fördelning för populationen
+
+::: callout-tip
+## Exempel. Energiförbrukning
+
+Man vill undersöka om energiförbrukning i vila är annorlunda hos personer drabbade av cystisk fibros jämfört med friska personer. Tio par matchades ihop, en i varje par hade sjukdomen medan den andre var frisk. För övrigt var personerna i varje par lika beträffande kön, ålder, vikt och längd. Resultat i energiförbrukning (kcal/dag):
+
+|                    |      |      |      |      |      |      |      |      |      |      |
+|--------------------|------|------|------|------|------|------|------|------|------|------|
+| Par                | 1    | 2    | 3    | 4    | 5    | 6    | 7    | 8    | 9    | 10   |
+| CF                 | 1153 | 1132 | 1165 | 1460 | 1634 | 1493 | 1358 | 1453 | 1185 | 1824 |
+| Friska             | 996  | 1080 | 1182 | 1452 | 1162 | 1619 | 1140 | 1123 | 1113 | 1463 |
+| Skillnad CF-Friska | 157  | 52   | -17  | 8    | 427  | -126 | 218  | 330  | 72   | 361  |
+
+Stickprovsstorleken $n=10$ är för liten för att använda sig av Centrala Gränsvärdessatsen för normalapproximation.
+
+(a) Hur gör vi om det är rimligt att tänka sig att differenserna kommer från en normalfördelning?
+
+(b) Hur gör vi utan antagande om fördelning?
+:::
+
+## (a) Antag att stickprovet kommer från en normalfördelning
+
+Låt oss undersöka om antagandet verkar stämma genom att göra en kvantil-kvantil-plot för normalfördelningen.
+
+```{r}
+x = c(157, 52, -17, 8, 427, -126, 218, 330, 72, 361)
+qqnorm(x)
+qqline(x)
+```
+
+Ja, det verkar stämma.
+
+**Modell:** $X = \text{"Skillnad i energiförbrukning inom par"} \sim N(\mu,\sigma)$
+
+**Hypoteser:** $H_0: \mu = 0$ mot $H_1: \mu \neq 0$
+
+**Testregel:** Vi väljer en signifikansnivå på $\alpha=0.05$ och testar genom att bilda ett 95%-igt två-sidigt konfidensintervall för väntevärdet och förkasta $H_0$ om intervallet inte täcker noll.
+
+$$I_{\mu}: \bar{x} \pm t_{\alpha/2}(n-1)\frac{s}{\sqrt{n}}$$
+
+Vi beräknar följande $\bar{x} = `r mean(x)`$ och $s = `r round(sd(x),1)`$ från stickprovet och erhåller intervallet $(`r round(mean(x)-qt(1-0.05/2,10-1)*sd(x)/sqrt(length(x)),2)`,`r round(mean(x)+qt(1-0.05/2,10-1)*sd(x)/sqrt(length(x)),2)`)$
+
+⇒ $H_0$ förkastas på signifikansnivå 5%.
+
+## (b) Antag ingen fördelning för stickprovet
+
+Vi söker efter ett test där vi inte antar någon fördelning om stickprovet. Ett sådant test kallas även för ett icke-parametriskt test.
+
+Exempel är $\chi^2$-test, Mann-Whitneys U-test.
+
+### Icke-parametriskt test: Wilcoxons teckentest
+
+Vi undersöker hur många differenser som är positiva respektive negativa.
+
+::: callout-tip
+### Exempel. Energiförbrukning (forts.)
+
+|                    |     |     |     |     |     |      |     |     |     |     |
+|--------------------|-----|-----|-----|-----|-----|------|-----|-----|-----|-----|
+| Par                | 1   | 2   | 3   | 4   | 5   | 6    | 7   | 8   | 9   | 10  |
+| Skillnad CF-Friska | 157 | 52  | -17 | 8   | 427 | -126 | 218 | 330 | 72  | 361 |
+| Tecken             | \+  | \+  | \-  | \+  | \+  | \-   | \+  | \+  | \+  | \+  |
+:::
+
+**Modell:** $W = \text{"Antal positiva skillnader utav 10 möjliga"}\sim Bin(10,p)$ där $p$ är sannolikheten att man får en positiv skillnad.
+
+Vi observerar att $w = 8$
+
+**Hypoteser:**
+
+$H_0: p = 0.5$ (det är lika troligt att det blir + som -)
+
+$H_1: p > 0.5$ (det är mer troligt att det blir + än -)
+
+**Testregel:** Vi väljer signifikansnivå till att vara $\alpha = 0.05$.
+
+Under $H_0$ är $W\sim Bin(10,0.5)$
+
+Vi testar med direktmetoden:
+
+$p$-värdet $=P(W\geq 8|H_0) = 1 -P(W\leq 7|H_0) = 1 - `r round(pbinom(7,10,0.5),3)` = `r round(1-pbinom(7,10,0.5),3)`$
+
+⇒ $H_0$ förkastas kan ej förkastas eftersom $p$-värdet \> $\alpha$.
+
+## Rangsummetest
+
+::: callout-tip
+### Exempel. Idrott på skola
+
+I en skola ville man göra en liten pilotstudie för att se om en annorlunda idrottsträning på kort tid skulle kunna påverka skolbarnens fysiska prestationer. Man valde ut 16 barn, som var likvärdiga beträffande den fysiska kapaciteten. Barnen delades slumpmässigt in i två grupper. Under en månad följde hälften av barnen (grupp A) den normala undervisningen i ämnen Idrott och hälsa, medan de övriga barnen (grupp B) dessutom fick delta i den speciella träningen. När en månad hade gått fick barnen vid ett gemensamt tillfälle springa en kort terrängbana och deras tider noterades. Två barn i grupp A var sjuka under testdagen. Resultat (sekunder):
+
+|         |     |     |     |     |     |     |     |     |
+|---------|-----|-----|-----|-----|-----|-----|-----|-----|
+| Grupp A | 64  | 62  | 73  | 54  | 66  | 71  |     |     |
+| Grupp B | 53  | 74  | 70  | 59  | 42  | 38  | 48  | 60  |
+:::
+
+Om man inte vill anta en fördelning för de två stickproven, kan man istället göra ett icke-parametriskt (eller fördelningsfritt) test. Mann-Whitney's rangsummetest går ut på att man rangordnar värdena i båda stickproven och räknar ut rangsumman för dem, sen skapar man en teststorhet och jämför den mot ett kritiskt område för teststorheten. Nedan har jag ersatt observationerna med dess ranger, och räknar ut rangsumman per grupp.
+
+```{r}
+#| echo: false
+#| results: false
+
+df <- data.frame(x = c(64, 62, 73, 54, 66, 71, 53, 74, 70, 59, 42, 38, 48, 60),  
+grupp = c(rep("A",6), rep("B",8)))
+df$rang = rank(df$x)
+(rangvärde_A = sum(df$rang[df$grupp=="A"]))
+(rangvärde_B = sum(df$rang[df$grupp=="B"]))
+```
+
+|         |     |     |     |     |     |     |     |     | Rangsumma |
+|---------|-----|-----|-----|-----|-----|-----|-----|-----|:---------:|
+| Grupp A | 9   | 8   | 13  | 5   | 10  | 12  |     |     |    57     |
+| Grupp B | 4   | 14  | 11  | 6   | 2   | 1   | 3   | 7   |    48     |
+
+: Rangvärden
+
+Vi går inte igenom icke-parametriska test i detalj. Det är dock viktigt att känna till att det finns icke-parametriska test och vilka för-och nackdelar de har.
+
+## Översikt av tester för kontinuerliga data
+
++---------------------------+------------------------------------+--------------------------------+
+| Situation                 | Antar normalfördelning             | Antar ingen fördelning         |
+|                           |                                    |                                |
+|                           | Parametriskt test                  | Icke-parametriskt test         |
++===========================+====================================+================================+
+| Ett stickprov             | t-test                             | teckentest                     |
++---------------------------+------------------------------------+--------------------------------+
+| Två parade stickprov      | t-test på differens                | teckentest på differenser      |
++---------------------------+------------------------------------+--------------------------------+
+| Två oberoende stickprov   | t-test för två oberoende stickprov | Rangsummetest (Mann-Whitney)   |
++---------------------------+------------------------------------+--------------------------------+
+| Flera oberoende stickprov | ensidig variansanalys              | Rangsummetest (Kruskal-Wallis) |
++---------------------------+------------------------------------+--------------------------------+
+
+## För- och nackdelar med icke-parametriska tester
+
+(+) Behöver inte göra antaganden om fördelning hos data
+
+(+) Fungerar för små stickprov
+
+(+) "Robust" mot avvikande värden (engelska: *outliers*)
+
+(-) Är inte lika "känsliga" som (har lägre styrka än) de test som baseras på normalfördelning.
+
+(-) Nollhypotesen är oftast inte lika specificerad som i "traditionella" test
+
+(-) Utnyttjar inte all information om fördelningen som ges i data - baseras ofta på ranger, inte på de aktuella värdena
+
+# Inferens om en proportion
+
+En proportion anger hur stor andel som innehar en viss egenskap.
+
+-   Andelen röstberättigade som röstade i senaste valet
+
+-   Andelen studenter som klarar färdighetstest på första försöket
+
+Låt $X$ vara antalet utav $n$ som har egenskapen, där $p$ proportionen med egenskapen. Vi skattar proportionen som
+
+$$\hat{p}=\frac{x}{n}$$
+
+Följande modell är rimlig: $$X\sim Bin(n,p)$$
+
+då vet vi att $E(X) = n\cdot p$ och $V(X) = n\cdot p\cdot (1-p)$
+
+## Väntevärde och varians för skattningen av propotionen
+
+Visa att skattningen av proportionen är väntevärdesriktning och härled dess varians.
+
+$E(\hat{p})=E(\frac{X}{n}) = \frac{E(X)}{n} = \frac{n\cdot p}{n} = p$ ⇒ VVR!
+
+$V(\hat{p})=V(\frac{X}{n}) = \frac{V(X)}{n^2} = \frac{n\cdot p \cdot (1-p)}{n^2} = \frac{p \cdot (1-p)}{n}$
+
+Variansen för skattningen av proportionen minskar med $n$!
+
+## Normalapproximation av skattningen av proportionen
+
+Om $n\cdot p \cdot (1-p) > 10$ kan vi normalapproximera binomialfördelningen till en normalfördelning
+
+$$X \overset{A} \sim N(np,\sqrt{np(1-p)})$$
+
+Vi med samma resonemang kan vi approximera samplingsfördelningen för skattningen av proportionen till en normalfördelning
+
+$$\frac{X}{n} \overset{A} \sim N(p,\sqrt{\frac{p(1-p)}{n}})$$ där $\hat{p} = \frac{x}{n}$.
+
+## Hypotestest för proportion
+
+Så här kan hypoteser för en proportion se ut, där vi har en tvåsidig mothypotes.
+
+$H_0: p = p_0$
+
+$H_1: p \neq p_0$
+
+> Notera att det är sällan man vill testa om en proportion är noll. Istället kan man vara intresserad av om den är lika med ett visst värde $p_0$.
+
+### Konfidensintervall för en skattning av en proportion
+
+När vi gör en normalapproximation kan vi gå vidare och skapa ett tvåsidigt konfidensintervall genom att stoppa in skattningen på proportionen i medelfelet:
+
+$$I_p: \hat{p} \pm \lambda_{\alpha/2}\sqrt{\frac{\hat{p}(1-\hat{p})}{n}}$$
+
+Intervallet $I_p$ kan sedan användas för hypotestest. Vi förkastar nollhypotesen på signifikansnivå $\alpha$ om $p_0$ inte ingår i intervallet.
+
+### Teststorhet för en skattning av en proportion
+
+Vi kan även testa hypoteserna med en teststorhet och kritiskt område.
+
+Om $H_0$ är sann, gäller att $X \sim Bin(n,p_0)$
+
+Här kan vi undersöka om det går att normalapproximera genom att kolla om $n\cdot p_0 \cdot (1-p_0) > 10$.
+
+Teststorheten är $$z = \left| \frac{\hat{p}-p_0}{\sqrt{\frac{p_0(1-p_0)}{n}}}\right|$$
+
+> Lägg märke till att denna gång specificerar vi medelfelet med $p_0$ och inte med $\hat{p}$.
+
+Vi förkastar $H_0$ om $z > \lambda_{\alpha/2}$.
+
+::: callout-note
+### Exempel. Pollenallergi
+
+I Stockholms län gjorde man 1990 en undersökning av förekomsten av pollenallergi bland vissa känsliga grupper. man valde slumpmässigt ut 500 personer i åldern 20-64 år och av dessa hade 23 % pollenallergi.
+
+-   Vad kan vi säga om andelen pollenallergiker i populationen?
+:::
+
+$X = \text{"antal pollenallergiker"} \sim Bin(500,p)$
+
+Kan vi normalapproximera? Ja, eftersom $500\cdot 0.23 \cdot (1-0.23) = `r 500*0.23*(1-0.23)` > 10$
+
+Vi skapar ett 95%-igt konfidensintervall för proportionen allergiker till:
+
+```{r}
+#| echo: false
+#| results: false
+0.23-qnorm(0.975)*sqrt(0.23*(1-0.23)/500)
+0.23+qnorm(0.975)*sqrt(0.23*(1-0.23)/500)
+round(qnorm(1-0.025),2)
+
+```
+
+$$I_p: 0.23 \pm 1.96\sqrt{\frac{0.23(1-0.23)}{500}} = (0.19, 0.27)$$
+
+# Inferens om skillnad mellan två proportioner
+
+::: callout-note
+### Exempel. Pollenallergi (forts.)
+
+I Stockholms län gjorde man 1990 en undersökning av förekomsten av pollenallergi bland vissa känsliga grupper. man valde slumpmässigt ut 500 personer i åldern 20-64 år och av dessa hade 23 % pollenallergi.
+
+År 1994 gjordes motsvarande undersökning och 500 nya personer valdes ut. Då hade 29% pollenallergi.
+
+-   Kan man rimligen säga att det skett en förändring av benägenheten för denna typ av allergi under perioden mellan 1990 och 1994?
+:::
+
+## Två proportioner
+
+**Modell:**
+
+$X = \text{"antal pollenallergiker 1990"} \sim Bin(500,p_x)$
+
+$Y = \text{"antal pollenallergiker 1994"} \sim Bin(500,p_y)$
+
+**Hypoteser:**
+
+$H_0: p_x = p_y$
+
+$H_1: p_x \neq p_y$
+
+Detta är samma sak som
+
+$H_0: p_x - p_y = 0$
+
+$H_1: p_x - p_y \neq 0$
+
+## Test med ett konfidensintervall för skillnad i proportioner
+
+Kan vi normalapproximera? Vi har redan visat det för $X$. Vi kan normalapproximera $Y$ eftersom $500\cdot 0.29 \cdot (1-0.29) = `r 500*0.29*(1-0.29)` > 10$
+
+```{r}
+#| echo: false
+#| results: false
+0.23-0.29-qnorm(0.975)*sqrt(0.23*(1-0.23)/500+0.29*(1-0.29)/500)
+0.23-0.29+qnorm(0.975)*sqrt(0.23*(1-0.23)/500+0.29*(1-0.29)/500)
+
+```
+
+$$I_{p_x-p_y}: \hat{p}_x-\hat{p}_y \pm \underbrace{\lambda_{\alpha/2}}_{\alpha=0.05}\sqrt{\frac{\hat{p}_x(1-\hat{p}_x)}{500}+\frac{\hat{p}_y(1-\hat{p}_y)}{500} } = (-0.114,-0.006)$$
+
+$H_0$ förkastas på signifikansnivå 0.05 eftersom intervallet inte täcker noll.
+
+## Test med teststorhet och kritiskt område
+
+När $H_0$ är sann gäller att $p_x = p_y = p_0$
+
+Vi skattar $p_0$ genom att kombinera information från 1990 och 1994 (poolad skattning)
+
+$$\hat{p}_0 = \frac{x + y}{n_x + n_y} = \frac{0.23\cdot 500 + 0.29\cdot 500}{500 + 500} = `r (0.23*500 + 0.29*500)/(500 + 500)`$$
+
+Kan vi normalapproximera? Ja, eftersom $500\cdot \hat{p}_0 \cdot (1-\hat{p}_0) = `r 500*0.26*(1-0.26)` > 10$
+
+Teststorhet
+
+$$z = \left| \frac{\hat{p}_x - \hat{p}_y - 0}{\sqrt{\hat{p}_0 (1-\hat{p}_0)(\frac{1}{n_x}+\frac{1}{n_y})}} \right| = 2.1628$$
+
+Förkasta $H_0$ på signifikansnivå 0.05 eftersom $z > \lambda_{\alpha/2} = 1.96$.
+
+⇒ Det har skett en förändring i andelen allergiker i populationen under perioden 1990 till 1994.
+
+# Sammanfattning proportioner
+
+|                                                                           |                                                                           |
+|:-------------------------------------------------------------------------:|:-------------------------------------------------------------------------:|
+| Om $np(1-p)\geq 10$                                                       | Om $np_0(1-p_0)\geq 10$                                                   |
+| Konfidensintervall för $p$                                                | Teststorhet                                                               |
+| $\hat{p} \pm \lambda_{\alpha/2}\sqrt{\frac{\hat{p}(1-\hat{p})}{n}}$       | $z = \left|  \frac{\hat{p}-p_0}{\sqrt{\frac{p_0(1-p_0)}{n}}} \right|$     |
+
+
+
+Om $n_xp_x(1-p_x)\geq 10$ och $n_yp_y(1-p_y)\geq 10$
+
+|                                                                                                                             |                                                                                                                      |
+|:---------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------:|
+| Konfidensintervall för $p_x-p_y$                                                                                            | Teststorhet                                                                                                          |
+| $\hat{p}_x-\hat{p}_y \pm \lambda_{\alpha/2}\sqrt{\frac{\hat{p}_x(1-\hat{p}_x)}{n_x}+\frac{\hat{p}_y(1-\hat{p}_y)}{n_y} }$   | $z = \left| \frac{\hat{p}_x - \hat{p}_y - 0}{\sqrt{\hat{p}_0 (1-\hat{p}_0)(\frac{1}{n_x}+\frac{1}{n_y})}} \right|$   |
+|                                                                                                                             |                                                                                                                      |
+
+där $\hat{p}_0 = \frac{n_x\hat{p}_x + n_y\hat{p}_y}{n_x + n_y} =\frac{x + y}{n_x + n_y}$
+
+# Analys av kategoriska data
+
+## Kategoriska data
+
+Ett slumpförsök kan utfalla på $k$ olika sätt. Gör $n$ oberoende försök, och räkna hur många försök som hamnar i varje kategori.
+
+::: callout-note
+### Exempel. Genetik
+
+Varje individ i en viss population hör i genetiskt hänseende till en av fyra kategorier $K_1$,$K_2$,$K_3$ och $K_4$. I en studie undersöktes 160 slumpmässigt utvalda individer och placerades in i lämplig kategori. Resultatet blev:
+
+|          |       |       |       |       |
+|----------|-------|-------|-------|-------|
+| kategori | $K_1$ | $K_2$ | $K_3$ | $K_4$ |
+| frekvens | 78    | 42    | 27    | 13    |
+:::
+
+## Tre situtationer med kategoriska data
+
+Vi kommer gå igenom tre vanliga situationer för hypotestest med kategoriska data med ett $\chi^2$-test.
+
+1)  Testa modellanpassning
+
+2)  Korstabellsanalys för homogenitetstest
+
+3)  Korstabellsanalys för oberoendetest
+
+## Test av modellanpassning
+
+::: callout-note
+### Exempel. Genetik (forts.)
+
+Varje individ i en viss population hör i genetiskt hänseende till en av fyra kategorier $K_1$,$K_2$,$K_3$ och $K_4$. I en studie undersöktes 160 slumpmässigt utvalda individer och placerades in i lämplig kategori. Resultatet blev:
+
+|          |       |       |       |       |
+|----------|-------|-------|-------|-------|
+| kategori | $K_1$ | $K_2$ | $K_3$ | $K_4$ |
+| frekvens | 78    | 42    | 27    | 13    |
+
+: Observations-tabell
+
+-   Teoretiskt sätt ska de fyra kategoriernas storlekar förhålla sig som 9:3:3:1. Talar de observerade data emot teorin?
+:::
+
+Låt $O_i$ vara observationer av kategori $i=1,\dots,r$. Totalt sett har vi $n$ observationer.
+
+**Hypoteser:**
+
+$H_0: p_1=\frac{9}{16}, p_2=\frac{3}{16}, p_3=\frac{3}{16}, p_4=\frac{1}{16}$ (den teoretiska modellen)
+
+$H_1: \text{några av dessa sannolikheter är fel}$ (den teoretiska modellen stämmer inte)
+
+**Testregel:**
+
+Låt $E_i=n\cdot p_i$ vara förväntat antal utfall för kategori $i$ när $H_0$ är sann.
+
+|          |                      |       |       |       |
+|----------|----------------------|-------|-------|-------|
+| kategori | $K_1$                | $K_2$ | $K_3$ | $K_4$ |
+| frekvens | $160\frac{9}{16}=90$ | 30    | 30    | 10    |
+
+: E-tabell
+
+Vi skapar en teststorhet som när $H_0$ är sann blir
+
+$$\chi^2=\sum_{i=1}^r \frac{(O_i-E_i)^2}{E_i} \sim \chi^2(r-1)$$
+
+Förkasta $H_0$ om teststorheten $\chi^2 > \chi^2_{\alpha}$
+
+I exemplet blir teststorheten $\chi^2 = \sum_{i=1}^r \frac{(O_i-E_i)^2}{E_i} = \frac{(78-90)^2}{90} +\frac{(42-30)^2}{30}$+$\frac{(42-30)^2}{30}$+$\frac{(13-10)^2}{10} = 7.6$
+
+En kvantil ur en $\chi^2$-fördelning med 4-1 frihetgrader är `r qchisq(0.95,3)`
+
+⇒ $H_0$ kan ej förkastas på signfikansnivån 0.05
+
+## Korstabellsanalys (test av oberoende)
+
+::: callout-note
+### Exempel. Magsår och blodgrupp
+
+Finns det ett samband mellan blodgrupp och risken för magsår? Blodgruppen bestämdes för 1655 magsårspatienter och för en kontrollgrupp om 10 000 personer från samma stad. Resultat:
+
++------------------+---------------+---------------+---------------+--------------+----------------+
+|                  | 0             | A             | B             | AB           | Totalt         |
++==================+===============+===============+===============+==============+================+
+| Magsårspatienter | 911           | 59            | 124           | 41           | $n_{1.}$=1655  |
++------------------+---------------+---------------+---------------+--------------+----------------+
+| Kontrollgrupp    | 4578          | 4219          | 890           | 313          | $n_{2.}$=10000 |
++------------------+---------------+---------------+---------------+--------------+----------------+
+| Totalt           | $n_{.1}$=5489 | $n_{.2}$=4798 | $n_{.3}$=1014 | $n_{.4}$=354 | $n$ = 11655    |
++------------------+---------------+---------------+---------------+--------------+----------------+
+
+: O-tabell
+:::
+
+Låt $p_{i.}$ och $p_{.j}$ vara sannolikheter att en observation tillhör kategorin på rad $i$ respektive kolumn $j$.
+
+Vi kan skatta $p_{i.}$ med $n_{i.}$, antalet observationer i rad $i$, genom det totala antalet observationer $n$:
+
+$$p_{i.} = \frac{n_{i.}}{n}$$
+
+**Hypoteser:**
+
+$H_0: p_{ij} = p_{i.}p_{.j}$ för alla $i$ och $j$ (blodgrupp och magsår är oberoende)
+
+$H_1: H_0 \text{ stämmer inte}$
+
+**Testregel:** När $H_0$ är sann är det förväntade antalet observationer i varje kombination av kategorer $E_{ij}=np_{ij}=np_{i.}p_{.j}$ vilket när vi sätter in skattningar av sannolikheterna blir $n\frac{n_{i.}}{n}\frac{n_{.j}}{n} = \frac{n_{i.}n_{.j}}{n}$
+
+T.ex. $E_{11}=\frac{n_{1.}n_{.1}}{n} = \frac{1655 \cdot 5489}{11655} = `r 1655*5489/11655`$
+
+|                  | 0      | A      | B     | AB    |
+|------------------|--------|--------|-------|-------|
+| Magsårspatienter | 779.4  | 681.3  | 144.0 | 50.3  |
+| Kontrollgrupp    | 4709.6 | 4116.7 | 870.0 | 303.7 |
+
+: E-tabell
+
+Under $H_0$ är samplingfördelningen för teststorheten
+
+$$\chi^2=\sum_{i=1}^r \sum_{j=1}^c \frac{(O_{ij}-E_{ij})^2}{E_{ij}} \sim \chi^2((r-1)(c-1))$$ där $r$ är antal kategorier fördelat på raderna och $c$ är antal kategorier fördelat på kolumnerna.
+
+$\chi^2=\frac{(911-779.4)^2}{779.4} + \frac{(579-681.3)^2}{681.3} \dots = 49.0153$
+
+Vi förkastar $H_0$ eftersom teststorheten är större än kvantilen $\chi^2_{\alpha}((2-1)(4-1)) = `r qchisq(0.95,3)`$
+
+### Oberoende eller homogenitetstest
+
+Vi kallar korstabellstestet för ett
+
+-   oberoendetest om vi vill visa att förekomsten av de två kategorierna är oberoende av varandra
+
+-   homogenitetstest om vill visa att två stickprov kommer från samma fördelning, de är homogena.
+
+## Korstabellsanalys (Homogenitetstest)
+
+Vi har $c$ kategorier och $r$ stickprov.
+
+|             |          | kategorier |         |          |          |
+|:------------|----------|------------|---------|----------|:--------:|
+|**stickprov**| 1        | 2          | $\dots$ | c        |  summa   |
+| 1           | $O_{11}$ | $O_{12}$   |         | $O_{1c}$ | $n_{1.}$ |
+| 2           | $O_{21}$ |            |         |          |          |
+| $\vdots$    |          |            |         |          |          |
+| r           | $O_{r1}$ |            |         | $O_{rc}$ | $n_{r.}$ |
+| summa       | $n_{.1}$ |            |         | $n_{.c}$ |   $n$    |
+
+: O-tabell
+
+Nollhypotesen när vi gör ett homogeneitetstest är att sannolikheten att hamna i en kategori ska vara densamma oavsett vilket stickprov man tillhör.
+
+$H_0: p_{1j} = p_{2j} = \dots = p_{rj}\text{ för alla kategorier }j$
+
+$H_1: H_0 \text{ stämmer inte}$
+
+Skattning av sannolikheter, teststorhet och testregel är densamma som för oberoendetest.
+
+# Villkor för $\chi^2$-testerna
+
+Eftersom $\chi^2$-testerna bygger på att teststorheten givet att $H_0$ är sann går att betrakta som en summa av kvadrerade standardiserade normalfördelade slumpvariabler behöver det vara rimligt att det går att göra en normalapproximation av varje kategori.
+
+En tumregel är att det förväntade värdet i varje kategori inte får vara för litet, t.ex. att $E_{ij}> 5$
+
+Om det inte är fallet, kan man slå ihop kategorier.

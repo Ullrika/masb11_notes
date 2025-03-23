@@ -1,0 +1,484 @@
+---
+title: "F7. Hypotesis testing"
+author: "Ullrika Sahlin"
+format: 
+  html:
+    embed-resources: true
+---
+
+# Hypotesis testing
+
+::: callout-note
+
+## Exempel. Drunk driving
+
+The limit for drunk driving is 0.2 per mille. At a traffic control, three determinations of the blood alcohol level are made.
+
+**Model:** The three measurements $x_1, x_2, x_3$ are assumed to be a sample from the random variable $X = \text{"measured alcohol level"}$, which is assumed to be normally distributed $N(\mu, 0.07)$, where $\mu$ is the true alcohol level of the person and 0.07 is a measure of the instrument's precision.
+
+For Kalle, the sample mean were $\bar{x}=0.27$ per mille. Should he be convicted of drunk driving?
+:::
+
+
+
+# Hypothesis testing - basic concepts
+
+(1) Determine an appropriate probability model
+
+(2) Formulate hypotheses:
+
+- Null hypothesis $H_0$ - "what we question"
+
+- Alternative hypothesis $H_1$ - "what we want to prove"
+
+(3) Identify a test rule
+
+- Determine which probabilities of error one can accept - choose significance level $\alpha$
+
+$$\alpha = P(\text{error of type I}) = P(\text{reject }H_0|H_0\text{ is true})$$
+
+$$\beta = P(\text{error of type II}) = P(\text{do not reject  }H_0|H_1\text{ is true})$$
+
+(4) Plan data collection to get a good strength of the test 
+
+$$1-\beta \text{ is the power of the test}$$
+
+(5) Draw conclusions
+
+::: callout-note
+##  Example. Drunk driving
+
+Hypotheses: 
+
+$H_0: \mu \leq 0.2$
+
+$H_1: \mu > 0.2$
+
+
++-----------------------+-----------------------+-----------------------+
+|                       | | $H_0$ true          | | $H_1$ true          |
+|                       | | Kalle is innocent   | | Kalle is guilty     |
++-----------------------+-----------------------+-----------------------+
+| | $H_0$ not rejected  | OK!                   | | Type II error       |
+| | Kalle is free       |                       | | $\beta$             |
++-----------------------+-----------------------+-----------------------+
+| | $H_0$ rejected      | | Type I  error       | OK!                   |
+| | Kalle is convicted  | | $\alpha$            |                       |
++-----------------------+-----------------------+-----------------------+
+: **Possible fallacies**
+
+:::
+
+
+# Hypothesis test in three ways
+
+- Confidence interval
+
+- Test quantity and critical area
+
+- With a p-value (the direct method)
+
+::: callout-note
+##  Example. Drunk driving
+
+We set significance level to $\alpha = 0.05$ and create a $1-\alpha$ =  95\% confidence interval: 
+
+$I_{\mu}: (\bar{x}-\lambda_{\alpha}\frac{\sigma}{\sqrt{n}},\infty) = (0.27 - `r round(qnorm(0.95),2)`\frac{0.07}{\sqrt{3}},\infty) = (`r round(0.27-qnorm(0.95)*0.07/sqrt(3),3)`,\infty )$
+
+0.2 ($H_0$) is not in the range. We can therefore reject the null hypothesis and say that kalle is guilty.  
+
+:::
+
+# Hypothesis testing with confidence intervals 
+
+### Two-sided counter hypothesis
+
+$H_0: \mu = \mu_0$
+
+$H_1: \mu \neq \mu_0$
+
+Make a two-sided confidence interval $I_{\mu}$ with confidence level $1 - \alpha$
+
+$I_{\mu}$ does **not** cover $\mu_0$ &#8596; $H_0$ is rejected at significance level $\alpha$
+
+$I_{\mu}$ covers $\mu_0$ &#8596; $H_0$ **can not** be discarded at level $\alpha$
+
+### One-sidig counter hypothesis
+
+$H_0: \mu \leq \mu_0$
+
+$H_1: \mu > \mu_0$
+
+Make a downward bounded confidence interval $I_{\mu}$ with confidence level $1 - \alpha$
+
+$I_{\mu}$ does **not** cover $\mu_0$ &#8596; $H_0$ is rejected at significance level $\alpha$
+
+$I_{\mu}$ covers $\mu_0$ &#8596; $H_0$ **can not** be discarded at level $\alpha$
+
+
+# Hypothesis testing and error risk
+
+::: callout-note
+##  Example. Drunk driving
+
+In our previous test, there was a 5% risk that we are wrong, and Kalle is judged incorrectly. What happens if we reduce the risk of error to $\alpha = 1\%$?  
+
+$I_{\mu}: (\bar{x}-\lambda_{0.01}\frac{\sigma}{\sqrt{n}},\infty) = (0.27 - `r round(qnorm(0.99),2)`\frac{0.07}{\sqrt{3}},\infty) = (`r round(0.27-qnorm(0.99)*0.07/sqrt(3),3)`,\infty )$
+
+0.2 ($H_0$) is now in the range. We therefore **cannot** reject the null hypothesis. The decision is **not** to convict Kalle.
+
+:::
+
+# The null hypothesis is never true
+
+> One should never conclude that the null hypothesis is true!
+
+$H_0$ cannot be rejected &#8655; $H_0$ is true
+
+> Instead, one can reject or not reject the null hypothesis
+
+::: callout-warning 
+
+You see an animal
+
+$H_0: \text{it is a horse}$
+
+$H_1: \text{it is not a horse}$
+
+**Test:** $H_0$ is rejected if the number of legs is something else than 4
+
+**Observation:** The animal has four legs
+
+**Conclusion:** $H_0$ cannot be rejected
+
+> It would be wrong to say that $H_0$ is true because there can be animals other than horses that have four legs
+:::
+
+
+
+# Hypothesis testing with test quantity and critical region
+
+**Model:** $X$ is a random variable with unknown expected value $\mu$ and known standard deviation $\sigma$
+
+**Observations:** Random sample $x_1, \dots, x_n$
+
+**Estimation:** The expected value is estimated with the sample mean $\hat{\mu} = \bar{x}$
+
+**Hypotheses:** $H_0: \mu = \mu_0$ and $H_1: \mu \neq \mu_0$
+
+(1) Derive the sampling distribution for the estimator when $H_0$ is true 
+
+$$ \bar{x}|H_0 \text{ true}\sim N(\mu_0, \frac{\sigma}{\sqrt{n}})$$
+
+(2) Investigate whether the value of the estimator appears to lie in the sampling distribution by forming a critical region where it can be considered that it does not 
+
+
+(3) Reject $H_0$ if the calculated value of the estimator is outside the critical range
+
+For example: Reject $H_0$ if $\bar{x} > \mu_0 + \lambda_{\alpha}\frac{\sigma}{\sqrt{n}}$
+
+Alternatively: Reject $H_0$ if $z = \frac{\bar{x}- \mu_0}{\sigma/\sqrt{n}} > \lambda_{\alpha}$
+
+$z$ is a test quantity
+
+### Illustration of critical area 
+
+One can illustrate the test with the hypothesis function found in Räknamedvariation. There, the average value is compared with a critical area controlled by k.
+
+```{r}
+source("kod/funktioner_raknamedvariation_light.R")
+```
+
+::: callout-note
+###  Example. Drunk driving
+
+Significance level $\alpha=5\%$
+
+```{r}
+hypotes(sigma=0.07,n=3,mu0=0.2,alfa=0.05,riktning=">")
+```
+
+ &#8658; $H_0$ rejected because $\bar{x}=0.27$ is in the critical region.
+
+
+Significance level $\alpha=1\%$
+
+```{r}
+hypotes(sigma=0.07,n=3,mu0=0.2,alfa=0.01,riktning=">")
+
+```
+
+&#8658; $H_0$ **not** rejected because $\bar{x}=0.27$ **is not** in the critical region
+
+:::
+
+# Probability of failure when $H_0$ is true
+
+Let's make sure that the test rule with the test variable gives the desired probability of failure, i.e. that $P(\text{Type I error}) = \alpha$
+
+::: callout-note
+## Example: Drunk driving
+
+$\begin{split} &  P(\text{Type I error}) = P(\text{Kalle is convicted despite being innoncent}) = \\ &  P(H_0\text{ reject although } H_0 \text{ is true}) = \\ & P(\frac{\bar{x}- \mu_0}{\sigma/\sqrt{n}} > \lambda_{\alpha})=\alpha \end{split}$ 
+
+:::
+
+
+# Test quantity with two-sided counter hypothesis
+
+A two-sided counter-hypothesis for the drunk driving can be
+
+$H_0: \mu = 0.2$ against $H_1: \mu \neq 0.2$
+
+The test quantity is compared against a critical region in both tails of the sampling distribution. 
+
+Reject $H_0$ if $z = |\frac{\bar{x}- \mu_0}{\sigma/\sqrt{n}}| > \lambda_{\alpha/2}$
+
+
+```{r}
+hypotes(sigma=0.07,n=3,mu0=0.2,alfa=0.05,riktning="!=")
+```
+
+# Summary
+
+**Hypotheses:**
+
+$H_0: \mu = \mu_0$
+
+$H_1: \mu \neq \mu_0$
+
+## Confidence interval 
+
+**Confidence interval:**
+
+If $\sigma$ is known: 
+
+$I_{\mu}: \bar{x} \pm \lambda_{\alpha/2}\frac{\sigma}{\sqrt{n}}$
+
+If $\sigma$ is unknown and estimated with $s$: 
+
+$I_{\mu}: \bar{x} \pm t_{\alpha/2}(n-1)\frac{s}{\sqrt{n}}$
+
+**Rule:** Reject $H_0$ if $\mu_0$ is not in the range $I_\mu$
+
+## Test quantity with critical area
+
+**Test quantity:**
+
+If $\sigma$ is known:
+
+$z = |\frac{\bar{x}-\mu_0}{\sigma/\sqrt{n}}|$
+
+If $\sigma$ is unknown and estimated with $s$: 
+
+$t = |\frac{\bar{x}-\mu_0}{s/\sqrt{n}}|$
+
+**Rule:** Reject $H_0$ if $z > \lambda_{\alpha/2}$ alternatively if $t > t_{\alpha/2}(n-1)$ 
+
+## Hypothesis testing with the direct method 
+
+**Rule:** Reject $H_0$ if 
+
+$\begin{split} & \text{p-value} = \\&  P(\text{"to get what we got or worse"}|H_0 \text{ is true}) < \alpha \end{split}$
+
+::: callout-note
+##  Example. Drunk driving
+
+**Hypotheses:** 
+
+$H_0: \mu \leq 0.2$ against $H_1: \mu > 0.2$
+
+$\begin{split} & \text{p-value} = P(\bar{x} \geq 0.27|\mu = 0.2) = \\ &  P(\frac{\bar{x}-\mu}{\sigma/\sqrt{n}} \geq \frac{0.27 - 0.2}{0.07/\sqrt{3}}) = P(Z \geq \sqrt{3}) =  1-\Phi(\sqrt{3}) = \\ & 1 - \Phi(`r round(sqrt(3),2)`) = 1 - `r round(pnorm(sqrt(3)),3)` =`r 1-round(pnorm(sqrt(3)),3)` \end{split}$
+
+**Rule:** Reject $H_0$ because the p-value is less than the chosen significance level of 0.05.
+
+If we had chosen a significance level of 0.01 instead, we would **not** have rejected instead
+because the p-value is higher than the chosen significance level.
+:::
+
+::: callout-warning
+## Do not change the significance level during the test
+
+You must select a significance level before doing the test. It is unfortunately common for researchers/statisticians to choose the lowest significance level which leads to the rejection of the null hypothesis, but this leads in the long run to overconfidence in results.
+
+Significance level is determined when planning a study.
+
+:::
+
+# Hypothesis testing three ways
+
+::: callout
+## Example: radon
+
+We make 10 measurements of radon in a house. Every radon measurement has a measurement error that we can say is normally distributed. The random variable $X$ is normally distributed. $X \sim N(\mu,\sigma)$ where the expected value is the true radon value and where measurement error can be described as a systematic random variation around the expected value, where $\sigma=3$.
+
+The sample mean is $\bar{x} = 195$ $Bq/m^3$.
+
+We want to test if the radon level is lower than 200 $Bq/m^3$ with a significance level of $\alpha = 0.05$.
+
+$H_0: \mu \geq 200$
+
+$H_1: \mu < 200$
+:::
+
+### Test with a confidence interval 
+
+We create an upward one-sided confidence interval
+
+$I_{\mu} : (-\infty, \bar{x} + \lambda_{\alpha} \cdot \frac{\sigma}{\sqrt{n}}) = (-\infty, 195 + `r round(qnorm(0.95),2)` \cdot \frac{3}{\sqrt{10}}) = (-\infty, `r round(195 + qnorm(0.95)*3/sqrt(10),1)`)$
+
+$H_0$ is rejected with a significance level of $\alpha=5\%$ because the range does not cover 200.
+
+### Test with test quantity and critical area
+
+We define the test variable $z$ as
+
+$z=\frac{\bar{x}-\mu_0}{\sigma/\sqrt{n}} = \frac{195-200}{3/\sqrt{10}} = `r round((195-200)/(3/sqrt(10)),1)`$
+
+The test quantity is compared to the quantile of the distribution of the test variable if the null hypothesis is true $\lambda_{0.05} = `r round(qnorm(0.05),3)`$
+
+$H_0$ is rejected at a significance level of 5% because the test quantity $z$ is extreme under the null hypothesis.
+
+
+```{r}
+hypotes(sigma=1,n=1,mu0=0,alfa=0.05,riktning="<")
+```
+
+### Test with a p-value (direct method)
+
+The direct method involves calculating *the probability that we got what we got or worse if the null hypothesis is true*. In the case of radon, it is that one measures a level that is lower than that which was measured given that the expected value is 200.
+
+```{r}
+#| echo: false
+#| results: false
+
+(195-200)/(3/sqrt(10))
+pnorm(-(195-200)/(3/sqrt(10)))
+
+pnorm(195,200,3/sqrt(10))
+```
+
+
+$\begin{split} & P(\bar{x} < 195|\mu = 200) = P(\frac{\bar{x}-\mu_0}{\sigma/\sqrt{n}} < \frac{195-200}{3/\sqrt{10}}) = \\ & 
+P(Z < -5.27) = \Phi(-5.27) = 1 - \Phi(5.27) = 
+\\ & 1-0.99 = `r pnorm(195,200,3/sqrt(10))` \end{split}$
+
+
+Since the p-value is lower than the chosen significance level of 5%, we reject the null hypothesis.
+
+
+# Power of an hypothesis test
+
+::: callout-note
+## Example: Drunk driving
+
+**Some interesting questions:**
+
+(a) Assume that Kalle's alcohol content is $\mu = 0.25$ (drunk), what is the probability that, using the above technique, we will discover that he is drunk and thus declare him guilty?
+
+(b) We will do $n$ measurements of alcohol content. Suppose we have a requirement that says that if Kalle has an alcohol content of $\mu = 0.3$, then we shall declare him guilty with a high probability (e.g. 0.99). How many measurements must we take in order for the requirement to be met?
+
+:::
+
+## Power definition
+
+The probability of rejecting the null hypothesis when it is false is the power of a test.
+
+The strength depends on the true value of the parameter being tested.
+
+$S(\mu) = P(\text{Reject }H_0 |\mu\text{ is the true expected value})$
+
+The power is $1-\beta = 1 - P(\text{Type II error})$ 
+
+::: callout-note
+## Example: Drunk driving
+
+**Hypotheses:** $H_0: \mu = 0.2$ against $H_1: \mu > 0.2$ 
+
+**Significance level:** $\alpha = 0.05$
+
+**Test rule:** Reject $H_0$ if $\bar{x} > \mu_0 + \lambda_{\alpha}\frac{\sigma}{\sqrt{n}} = 0.2 + 1.64 \frac{0.07}{\sqrt{3}} = `r round(0.2+1.64*0.07/sqrt(3),2)`$
+
+$\begin{split} & S(\mu) = P(\bar{x} > 0.27|\mu) = P(\frac{\bar{x}-\mu}{\sigma/\sqrt{n}} > \frac{0.27-\mu}{0.07/\sqrt{3}}) = // & P(Z > \frac{0.27-\mu}{0.07/\sqrt{3}}) = 1 - \Phi(\frac{0.27-\mu}{0.07/\sqrt{3}}) \end{split}$
+
+```{r}
+#| echo: false
+library(ggplot2)
+```
+
+```{r}
+df <- data.frame(mu = seq(0.1,0.4,by=0.005)) # possible mu-values
+n = 3
+test_quantity = 0.2+1.64*0.07/sqrt(n)
+df$styrka_mu_n3 <- 1 - pnorm((test_quantity-df$mu)/(0.07/sqrt(n))) # power when n=3
+n = 6
+test_quantity = 0.2+1.64*0.07/sqrt(n)
+df$styrka_mu_n6 <- 1 - pnorm((test_quantity-df$mu)/(0.07/sqrt(n)))
+
+ggplot(df,aes(x=mu,y=styrka_mu_n3)) +
+  geom_line() +
+  geom_line(aes(x=mu,y=styrka_mu_n6), col = 'blue') +
+  ylab("P(Kalle is convicted)") +
+  xlab("Actual level in Kalle") +
+  ggtitle("The power function of the test") +
+  annotate("text",x = 0.3, y = 0.6, label = "n = 3") + 
+  annotate("text",x = 0.25, y = 0.75, label = "n = 6", col = "blue")
+```
+:::
+
+The power function is influenced by  
+
+-The true value of the parameter $\mu$
+
+- The sample size $n$
+
+- The variance in the population $\sigma^2$
+
+- The level of significance - the lower $\alpha$, the worse strength
+
+> A hypothesis test involves a trade-off between making type I and type II errors
+
+
+```{r}
+hypotes(sigma=0.07,n=3,mu0=0.2,alfa=0.05,riktning=">",mu.sant = 0.35)
+```
+
+::: callout-note
+## Example: Food coloring
+
+A pharmaceutical manufacturer uses a certain food coloring. You want to know how the color affects the appearance of the medicine. Without the dye, turbidity is usually 4.0.  
+**Model:** $X = \text{"Turbidity"}$
+$X \sim N(\mu, 0.2)$
+
+Turbidity is measured on $n=10$ randomly selected tablets. The sample mean of the turbidity was $\bar{x}=4.1$.
+
+(a) Test if the drug is to turbid at a significance level $\alpha = 0.05$
+
+**Hypotheses:** $H_0: \mu = 4.0$ against $H_1: \mu > 4.0$
+
+**Test rule:** Reject $H_0$ if $\bar{x} > \mu_0 + \lambda_{0.05}\frac{\sigma}{\sqrt{n}} = 4.0 + 1.64 \frac{0.2}{\sqrt{10}} = `r round(4 + 1.64*0.2/sqrt(10),3)`$
+
+&#8658; We cannot reject $H_0$
+
+```{r}
+#| echo: false
+#| results: false
+mu = 4.3
+z = (4.104-mu)/(0.2/sqrt(10))
+p = pnorm(z)
+1-pnorm(z)
+pnorm(-z)
+```
+
+(b) What is the power of the test when the turbidity is 3.8? 
+
+
+$\begin{split} & S(\mu) = P(\text{Reject }H_0|\mu = `r mu`) = \\ & P(\bar{x} > 4.104|\mu = `r mu`) = P(\frac{\bar{x}-\mu}{\sigma/\sqrt{n}} > \frac{4.104-`r mu`}{0.2/\sqrt{10}}) = \\ &  P(Z >`r round((4.104- mu)/(0.2/sqrt(10)),2)`) = 1-\Phi(`r round(z,2)`) = \Phi(`r -round(z,2)`) = `r round(1 - p,3)` \end{split}$
+
+
+&#8658; The power is `r round(1 - p,3)`
+
+:::
+
+
+

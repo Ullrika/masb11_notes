@@ -1,0 +1,270 @@
+---
+title: "Lecture notes in English"
+---
+
+# L0. Descriptive statistics (self studies)
+
+Qualitative and quantitative data
+
+Median
+
+Mean
+
+Variance
+
+Standard deviation
+
+Quantile
+
+Bar chart
+
+Histogram
+
+Boxplot
+
+Coefficient of correlation
+
+Quantile-quantile plot
+
+# L1. Basic probability theory
+
+Probability
+
+Random experiment
+
+Outcome
+
+Outcome space
+
+Event
+
+Probability rules
+
+Venn diagram
+
+Complementary event
+
+Complementary event
+
+The additive theorem of probability
+
+Independent events
+
+Conditional probability
+
+The multiplication theorem of probability
+
+The law of total probability
+
+Bayes' theorem (Bayes' rule)
+
+Combinatorics
+
+[Lecture notes 1](F1_notes_ENG.qmd)
+
+
+# L2. Discrete random variables
+
+Random variables
+
+Discrete and continuous r.v.
+
+Probability function
+
+Distribution function
+
+Bernoulli distribution
+
+Discrete uniform distribution
+
+Expected value, variance, standard deviation
+
+Expected value of a discrete r.v.
+
+Variance of a discrete r.v.
+
+Poisson distribution
+
+Binomial distribution
+
+Expected value of a function of a random variable
+
+[Lecture notes 2](F2_notes_ENG.qmd)
+
+
+# L3. Discrete and continuous random variables
+
+Continuous random variables
+
+Uniform distribution
+
+Density function
+
+Distribution function for a continuous random variable
+
+Complementary event for a continuous r.v.
+
+Expected value of a continuous r.v.
+
+Variance of a continuous r.v.
+
+Exponential distribution
+
+Normal distribution
+
+
+[Lecture notes 3](F3_notes_ENG.qmd)
+
+
+
+# L4. Continuous random variables, normal distribution
+
+Lognormal distribution
+
+Standardised normal distribution
+
+Normal quantiles
+
+Expected value and variance of a linear combination of a random variable
+
+Expected value and variance for sums of random variables
+
+Distribution of a sum of normally distributed random variables
+
+Population/parameters - Sample/statistica
+
+[Lecture notes 4](F4_notes_ENG.qmd)
+
+
+
+# L5. Sampling distributions, Central Limit Theorem
+
+Statistical model
+
+Sampling distributions
+
+Central Limit Theorem
+
+CGS and the binomial distribution
+
+Normal approximations
+
+From probability theory to statistical inference
+
+Parameter estimation (estimates)
+
+Unbiased and effective estimator
+
+t-distribution
+
+[Lecture notes 5](F5_notes_ENG.qmd)
+
+
+
+# L6. Estimation, confidence interval
+
+Sampling distributions for known and unknown variance
+
+Estimation and confidence interval
+
+Confidence interval with known and unknown variance
+
+Parameter estimation in a lognormal distribution
+
+[Lecture notes 6](F6_notes_ENG.qmd)
+
+
+
+# L7. Hypothesis testing
+
+Hypothesis testing in three ways
+
+-   Test statistic with critical area
+
+-   Confidence interval
+
+-   P-value (direct method)
+
+Possible errors
+
+Power of an hypothesis test
+
+[Lecture notes 7](F7_notes_ENG.qmd)
+
+
+
+# L8. Two random samples
+
+$\chi^2$ distribution
+
+Hypothesis test for variance
+
+Compare populations
+
+Paired samples
+
+Independent samples
+
+Equal and non-equal variance
+
+Test if variances are equal
+
+F distribution
+
+[Lecture notes 8](F8_notes_ENG.qmd)
+
+
+
+# L9. Inference of discrete and categorical data
+
+Direct method and normal approximation
+
+Non-parametric test
+
+Inference of a proportion
+
+Inference on the difference between to proportions
+
+Analysis of categorical data:
+
+-  Test model fit
+
+-   Testing homogeneity
+
+-   Independence test
+
+Parametric vs non-parametric test
+
+[Lecture notes 9](F9_notes_ENG.qmd)
+
+
+# L10. Simple linear regression
+
+Bivariate normal distribution
+
+Covariance
+
+Correlation
+
+Correlation analysis
+
+Regression analysis
+
+[Lecture notes 10](F10_notes_ENG.qmd)
+
+
+
+# L11. Analysis of variance
+
+Analysis of variance
+
+Repetition
+
+[Lecture notes 11](F11_notes_ENG.qmd)
+
+
+# L12. Reserv och repetition
+
+Repetition
+
+

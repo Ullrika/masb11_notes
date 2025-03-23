@@ -1,0 +1,359 @@
+---
+title: "F1. Foundations in probability theory"
+author: "Ullrika Sahlin"
+format:
+  html:
+    embed-resources: true
+
+---
+
+# Random experiment
+
+A "trial" for which the outcome is unknown
+
+# Outcome
+
+A result of a random experiment $\omega$
+
+# Outcome space
+
+All possible outcomes $\Omega$
+
+# Event
+
+One or several outcomes (a subset of the outcome space) e.g. A, B or C
+
+::: callout-tip
+## Example: Dice
+
+A random experiment: Throw of a dice
+
+Outcome space: $\{1, 2, 3, 4, 5, 6\}$
+
+Examples of events: 
+
+A = "Get a 3" $\{3\}$ 
+
+B = "Get an even number" $\{2, 4, 6\}$ 
+
+C = "Get a two or a five" $\{2, 5\}$
+:::
+
+::: callout-tip
+## Example: People with allergies
+
+Random experiment: Proportion of individuals with allergies amoung day care children
+
+Outcome space: Infinitely possible outcomes in the interval $[0,100]$
+
+Example of event: A = "Proportion children with allergies are higher than 6 %"
+:::
+
+::: callout-tip
+## Example: Waiting time
+
+Random experiment: Waiting time in a queue in a shop (in minutes)
+
+Outcome space: All times in $(0,\infty)$ 
+
+Example of event: Q = "A person must wait at least one minute"
+:::
+
+
+#  disjoint events
+
+A and B are  disjoint events if they cannot occur at the same time.
+
+$A \cap B = \emptyset$
+
+
+# Probability
+
+-   Classical probability: number of favourable outcomes over the number of possible outcomes
+
+-   Relative frequency: how often an outcome occurs in an infinite sequences of random independent trials
+
+-   Subjective probability: someone's uncertainty/certainty about a statement
+
+# Probability rules
+
+-   Axiomatic probability: a mathematical measure describing random experiments. 
+
+The probability for event A is written $P(A)$
+
+(i) $0\leq P(A) \leq 1$
+
+(ii) $P(\Omega)=1$
+
+(iii) If $A_1$ and $A_2$ are  disjoint, then $P(A_1\cup A_2) = P(A_1) + P(A_2)$
+
+## Union and intersection
+
+Intersection: $A \cap B$ means **A and B**
+
+Union: $A \cup B$ means **A or B**
+
+## Venn diagram
+
+## Complementary event
+
+$P(A) + P(\bar{A}) = 1$
+
+$P(\bar{A}) = 1 - P(A)$
+
+::: callout-tip
+## Example: Complementary event
+
+A = "Dice shows six dots" 
+
+$\bar{A}$ = "Dice **does not** show six dots"
+
+$P(A) = \frac{1}{6}$
+
+$P(\bar{A}) = 1 - P(A) = 1 - \frac{1}{6} = \frac{5}{6}$
+:::
+
+# The additive theorem of probability
+
+$P(A \cup B) = P(A) + P(B) - P(A \cap B)$
+
+Note that $P(\emptyset)=0$, and therefore the last term disappears when A and B are  disjoint.
+
+# Independent events
+
+If A and B are independent, then $P(A \cap B) = P(A)\cdot P(B)$
+
+::: callout-tip
+## Example: Independent tosses a dice
+
+A dice is thrown two times
+
+A = "First throw is a two" B = "Second throw is a three"
+
+A and B are independent
+
+$P(A \cap B) = P(A) \cdot P(B) = \frac{1}{6}\cdot\frac{1}{6} = \frac{1}{36}$
+:::
+
+::: callout-warning
+## Independent and  disjoint events are different things!
+
+Independence $P(A \cap B) = P(A) \cdot P(B)$
+
+ disjoint $P(A \cap B) = 0$
+:::
+
+::: callout-tip
+## Example. At least one
+
+We know that 40\% in a patient population has high blood pressure. We choose two patients at random.
+
+A = "Person 1 has high blood pressure" B = "Person 2 has high blood pressure"
+
+What is the probability that **at least one** of the patients has a high blood pressure, i.e. $P(A \cup B)$?
+
+From the information we know that P(A) = P(B) = 0.4
+
+We can also assume that the events A and B are independent.
+
+$$\begin{split} & P(A \cup B) = P(A) + P(B) - P(A \cap B) = \\ & P(A) + P(B) - P(A)\cdot P(B) = \\ & 0.4 + 0.4 - 0.4\cdot 0.4 = 0.64 \end{split}$$
+:::
+
+::: callout-tip
+## Example. Exactly one
+
+What is the probability that **exactly one** of the patients has a high blood pressure, i.e. $P(A \cup B)-P(A \cap B)$?
+
+$P(A \cup B) -P(A \cap B) = P(A) + P(B) - 2P(A \cap B) =$
+
+$P(A) + P(B) - P(A)\cdot P(B) = 0.4 + 0.4 - 2\cdot 0.4\cdot 0.4 = 0.48$
+:::
+
+::: callout-tip
+## Example. Blood transfusion
+
+In a country the probability to be infected by HIV by blood transfusion is 1\%. Assume that a person has received blood transfusion 20 times. What is the probability that the person has been infected by HIV in this way?
+
+Let $A_i$ be the event "infected at transfusion i", where i = 1 to 20.
+
+From the information we know that $P(A_i)=0.01$.
+
+The probability we seek is $P(A_1 \cup A_2 \cup ... \cup A_20)$ This can also be written as $1 - P(\bar{A_1}\cap\bar{A_2}\cap...\cap\bar{A_{20}})$
+
+If we assume that the events are independent, then 
+
+$1-P(\bar{A_1})P(\bar{A_2})...P(\bar{A}_{20}) = 1 - (1-0.01)^{20} = 0.182$
+:::
+
+# Conditional probability
+
+If we know that B has occured - what is the probability that A will happen?
+
+$P(A|B) = \frac{P(A \cap B)}{P(B)}$
+
+::: callout-tip
+## Example: Play online poker
+
+1000 randomly chosen persons were asked if they ever have played online poker and if they have economic problems. This is the result.
+
+|                                 | Does not play| Play    |
+|---------------------------------|--------------|---------|
+| Has economic problems           | 300          | 90      |
+| Do not have economical problems | 500          | 110     |
+
+(a) What is the probability that a randomly chosen person has economical problems?
+
+Let us introduced some notations: E = "has economical problems" and S = "play"
+
+$P(E) = \frac{300 + 90}{1000} = 0.39$
+
+(b) What is the probability that a person that play has economical problems?
+
+$P(E|S) = \frac{90}{90+110} = 0.45$
+:::
+
+::: callout-tip
+## Example
+
+![](img/stlars.png)
+
+At the check, 45 drivers were caught speeding. 26 of them were parents who were picking up their children.
+
+Police officer Patrik's conclusion is simple and clear: 'It's the parents themselves who drive the fastest.'
+
+Is the policeman correct in his conclusion?
+
+Let's introduce some notation:
+
+Event F is 'a parent is the driver' 
+
+Event K is 'the driver is speeding'
+
+We have information about P(F|K)
+
+Officer Patrik makes a statement about P(K|F). To say something about how likely it is that a parent is speeding, we need to know how common speeding drivers are P(K) and how many of the drivers are parents P(F).
+
+Patrik has made a hasty conclusion based on the information he has.
+:::
+
+
+::: callout-warning
+## One cannot simply swap them
+
+$P(A|B) \neq P(B|A)$
+:::
+
+# The multiplication theorem of probability
+
+For two events A and B the following holds
+
+$P(A \cap B) = P(A|B) \cdot P(B)$ 
+
+$P(B \cap A) = P(B|A) \cdot P(A)$
+
+# Bayes' theorem (Bayes' rule)
+
+From the multiplication theorem we get
+
+$\Rightarrow \frac{P(A|B) \cdot P(B)}{P(B)} = \frac{P(B|A) \cdot P(A)}{P(B)}$
+
+$\Rightarrow P(A|B) = \frac{P(B|A) \cdot P(A)}{P(B)}$
+
+# The law of total probability
+
+$H_1$, $H_2$, $H_3$ and $H_4$ are  disjoint events covering the whole outcome space $\Omega$.
+
+Then, for event $A$ 
+
+$P(A)=P(A|H_1)\cdot P(H_1) + P(A|H_2)\cdot P(H_2) +$
+
+$P(A|H_3)\cdot P(H_3) + P(A|H_4)\cdot P(H_4)$
+
+::: callout-tip
+## Exam question
+
+"To detect uterine cancer at an early stage, regular cell samples from the cervix are examined. In such a test, it is known that"
+
+P(test positive \| cancer) = 0.8
+
+P(test positive \| no cancer) = 0.1
+
+Assume that there are 10 out of 10,000 women who have this type of cancer. What is the probability, if we randomly select and test a woman, that her test shows positive?
+
+We introduce a simpler notation.
+
+$P(+ | c) = 0.8$
+
+$P(+ | \bar{c}) = 0.1$
+
+From the information we know that $P(c) = 10/10000 = 0.001$
+
+The law of total probability makes it possible to calculated the probability that is asked for as 
+
+$P(+) = P(+|c)\cdot P(c) + P(+|\bar{c})\cdot P(\bar{c}) = 0.8 \cdot 0.001 + 0.1 \cdot (1-0.001) = 0.1007$
+:::
+
+::: callout-tip
+## Example. Complementary events
+
+The events A and B are independent with P(A) = 0.1 and P(B) = 0.05
+
+Calculate $P(\bar{A}\cap \bar{B})$?
+
+$P(\bar{A}\cap \bar{B}) = P(\bar{A}) \cdot P(\bar{B}) =$
+
+$(1-P(A)) \cdot (1-P(B)) = (1-0.1)\cdot (1-0.05)=0.9\cdot 0.95 = 0.855$
+:::
+
+::: callout-tip
+## Example. Family dinner
+
+The families A, B and C are invited for dinner. The probability that they will come are the following: P(A) = 0.8, P(B) = 0.6 och P(C) = 0.9. They come independent of each other.
+
+What is the probability that
+
+(a) All will come? $P(A \cap B \cap C)=P(A) \cdot P(B) \cdot P(C)$
+
+(b) No one will come? $P(\bar{A} \cap \bar{B} \cap \bar{C})=(1-P(A)) \cdot (1-P(B)) \cdot (1-P(C))$
+
+(c) At least one will come? $P(\text{at least one})=1-P(\text{no one}) = 1 - P(\bar{A} \cap \bar{B} \cap \bar{C})$
+:::
+
+
+# Combinatorics
+
+How to work with combinations, permutations and countable sequences.
+
+::: callout-tip
+## Example: In how many ways can we order the letters A, B and C?
+
+ABC ACB BAC BCA CAB CBA
+
+$3 \cdot 2 \cdot 1 = 6$
+:::
+
+n-fakultet är $n! = n\cdot (n-1) \cdot (n-2) \cdot ... \cdot 2 \cdot 1$
+
+It has been decided that $0!=1$
+
+::: callout-tip
+## Example: In how many ways can one shuffle a deck of cards?
+
+$52!$
+:::
+
+Sometimes you are interested to calculate in how many ways one can choose k elements from n elements. The order does not matter. 
+
+$\binom{n}{k} = \frac{n!}{k!(n-k)!}$
+
+::: callout-tip
+## Example: In how many ways can you choose 5 cards?
+
+$\binom{52}{5} = \frac{52!}{5!47!}$
+:::
+
+::: callout-tip
+## Example: In how many ways can you get 10 correct answers on a quiz with 13  questions?
+
+$\binom{13}{10} = \frac{13!}{10!3!} = 286$
+:::

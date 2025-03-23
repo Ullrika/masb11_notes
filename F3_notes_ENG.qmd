@@ -1,0 +1,715 @@
+---
+title: "F3. Continuous random variables"
+author: "Ullrika Sahlin"
+format:
+  html:
+    embed-resources: true
+---
+
+```{r}
+#| echo: false
+#| warning: false
+
+library(ggplot2)
+library(dplyr)
+```
+
+
+# (cont F2) Variance
+
+Let $\mu$ be the expected value for the random variable $X$
+
+The variance describes the spread around the expected value. More specifically is the variance the expected value of the quadratic distance to the expected value of $X$.
+
+$V(X) = E((X-E(X))^2)$
+
+or
+
+$V(X) = E((X-\mu)^2)$
+
+::: callout-note
+The reason for squaring the distances is that there will be both negative and positive distances, and they can 'cancel each other out' if summed directly.
+
+The deviation is $\sqrt{V(X)}$ and is a measure of spread on the same scale as the random variable $X$.
+:::
+
+# (cont F2)  Variance for a discrete random variable
+
+$X$ is a discrete random variable 
+
+$V(X)=\sum_{\text{all x}} (x-\mu)^2P(X=x)$
+
+::: callout-note
+## Example: Dice role
+
+Let $X= \text{"number of dots"}$ 
+
+We have earlier derived that $E(X)=3.5$
+
+$$\begin{split} & V(X)=\sum_{x=1}^6(x-3.5)^2\cdot \frac{1}{6} = \\ & \frac{1}{6} ((1-3.5)^2+(2-3.5)^2+(3-3.5)^2+(4-3.5)^2+(5-3.5)^2+(6-3.5)^2) = \\ & \frac{1}{6} ((-2.5)^2 + (-1.5)^2+ (-0.5)^2+ (0.5)^2+ (1.5)^2+ (2.5)^2) = \frac{17.5}{6} \end{split}$$
+:::
+
+```{r}
+#| echo: false
+#| results: false 
+((1-3.5)^2+(2-3.5)^2+(3-3.5)^2+(4-3.5)^2+(5-3.5)^2+(6-3.5)^2)
+17.5/6
+```
+
+:::callout-note
+## (cont F2) Exam questions on the expected value
+
+On a specific road the random variable $X = \text{number of accidents during a week}$ has the following distribution
+
+| Outcome (x)| 0    | 1    | 2    | 3    |
+|------------|------|------|------|------|
+| $P(X = x)$ | 0.70 | 0.20 | 0.06 | 0.04 |
+
+### Calculate the expected number of accidents during a week
+
+$$\begin{split} & E(X) = \sum_{x=0}^3 x\cdot P(X=x) = \\ & 0\cdot 0.70 + 1 \cdot 0.20 + 2\cdot 0.06+ 3\cdot 0.04 
+= 0.44 \end{split}$$
+
+$\therefore E(X)=\mu = 0.4$
+
+> The symbolen $\therefore$ means *therefore is my conclusion that* 
+
+```{r}
+#| echo: false
+#| results: false
+0* 0.70 + 1 * 0.20 + 2* 0.06+ 3* 0.04
+```
+
+### What is the variance? (this was not on the exam)
+
+$$\begin{split} & V(X)=\sum_{x=0}^3 (x-\mu)^2\cdot P(X=x) =\sum_{x=0}^3 (x-0.44)^2\cdot P(X=x)=\\ & (0-0.44)^2\cdot 0.70 + (1-0.44)^2 \cdot 0.20 + (2-0.44)^2\cdot 0.06+ (3-0.44)^2\cdot 0.04 =\\ & 0.6064 \end{split}$$
+
+```{r}
+#| echo: false
+#| results: false
+(0-0.44)^2* 0.70 + (1-0.44)^2 * 0.20 + (2-0.44)^2* 0.06+ (3-0.44)^2* 0.04  
+```
+:::
+
+<!-- :::callout-notes -->
+<!-- ### Snabbformel för varians -->
+<!-- En alternativt sätt att beräkna varians för en s.v. med känd sannolikhetsfunktion är,  -->
+
+<!-- $$\frac{\sum_{\text{alla x}} x^2 - \frac{(\sum x)^2}{n}}{n}$$ -->
+<!-- där man har $n$ olika utfall.  -->
+
+<!-- ::: -->
+
+# (cont F2) Probability and distributionfunctions discrete r.v. 
+
+Pair the following $f(x)$ with $F(X)$
+
+```{r}
+#| echo: false
+pa <- rep(1,5)/5
+pb <- c(2,0,1,2,1)/6
+pc <- c(2,1,0,1,2)/6
+
+nf <- layout( matrix(c(1,2,3,4,5,6), ncol=3, byrow = TRUE) )
+barplot(pa,names.arg = 1:5,ylim=c(0,1),ylab="f(x)",xlab="x")
+barplot(pb,names.arg = 1:5,ylim=c(0,1),ylab="f(x)",xlab="x")
+barplot(pc,names.arg = 1:5,ylim=c(0,1),ylab="f(x)",xlab="x")
+plot(c(1,1:5),c(0,cumsum(pb)),ylim=c(0,1),type='s',ylab="F(x)",xlab="x")
+plot(c(1,1:5),c(0,cumsum(pc)),ylim=c(0,1),type='s',ylab="F(x)",xlab="x")
+plot(c(1,1:5),c(0,cumsum(pa)),ylim=c(0,1),type='s',ylab="F(x)",xlab="x")
+```
+
+:::callout-note
+## Example. Poisson distribution
+$X=\text{"number of spams per hour"}$
+
+Model: $X \sim Po(\lambda_X)$ where $\lambda_X=0.5$
+
+What is the probability of receiving at least 6 spams in one day?
+
+The first thing we need to do is convert the model's intensity parameter so that it gives the number over the correct time unit. From per hour to per day.
+
+1 spam per day corresponds to 24 spams per hour.
+
+$Y=\text{"number of spams per day (24 hours)"}$
+
+Model: $Y \sim Po(\lambda_Y)$ where $\lambda_Y=24\cdot 0.5 = 12$
+
+```{r}
+#| echo: false
+#| results: false
+ppois(5,12)
+1-ppois(5,12)
+```
+
+
+$$\begin{split} & P(Y\geq 6) = P(Y\geq 6) = \\  & 1-P(Y\leq 5) = 1 - F_Y(5) = \\  & 1- 0.0203 = 0.9797 \end{split}$$
+
+![](img/tabpo_2.png)
+
+![](img/potab2.png)
+
+Alternatively one can calculate the probability directly from the probability functions
+
+$$\begin{split} F_Y(5) = & P(Y=0)+P(Y=1)+ \dots P(Y=5) =\\ & \frac{2^0e^{-2}}{0!} + \frac{2^1e^{-2}}{1!} +\dots +\frac{2^5e^{-2}}{5!} \end{split}$$
+:::
+
+# (cont F2) Expected value for a Poisson distribution
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+Difficult! Not included in the material for the course, but useful to have heard about. 
+:::
+::: {.column width="50%"}
+
+![](img/skriet.jpg)
+:::
+::::
+
+$X \sim Po(\lambda)$ and 
+$f(x) = \frac{\lambda^xe^{-\lambda}}{x!}$
+
+$$\begin{split} & E(X) = \sum_{x=0}^{\infty}x\cdot f(x) = \sum_{x=1}^{\infty}x\cdot f(x) = \\ & 
+\sum_{x=1}^{\infty}x\cdot \frac{\lambda^xe^{-\lambda}}{x!} = \sum_{x=1}^{\infty}\frac{\lambda^xe^{-\lambda}}{(x-1)!} = \\& e^{-\lambda} \sum_{x=1}^{\infty}\frac{\lambda^x}{(x-1)!} = \\ & 
+\lambda \cdot e^{-\lambda} \sum_{x=1}^{\infty}\frac{\lambda^{x-1}}{(x-1)!} = \\ & 
+\lambda \cdot e^{-\lambda} \sum_{x=0}^{\infty}\frac{\lambda^x}{x!} = \lambda\cdot e^{-\lambda}\cdot e^{\lambda} = \lambda \end{split}$$
+
+> In the second but last step we used the mathematical result that $\sum_{x=0}^{\infty}\frac{\lambda^x}{x!} = e^{\lambda}$
+
+
+# Continuous random variables
+
+- A continuous random variable $X$ takes an infinite amount of values. This means that 
+
+$$P(X =x) = 0$$ 
+
+- Instead, we study probability for intervals, e.g. the interval $[a,b]$: 
+
+$$P(a \leq X \leq b)$$
+
+- The distribution of a continuous r.v. $X$ can be described by a density function (*probability density function, PDF*)
+
+$$f_X(x) \geq 0$$
+
+
+
+# Density function for a continuous r.v. 
+
+:::callout-note
+## Example. Uniform distribution
+
+$$f(x) = \left\{ \begin{array}{lr}
+        \frac{1}{b-a} & a \leq x \leq b\\
+        0 & \text{otherwise}
+        \end{array}\right.$$
+
+A uniform distribution is suitable for a r.v. taking values in an interval with equal probability. 
+
+:::
+
+:::callout-note
+## Example. Exponential distribution
+
+$$f(x) = \left\{ \begin{array}{lr}
+        \lambda\cdot e^{-\lambda x} & x \geq 0\\
+        0 & \text{otherwise}
+        \end{array}\right.$$
+        
+The exponential distribution takes non-negative values $x \geq 0$.
+
+It is a suitable distribution for describing the time it takes for an event to occur, such as waiting time for a bus or getting an appointment with the doctor. 
+
+:::
+
+:::callout-note
+## Example. Normal distribution
+
+$f(x) = \frac{1}{\sigma \sqrt{2\pi}}e^{-\frac{(x-\mu)^2}{2\sigma^2}}$ där $-\infty < x < \infty$
+
+> a normal distribution has two parameters, $\mu$ and $\sigma^2$. The coincide with the expeted value and variacne of the distribution
+:::
+
+# Distribution function for a continuous r.v. 
+
+- Probability corresponds to an area under the density function
+
+- The distribution function is the area up to the outcome  $x$
+
+$$F(x)=\int_{-\infty}^{x} f(v)dv$$
+
+- The total area under the density function is always 1 
+
+$$\int_{-\infty}^{\infty} f(x)dx$$
+
+- $P(X < x) = P(X\leq x)$ for continuous r.v. (not for discrete r.v.)
+
+:::callout-note
+## Example. Uniform distribution
+The random variable $X$ is uniformly distributed in the interval 0 to 10.
+
+We know that the density function is
+$$f(x) = \left\{ \begin{array}{lr}
+        \frac{1}{10} & 0 \leq x \leq 10\\
+        0 & \text{otherwise}
+        \end{array}\right.$$
+
+What is the probability that $X$ is less than or equal to 7?
+
+$$\begin{split} & P(X \leq 7) = F(7) = \int_{-\infty}^7 f(x)dx = \\ & \int_0^7 \frac{1}{10}dx = [\frac{x}{10}]_{x=0}^{7} = \\ &  \frac{7}{10} - \frac{0}{10} = \frac{7}{10}   \end{split}$$
+:::
+
+:::callout-note
+## Example. Exponential distribution
+The random variable $X$ is exponentially distributed with the parameter $\lambda = \frac{3}{2}$
+
+We know that 
+$$f(x) = \left\{ \begin{array}{lr}
+        \lambda\cdot e^{-\lambda x} & x \geq 0\\
+        0 & \text{otherwise}
+        \end{array}\right.$$
+
+What is the probability that $X$ is less or equal to 2?
+
+$$\begin{split} & P(X \leq 2) = F(2) = \int_{-\infty}^2 f(x)dx = \\ & \int_{-\infty}^2 \lambda\cdot e^{-\lambda x}dx =\int_{0}^2 \frac{3}{2}\cdot e^{-\frac{3}{2} x}dx = \\ & [-e^{-\frac{3}{2} x}]_{x=0}^{2} =  -e^{-\frac{3}{2}\cdot 2} - -e^{-\frac{3}{2} \cdot 0} = \\ &
+-e^{-3} + 1 = 1 - e^{-3} \end{split}$$ 
+
+:::
+
+## Distribution function for an exponential distribution
+
+The distribution function for an exponential distribution is 
+
+ $$F(x) = 1 - e^{-\lambda x}$$
+
+# Complementary event for a continuous r.v. 
+
+$P(X \geq x) = 1 - P(X < x) \underbrace{ =}_{P(X=x)=0} 1 - P(X \leq x)$
+
+
+# Probability over an interval 
+
+$P(a < X \leq b) = P(X \leq b) - P(X \leq a)$ 
+
+:::callout-note
+## Example: Interval
+
+$P(-2 < X \leq 1)$
+
+```{r, fig.height=3}
+#| echo: false
+prob1 = pnorm(-2)
+prob2 = pnorm(1)
+fill = paste0(round(100*(prob2-prob1),0),"% sannolikhet för intervallet")
+data.frame(pp = ppoints(1000)) %>%
+  mutate(x = qnorm(pp)) %>%
+  mutate(y = dnorm(x)) %>%
+  ggplot(aes(x=x,y=y)) +
+  geom_line() +
+  geom_ribbon(data=. %>% filter(pp <= prob2 & pp > prob1), 
+              aes(ymin=0, ymax=y, fill=fill)) +
+  theme_bw() + 
+  xlab("x") + 
+  ylab("täthet") 
+```
+:::
+
+
+# Expeted value and variance for a continuous r.v. 
+
+$X$ is a continuous random variable
+
+$\mu= E(X) = \int_{-\infty}^{\infty} xf(x)dx$
+
+$\sigma^2 = V(X) = \int_{-\infty}^{\infty} (x-\mu)^2f(x)dx$
+
+:::callout-note
+## Example: Exponential distribution
+$X \sim Exp(\lambda)$
+
+$E(X) = \frac{1}{\lambda}$
+
+$V(X) = \frac{1}{\lambda^2}$
+
+[Exponential distribution on wiki](https://en.wikipedia.org/wiki/Exponential_distribution)
+
+:::
+
+
+# Discrete and continuous r.v. 
+
+![](img/dccomp.png)
+
+# Normal distribution
+
+- The normal distribution is useful and often appear when describing natural phenomena 
+
+- The normal distribution is a good description of random variation for sums of indepednent and equally distributed random variables
+
+- We will spend a lot of time on the normal distribution in this course
+
+- There is a trick to get the value on the distribution function for any parameter values
+
+## Density function for a normal distribution 
+
+$X \sim N(\mu,\sigma)$
+
+:::callout-warning
+### standard deviation or variance
+Some text books and software use variance in the formula for the normal distribution $N(\mu,\sigma^2)$
+:::
+
+- The density function for a normal distribution looks like a church bell
+
+- The normal distribution is symmetrical
+
+$F(x) = 1 - F(-x)$
+
+- Mode, median and expeted value coincide fora normal distribution
+
+![](img/norm1.png){width=50%}
+
+## Distribution function for a normal distribution
+
+$X \sim N(\mu,\sigma)$
+
+$$\begin{split}  P(X \leq 0.1) & = F(0.1) = \int_{-\infty}^{0.1}f(x)dx = \\  & \int_{-\infty}^{0.1}\frac{1}{\sigma \sqrt{2\pi}}e^{-\frac{(x-\mu)^2}{2\sigma^2}}dx \end{split}$$
+
+Let us assume that $\mu=0$ and $\sigma=1$
+
+$$=\int_{-\infty}^{0.1}\frac{1}{\sqrt{2\pi}}e^{-x^2}dx = \dots\text{is possible to solve but difficult}$$
+
+## Distribution function for a normal distribution - table 
+
+Instad of calcluating the integral we can use 
+
+- tables
+- calculators/computer programs
+
+If we only have a table - how to do for all possible values on the expted value $\mu$ and the variance $\sigma^2$? 
+
+The solution is to standardise the distribution
+
+# Standardiserad Normal distribution 
+
+$X \sim N(3,4)$
+
+Create a new r.v. $Z = \frac{X-3}{4}$
+
+One can show that $Z \sim N(0,1)$ which is a standardised normal distribution. 
+
+The following holds $X = 3 + 4\cdot Z$ 
+
+
+```{r, fig.height=3}
+#| echo: false
+
+mu = 3
+sigma = 4
+
+pp = ppoints(100)
+xx = qnorm(pp,mu,sigma)
+df=data.frame(xx=xx, dx = dnorm(xx,mu,sigma),dz = dnorm(xx))
+ggplot(df, aes(x=xx,y=dx)) +
+         geom_line() + 
+  geom_line(aes(x = xx, y = dz),col = 'darkred') +
+  annotate("text",x=5,y = 0.3,label="Z",colour = 'darkred') +
+  annotate("text",x=6,y = 0.15,label="X",colour = 'black') +
+  xlab("") +
+  ylab("density")
+               
+```
+
+> The distribution function for a standardised normal distribution is denoted $\Phi(x)$ and has a table
+
+
+```{r}
+#| echo: false
+#| results: false
+
+pnorm(0.25)
+```
+
+$$\begin{split} & P(X \leq 4) = P(\frac{X-3}{4} \leq \frac{4-3}{4}) = \\ & 
+P(Z \leq 0.25) = \Phi(0.25) \underbrace{= 0.5987}_{\text{from table}} \end{split}$$
+
+
+![](img/normtab.png)
+
+## Standardissed normal distribution and normal distribution
+
+Let $Z \sim N(0,1)$
+
+Then $X = \mu + \sigma \cdot Z$ is also normally distributed with expected value $\mu$ and variance $\sigma^2$, i.e.  
+$$X \sim N(\mu,\sigma)$$
+
+:::callout-note
+## Example. Normal distribution
+
+Let $X \sim N(5,2)$
+
+$$\begin{split} & P(X \geq 0)  = 1 - P(X < 0) = 1 - P(X \leq 0) = \\ & 1 - P(\frac{X-5}{2} \leq \frac{0-5}{2}) = 1 - \Phi(\frac{-5}{2}) = \\ & 1 - (1-\Phi(\frac{5}{2})) \end{split}$$
+
+![](img/normtab.png)
+
+:::
+
+:::callout-note
+## Exam question
+The weight of a skier with equipment is modelled by a normal distribution with expected value 80 kg and varians 36 kg^2. The skiier Kim is alone in the lift. What is the probability that his weight exceeds 90 kg? 
+
+Let $X = \text{"weight in kg"}$
+
+Model: $X \sim N(80,6)$ 
+
+$$\begin{split} & P(X > 90) = 1 - P(X \leq 90) = \\ & 1 - P(\frac{X-80}{6} \leq \frac{90-80}{6}) = 1 - \Phi(\frac{10}{6}) \end{split}$$
+
+```{r}
+#| echo: false
+#| results: false
+
+pnorm(10/6)
+1-pnorm(10/6)
+```
+
+:::
+
+
+# Quantile
+
+A quantile divides a probability distribution into two parts. 
+
+$$P(X  \leq x_{.98}) = 0.98$$
+
+
+```{r, fig.height=3}
+#| echo: false
+prob = pnorm(2)
+fill = paste0(round(100*(prob),0),"% probability")
+data.frame(pp = ppoints(1000)) %>%
+  mutate(x = qnorm(pp)) %>%
+  mutate(y = dnorm(x)) %>%
+  ggplot(aes(x=x,y=y)) +
+  geom_line() +
+  geom_ribbon(data=. %>% filter(pp < prob), 
+              aes(ymin=0, ymax=y, fill=fill)) +
+  theme_bw() + 
+  xlab("x") + 
+  ylab("density") 
+```
+
+or 
+
+$$P(X  > \lambda_{.02}) = 0.02$$
+
+
+```{r, fig.height=3}
+#| echo: false
+prob = pnorm(2)
+fill = paste0(round(100*(1-prob),0),"% probability")
+data.frame(pp = ppoints(1000)) %>%
+  mutate(x = qnorm(pp)) %>%
+  mutate(y = dnorm(x)) %>%
+  ggplot(aes(x=x,y=y)) +
+  geom_line() +
+  geom_ribbon(data=. %>% filter(pp >= prob), 
+              aes(ymin=0, ymax=y, fill=fill)) +
+  theme_bw() + 
+  xlab("x") + 
+  ylab("density") 
+```
+
+## Examples of quantiles
+
+- **Median** – the quantile that divides the distribution into two halfs with 50% probability each
+
+- **Quartiles** – the quantiles that split a distribution into four parts with equal probability: 
+
+  - First quartile (Q1)
+  - Second quartile = Median
+  - Third quartile (Q3)
+  
+- **Percentile** – the p:th percentile is the value of a random variable that is higher than p% of all possible values
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| fig-width: 7
+#| fig-height: 7
+library(tidyverse)
+library(patchwork)
+library(scales)
+
+qntls <- c(0.5, 0.05, 0.95, 0.25, 0.75)
+xqntls <- qnorm(qntls, 3, 2)
+qntls_e <- c(0.01, 0.99, 0.5, 0.05, 0.95, 0.25, 0.75)
+xqntls_e <- qnorm(qntls_e, 3, 2)
+#qntls <- c(0.5)
+
+dist_df <- tibble::tibble(
+  p=c(qntls_e, ppoints(300)),
+  q=qnorm(p, 3, 2),
+  d=dnorm(q, 3,2)
+) %>%  tibble::rowid_to_column() 
+
+dist_w_df <- dist_df %>% select(rowid, p,q) %>% 
+  filter(p %in% qntls_e) %>%
+  pivot_longer(-c(rowid, p)) %>% 
+  mutate(p_name=paste0("p_", str_pad(p*100,2, pad="0"))) %>% 
+  select(-p,-name) %>% 
+  pivot_wider(-rowid, values_from="value", names_from="p_name") 
+
+p1 <- dist_df %>% ggplot(aes(x=q, y=p)) +
+  #geom_ribbon(data=. %>% filter(p<0.5), 
+  #            aes(ymin=0, ymax=p, fill="50% probability"),
+  #            show.legend=FALSE)+
+  geom_ribbon(data=. %>% filter(p >= 0.25 & p<0.75), 
+              aes(ymin=0, ymax=p, fill="50% probability"),
+              show.legend = FALSE)+
+  geom_linerange(data=. %>% filter(p %in% qntls),
+                 aes(xmin=-3, xmax=q), linewidth=0.25, 
+                 linetype=2, color="grey70")+
+  geom_linerange(data=. %>% filter(p %in% qntls),
+                 aes(ymin=0, ymax=p), linewidth=0.25, 
+                 linetype=2, color="grey70")+
+  geom_line()+
+  geom_point(data=. %>% filter(p %in% qntls))+
+  scale_fill_brewer(palette = "Pastel1")+
+  scale_y_continuous(labels=scales::percent)+
+  scale_x_continuous(breaks = xqntls, 
+                     labels = paste0("P",qntls*100))+
+  coord_cartesian(xlim = c(-3,9), ylim=c(0,1), expand = FALSE)+
+  labs(y="Probability", fill=NULL, x=NULL)+
+  theme_minimal()+
+  theme(panel.grid = element_blank())
+
+p2 <- dist_df %>% ggplot(aes(x=q, y=d)) +
+  #geom_ribbon(data=. %>% filter(p<0.5), 
+  #            aes(ymin=0, ymax=d, fill="50% probability"))+
+  #geom_ribbon(data=. %>% filter(p >= 0.05 & p<0.95), 
+  #            aes(ymin=0, ymax=d, fill="90% probability"))+
+  geom_ribbon(data=. %>% filter(p >= 0.25 & p<0.75), 
+              aes(ymin=0, ymax=d, fill="50% probability"))+
+  geom_linerange(data=. %>% filter(p==0.5),
+                 aes(ymin=0, ymax=d), linewidth=0.25, 
+                 linetype=2, color="grey70")+
+  geom_line()+
+  geom_point(data=. %>% filter(p %in% qntls), aes(y=0))+
+  scale_fill_brewer(palette = "Pastel1")+
+  scale_x_continuous(breaks = xqntls, 
+                     labels = paste0("P",qntls*100))+
+  coord_cartesian(xlim = c(-3,9), ylim=c(0,0.3), expand = FALSE)+
+  labs(y="Density", fill=NULL, x=NULL)+
+  theme_minimal()+
+  theme(panel.grid = element_blank())
+
+p3 <-  dist_w_df %>% 
+  ggplot() + 
+  geom_boxplot(stat="identity", 
+               aes(y="one", fill="50% probability",
+                   xlower  = p_25, xupper  = p_75, xmiddle = p_50,
+                   xmin   = p_01, 
+                   xmax   = p_99), 
+               show.legend = FALSE, fatten=1,
+               linetype=2, linewidth=0.25, color="grey70")+ 
+  geom_boxplot(stat="identity", 
+               aes(y="one", 
+                   xlower  = p_25, xupper  = p_75, xmiddle = p_50,
+                   xmin   = p_01, 
+                   xmax   = p_99), 
+               show.legend = FALSE, fatten=0, alpha=0)+
+  scale_x_continuous(breaks = xqntls_e, 
+                     labels = paste0("P",qntls_e*100))+
+  coord_cartesian(xlim = c(-3,9), ylim=c(0,2), expand = FALSE)+
+  scale_fill_brewer(palette = "Pastel1")+
+  labs(fill=NULL)+
+  theme_minimal()+
+  theme(axis.line.y = element_blank(),
+        axis.title.y  = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y  = element_blank(),
+        panel.grid = element_blank())
+#patchwork::wrap_plots(p1,p2,p3, ncol=1, guides="collect") &
+#theme(legend.position = "bottom")
+
+#ggsave("prob_dist.png", width=5, height = 7)
+```
+
+## Quantiles illustrated with a distribution function
+
+```{r}
+#| echo: false
+p1
+```
+
+## Quantiles illustrated with a density function 
+
+```{r}
+#| echo: false
+p2
+```
+
+## Quantiles illustrated with a boxplot 
+
+
+```{r}
+#| echo: false
+p3
+```
+
+
+# Quantiles of the normal distribution 
+
+We will use quantiles from a standardised normal distribution to create statistical tests and confidence intervals 
+
+The table sheet contains some commonly used quantiles 
+
+![](img/kvantiler.png)
+
+# Extra examples
+
+Let $X \sim N(5,2)$
+
+(a) $P(X \leq 6) =  P(\frac{X-5}{2} \leq \frac{6-5}{2}) = \Phi(\frac{1}{2})$
+
+```{r}
+#| echo: false
+#| results: false 
+(7.2-5)/2
+(1.8-5)/2
+pnorm(1.1)
+pnorm(1.6)
+pnorm(1.1) - (1- pnorm(1.6))
+pnorm(7.2,5,2)-pnorm(1.8,5,2)
+```
+
+(b) 
+
+$$\begin{split} & P(1.8 < X < 7.2) =  P(X < 7.2) - P(X \leq 1.8) = \\ & \Phi(\frac{7.2-5}{2})-\Phi(\frac{1.8-5}{2}) = \Phi(1.1) - \Phi(-1.6) = \\ & \Phi(1.1) - (1 - \Phi(1.6)) = 0.864 - (1 - 0.945) = 0.810 \end{split}$$
+
+(c) Find $a$ such that $P(X \leq a) = 0.05$
+
+Let $Z$ be the standarised normal distribution $Z \sim N(0,1)$
+
+We know the following: 
+$P(X \leq a) = P(Z \leq \frac{a-5}{2})$ 
+
+If we can find the quantile for $Z$, then we can derive the quantile for $X$
+
+From the quantile table we see that $P(Z \leq z_{.05}) = 0.05$ when $z_{.05} = -1.645$
+
+> use that  $\lambda_{1-\alpha} = -\lambda_{\alpha}$
+
+Then $x_{.05} = 5 + 2 \cdot z_{.05} = 5 + 2 \cdot (-1.645) =  1.71$
+
+```{r}
+#| echo: false
+#| results: false 
+
+5 + 2*(-1.645)
+qnorm(0.05,5,2)
+```
+
+

@@ -1,0 +1,46 @@
+---
+title: "Exponential-fördelning" 
+format: html
+editor: visual
+---
+
+# Exponentialfördelning
+
+I kursen tar vi ibland upp en så kallad exponentialfördelning. Den har en parameter, $\lambda$.
+
+## Väntevärde
+
+Om $X\sim Exp(\lambda)$ så är väntevärdet $E(X) = \frac{1}{\lambda}$
+
+## Fördelningsfunktion
+
+Det finns ingen tabell för exponentialfördelningen eftersom fördelningsfunktion är väldigt enkel att beräkna.
+
+$F(x) = P(X \leq x) = 1 - e^{-\lambda x}$
+
+## Skattning av parametern
+
+Man kan skatta parametern med stickprovsmedelvärdet som följer
+
+$\hat{\lambda} = \frac{1}{\bar{x}}$
+
+# QQ-plot för exponentialfördelning
+
+I koden nedan har jag hittat på ett stickprov som heter sam. Vill du köra qq-plotten för ditt stickprov, kan du börja koden med att skriva `sam = ditt stickprov`
+
+```{r}
+n = 22
+sam = rexp(n,1/3)
+plot(qexp(ppoints(length(sam)),1/mean(sam)),sort(sam),xlab = "teoretiska kvantiler", ylab = "empiriska kvantiler")
+abline(0,1,col='blue')
+title('QQ-plot för expontential')
+
+```
+
+# Histogram med täthetsfunktion för exponentialfördelning
+
+```{r}
+hist(sam,prob = TRUE)
+xx = seq(0,14,by=0.1)
+lines(xx,dexp(xx,1/mean(sam)),col="#603f8b",lwd = 2 )
+```

@@ -1,0 +1,481 @@
+---
+title: "F4. Continuous random variables, linear combination and sums of random variables"
+author: "Ullrika Sahlin"
+format:
+  html:
+    embed-resources: true
+---
+
+
+# Normal quantile
+
+A quantile is found by reading the distribution function backwards. The figure shows $z_{.25}$ (red) and  $z_{.90}$ for a standardised normal distribution $Z \sim N(0,1)$. 
+
+```{r}
+#| echo: false
+#| warnings: false
+#| message: false
+
+library(ggplot2)
+pp = ppoints(100)
+df <- data.frame(pp = pp, xx = qnorm(pp))
+ggplot(df,aes(x=xx,y=pp)) +
+  geom_line() +
+  xlab("x") +
+  ylab("F(x)") +
+  annotate("segment",x=-2.5,xend=qnorm(0.25),y=0.25,yend=0.25,colour = "red") +
+  annotate("segment",x=qnorm(0.25),xend=qnorm(0.25),y=0.25,yend=0,colour = "red") + 
+  annotate("segment",x=-2.5,xend=qnorm(0.9),y=0.9,yend=0.9,colour = "blue") +
+  annotate("segment",x=qnorm(0.9),xend=qnorm(0.9),y=0.9,yend=0,colour = "blue")
+
+```
+
+In R we derive a quantile from a normal distribution with the command `qnorm(p)`, where `p` is the probability for the area below the quantile.
+
+Quantiles are derived for common distributions in a similar way by putting a q in front of the name of the distribution, such as `qexp` or `qt`.
+
+
+## Quantile-quantile plot
+
+A way to examine the fit of model (probability distribution for which data can be seen as observations from) is to compare theoretical quantiles (from the model) to empirical quantiles (from the sample).
+
+::: callout-note
+### Empirical distribution function
+
+The empirical distribution function can be created as follows: 
+
+- sort the the $n$ values in the sample - these are the values for the x-axis
+
+- divide the interval 0 to 1 into equal sized steps and for every value on the x-scale (start with the smallest one) you increase $F(x)$-value one step.
+
+
+```{r}
+load("data/lab1_filer/jordprov.Rdata")
+x <- sort(jordprov$al) # sort
+n <- length(x) # the number of values in the sample
+eFx <- (1:n)/n # steps
+plot(x,eFx,main="Empirical distribution function") # plot eFx against x
+```
+
+This is what is done, but with a nicer layouy, with the command `plot.ecdf()`
+
+```{r}
+plot.ecdf(jordprov$al)
+```
+
+[Empirical distribution function on wiki](https://en.wikipedia.org/wiki/Empirical_distribution_function)
+:::
+
+### Theoretical distribution
+
+Let us evaluate if a sample can be seen as coming from a normal distribution.
+
+-   The theoretical distribution is a normal distribution with parameters estimated from the sample.
+
+```{r}
+m = mean(jordprov$al)
+s = sd(jordprov$al)
+```
+
+-   We derive the quantiles for the theoretical distribution corresponding to the values on the empirical distribution
+
+```{r}
+tFx <- qnorm(eFx,m,s)
+```
+
+-   Then we draw the theoretical quantiles against the sorted values in the sample. The values should be on a straight line if the theoretical models is a good model for the sample.
+
+```{r}
+plot(tFx,x)
+abline(0,1) # add a 1:1-line
+```
+
+The same thing can be done with the commands  `qqnorm` and  `qqline` but with a nice layout
+
+```{r}
+qqnorm(jordprov$al)
+qqline(jordprov$al)
+```
+
+# Expected value
+
+## Expected value of the random variables $X$
+
+$X$ is discrete: $E(X) = \sum_{all \ x}xf(x)$
+
+$X$ is continuous: $E(X) = \int_{-\infty}^{\infty}xf(x)dx$
+
+::: callout-note
+
+### The expected value for a uniform distribution
+
+$X \sim U(a,b)$
+
+$$f(x) = \left\{ \begin{array}{lr}
+        \frac{1}{b-a} & \text{if }a \leq x \leq b\\
+        0 & \text{otherwise}
+        \end{array}\right.$$
+
+
+
+$$\begin{split} & E(X)  =\int_{-\infty}^{\infty}xf(x)dx =  \\ & \int_{a}^{b}\frac{x}{b-a}dx = [\frac{x^2}{2(b-a)}]_{x=a}^{b}  = \\ & \frac{b^2-a^2}{2(b-a)} = \frac{(b+a)(b-a)}{2(b-a)} = \frac{a+b}{2}  \end{split}$$
+
+The expected value of $X \sim U(0,10)$ is $E(X)=\frac{0+10}{2} = 5$
+:::
+
+## Expected value of a function $g$ of $X$
+
+$X$ is discrete: $E(g(X)) = \sum_{alla \ x}g(x)f(x)$
+
+$X$ is continuous: $E(g(X)) = \int_{-\infty}^{\infty}g(x)f(x)dx$
+
+::: callout-note
+
+### Expected value of a function of a uniform distribution
+
+continuation of $X \sim U(0,10)$
+
+$g(x) = x^2$
+
+$$\begin{split}  E(g(X)) = \int_{-\infty}^{\infty}g(x)f(x)dx = \int_{0}^{10}x^2\frac{1}{10}dx = & \\  [\frac{x^3}{3\cdot 10}]_{x=0}^{10} = \frac{10^3}{30} = \frac{100}{3} \end{split}$$
+:::
+
+# Expected value and variance of a linear combination of a random variable
+
+$a\cdot x+b$ is a linear transformation of $x$
+
+$E(a\cdot X+b) = a\cdot E(X)+b$
+
+$V(a\cdot X+b) = a^2\cdot V(X)$
+
+> These rules applies for ALL random variables regardless of distribution!
+
+## Expected value of a linar combination of a discrete random variable
+
+$X$ is a discrete random variable
+
+-   What is the expected value $E(X + b)$?
+
+$$\begin{split} E(X+b)=\sum_{all \ x}(x+b)f(x) = \sum_{all \ x}xf(x) + \sum_{all \ x}bf(x) = & \\ E(X) + b\sum_{all \ x}f(x) = E(X) + b \end{split}$$
+
+-   What is the expected value of $E(aX + b)$?
+
+$$\begin{split} E(aX+b)=\sum_{all \ x}(ax+b)f(x) = & \\ \sum_{all \ x}axf(x) + \sum_{all \ x}bf(x) = & \\ a\sum_{all \ x}xf(x) + b\sum_{all \ x}f(x) = aE(X) + b \end{split}$$
+
+## Variance of a linear combination of a discrete random variable
+
+::: callout-notes
+### Variance in at least three ways
+
+$E(X) = \mu$
+
+$$\begin{split} & V(X) =  \underbrace{E[(X-E(X))^2]}_{I} =   \underbrace{\sum (x-\mu)^2f(x)}_{II} = \\ & \sum (x^2 - 2x\mu + \mu^2)f(x) = \sum x^2f(x) - \sum 2x\mu f(x) + \sum \mu^2 f(x) = \\ &  E(X^2) - 2\mu \sum xf(x) + \mu^2 \sum f(x) = E(X^2)-2(E(X))^2+(E(X))^2 =  \\ &  \underbrace{E(X^2)-[E(X)]^2}_{III} \end{split}$$
+:::
+
+$X$ is a discrete random variable
+
+-   What is the variance $V(X + b)$?
+
+$$\begin{split} & V(X + b) = E[(X+b-E(X+b))^2] =  \\ & E[(X+b-E(X)-b)^2] = E[(X-E(X))^2] = V(X) \end{split}$$
+
+>  Adding the constant $b$ shifts the distribution but does not change the spread.
+
+-   What is the variance $V(a \cdot X + b)$?
+
+$$\begin{split} & V(a \cdot X + b) = E[(aX+b-aE(X)-b)^2] = E[(aX-aE(X))^2]= \\ & E[a^2(X-E(X))^2] = a^2E[(X-E(X))^2] = a^2V(X) \end{split}$$
+
+
+# Standardised normal distribution
+
+From earlier lecture: 
+
+- If $X \sim N(\mu,\sigma)$ then $Z = \frac{X-\mu}{\sigma} \sim N(0,1)$
+
+When we apply rules for expected value and variance on a linear combination we get: 
+
+$E(Z) = E(\frac{X-\mu}{\sigma}) =  \frac{1}{\sigma}(E(X) - \mu) = \frac{1}{\sigma}(\mu - \mu) = 0$
+
+$V(Z) = V(\frac{X-\mu}{\sigma}) =  \frac{1}{\sigma^2}[V(X-\mu)] = \frac{1}{\sigma^2}V(X) = \frac{1}{\sigma^2}\sigma^2 = 1$
+
+
+# Example. Starlings
+
+After studying a large number of nesting starlings, it has been concluded that the variable $X = \text{"number of eggs per brood"}$ can be described by the following probability function:
+
+|                   |      |      |      |      |      |
+|-------------------|------|------|------|------|------|
+|x                  | 4    | 5    | 6    | 7    | 8    |
+| $P(X = x)$        | 0.10 | 0.20 | 0.30 | 0.20 | 0.20 |
+
+::: callout-note
+## Starlings 1 
+
+Calculate E(X) and V(X)!
+
+```{r}
+#| echo: false
+#| results: false
+4*0.1 + 5*0.2 + 6*0.3 + 7*0.2 + 8*0.2
+4^2*0.1 + 5^2*0.2 + 6^2*0.3 + 7^2*0.2 + 8^2*0.2
+6.2^2
+40-38.44
+```
+
+$$\begin{split} \mu = & E(X) = \sum_{\text{all x}} xP(X=x) = \\ & 4\cdot 0.10 + 5 \cdot 0.20+ 6 \cdot 0.30+ 7 \cdot 0.20+ 8 \cdot 0.20 = 6.2 \end{split}$$
+
+
+$$\begin{split} V(X) = & E(X^2) - [E(X)]^2  = \sum_{\text{all x}} x^2P(X=x) - \mu^2 = \\ & 4^2\cdot 0.10 + 5^2 \cdot 0.20+ 6^2 \cdot 0.30+ 7^2 \cdot 0.20+ 8^2 \cdot 0.20 - 6.2^2 =  \\ & 40 - 38.44 = 1.56 \end{split}$$
+
+:::
+
+::: callout-note
+## Starlings  2 
+
+We randomly choose 10 broods. What is the probability that at least one of them has 8 eggs?
+
+Let $Y = \text{"number of broods with 8 eggs"}$. We consider the number of eggs in different broods as independent. 
+
+The following model is reasonable: $Y \sim Bin(10,P(X=8)=0.2)$ 
+
+```{r}
+#| echo: false
+#| results: false
+1 - (1-0.2)^10
+```
+
+
+$P(\text{"at least one brood with 8 eggs"}) = P(Y \geq 1) = 1 - P(Y = 0) = 1 - (1-0.2)^{10} = 0.89$ 
+
+:::
+
+::: callout-note
+## Starlings 3 
+
+We randomly choose two broods. Calculate the probability that there are at least 15 eggs in total in the two broods.
+
+Let $X_i = \text{"number of eggs in brood } i$ where $i = 1,2$
+
+The probability that we seek is $P(X_1 + X_2 \geq 15) = \dots $
+
+
+```{r}
+#| echo: false
+#| results: false
+
+0.2*0.2 + 0.2*0.2 + 0.2*0.2
+```
+
+The event can occur in three ways 
+$$ \begin{split} & P(X_1 = 7)P(X_2=8) + P(X_1 = 8)P(X_2=7) + P(X_1 = 8)P(X_2=8) = \\ & 0.2\cdot 0.2 + 0.2\cdot 0.2 + 0.2\cdot 0.2 = 0.12 \end{split} $$
+
+> It often happens that we would like to say something about sums of random variables. 
+:::
+
+
+# Expected value and variance for a sum of random variables
+
+Let $X$ and $Y$ be two random variables. Then 
+
+$E(X + Y)=E(X)+E(Y)$
+
+If $X$ and $Y$ also are independent, then $V(X+Y) = V(X) + V(Y)$
+
+::: callout-note
+
+## Expected value and variance for a sum a many random variables
+
+Let $X_1, X_2, ..., X_n$ be $n$ random variables. Then 
+
+$E(\sum_{i=1}^n X_i) = \sum_{i=1}^n E(X_i)$
+
+If they also are independent, then 
+
+$V(\sum_{i=1}^n X_i) = \sum_{i=1}^n V(X_i)$
+:::
+
+::: callout-note
+
+## The expected value and variance for a sum of equally distributed random variables
+
+Let $X_1, X_2, ..., X_n$ be $n$ random variables where all have the expected value $\mu$ and variance $\sigma^2$.
+
+Then 
+
+$E(\sum_{i=1}^n X_i) = \sum_{i=1}^n E(X_i) = n \cdot \mu$
+
+If they are independent, then 
+
+$V(\sum_{i=1}^n X_i) = \sum_{i=1}^n V(X_i) = n \cdot \sigma^2$
+:::
+
+
+# The distribution of a sum of normal distributions
+
+- The sum of normally distributed random variables is also normally distributed
+
+Let $X_i \sim N(\mu_i,\sigma_i)$
+
+Then  $\sum_{i=1}^n X_i \sim N$ 
+
+with the expected value $E(\sum_{i=1}^n X_i) = \sum_{i=1}^n \mu_i \underbrace{=}_{\text{if all }\mu_i=\mu} = n\cdot \mu$
+
+and variance $V(\sum_{i=1}^n X_i) \underbrace{=}_{\text{if independent}} \sum_{i=1}^n \sigma^2_i  \underbrace{=}_{\text{if all }\sigma_i=\sigma} = n\cdot \sigma^2$
+
+- The average of normally distributed random variables is also normally distributed
+
+> An arithmetic mean is also a sum
+
+Let $\bar{X} = \frac{\sum_{i=1}^n X_i}{n}$ be an average of $n$ equally distributed and independent random variables
+
+Then:
+
+$E(\bar{X}) = \frac{E(\sum X_i)}{n} = \frac{n\mu}{n} = \mu$
+
+$V(\bar{X}) = \frac{V(\sum X_i)}{n^2} = \frac{n\sigma^2}{n^2} = \frac{\sigma^2}{n}$
+
+
+## Important special case
+
+### The distribution of a sum of independent equally distributed normally distributed random variables
+
+$\sum_{i=1}^n X_i \sim N(n\mu,\sqrt{n}\sigma)$
+
+### The distribution of an average of independent equally distributed normal distributions
+
+$\bar{X} \sim N(\mu,\frac{\sigma}{\sqrt{n}})$
+
+::: callout-note
+## Example 1
+
+Let $X \sim N(0,1)$ och $Y=3X+2$
+
+Derive $E(Y)$ and $D(Y)$
+
+$E(Y)=E(3X+2)=3E(X)+2=3\cdot 0 + 2 = 2$
+
+$V(Y)=V(3X+2)=3^2V(X)=3^2\cdot 1$
+
+$D(Y)=\sqrt{V(Y)}=\sqrt{3^2} = 3$
+
+:::
+
+
+::: callout-note
+## Example 2
+
+Let $X \sim N(1,1)$ and $Y \sim N(-1,2)$ be independent random variables 
+
+- Which distribution has $X+Y$?
+
+It will be a normal distribution with expected value 
+
+$E(X+Y) = E(X) + E(Y) = 1 + (-1) = 0$
+
+and variance 
+
+$V(X+Y)=V(X)+V(Y)=1^2+2^2=5$
+
+- Which distribution has  $X-Y$?
+
+It will be a normal distribution with expected value 
+
+$E(X-Y) = E(X) + E(-Y) = E(X) + (-1)\cdot E(Y) = 1 + (-1)\cdot(-1) = 1 + 1 = 2$
+
+and variance
+
+$V(X-Y)=V(X)+V(-Y)=V(X)+(-1)^2\cdot V(Y)= V(X)+V(Y) = 1^2+2^2 = 5$
+
+:::
+
+::: callout-note
+## Example 3
+
+The independent random variables $X_1$ and $X_2$ both belongs to $N(1,2)$
+
+-   Specify the distribution for $\frac{X_1+X_2}{2}$
+
+This is an average of two independent and normally distributed random variables with the same expected value $\mu=1$ and variance $\sigma^2=2$
+
+$\bar{X}=\frac{X_1+X_2}{2}$
+
+Following the rules for a linear combination of random variables and knowing that "a sum of normal is also normal", then
+
+$\bar{X} \sim N(\mu,\frac{\sigma}{\sqrt{2}})$
+
+Let us derive the expected value and variance 
+
+$$E(\bar{X}) = E(\frac{X_1+X_2}{2}) = \frac{1}{2}E(X_1+X_2) = \frac{1}{2} (1 + 1) = 1$$
+
+$$V(\bar{X}) = V(\frac{X_1+X_2}{2}) = \frac{1}{2^2}V(X_1+X_2)=\frac{1}{2^2}(2^2+2^2)=2$$
+
+> Note that the sum has a lower variance than the individual variances. The reason is that the two r.v. "cancels each other out" resulting in a lower variance in the sum. 
+
+:::
+
+# Population/parameter – Sample/stastistica
+
+Statistical inference is about making conclusions about parameters within models for populations (what you want to say something about) based on observations (often a random sample from the population to ensure that the statistical methods works). 
+
+You can also make conclusions about future observations from the population (predictive inference). 
+
+Look out for the following concepts and how they are related: 
+
+- Population, model and parameter
+
+- Sample, assumption of independence etc, summary statistics of a sample (statistica) that can be used to estimate parameters in the model for the population.
+
+- Parametric inference - make a conclusion about the population by studying estimates of parameters 
+
+- Predictive inference - make a conclusion about the population by studying predictions of future observations
+
+![](img/popstick.png)
+
+
+
+# Log-normal distribution
+
+$X$ follows a log-normal distribution if $log(X)$ is normally distribution
+
+> the log-normal distribution does not exist - it is a normal distribution on the log scale 
+
+$log(X) \sim N(\mu_{logX}, \sigma_{logX})$
+
+The log-normal distribution is suitable for r.v. taking positive values. An example is concentrations that are a result from a ratio. 
+
+:::callout-warning 
+
+Note that the parameter $\mu_{logX}$ is not the expected value for $X$, i.e. $E(X) \neq \mu_{logX}$. It is however, the expected  value of $log(X)$
+
+:::
+
+```{r}
+#| echo: false
+pp <- ppoints(100)
+
+df <- data.frame(cdf = c(pp,pp), xx = c(qnorm(pp),qlnorm(pp)), pdf = c(dnorm(qnorm(pp)),dlnorm(qlnorm(pp))),typ = rep(c("logx","x"), each = 100))
+
+ggplot(df,aes(x = xx, y = pdf, col=typ)) + 
+  geom_line() +
+  facet_wrap(~typ, scales="free") +
+  xlab("") +
+  ylab("f()")
+
+
+```
+
+
+:::callout-note 
+## Fit a log-normal distribution to data
+
+Log the data and make summaries on the log-scale
+
+From $\{x_1,x_2,...,x_n\}$ to $\{log(x_1), log(x_2), ..., log(x_n)\}$
+
+Estimate the parameters in the model above, $\mu_{logX}$ and $\sigma_{logX}$, with the logged sample.
+
+$\hat{\mu}_{logX} = \frac{\sum_{i=1}^n logx_i}{n} = \bar{logx}$ and
+
+$\hat{\sigma}_{logX} = \sqrt{\frac{\sum_{i=1}^n (logx_i-\bar{logx})^2}{n-1}} = s_{logx}$
+
+Think about that this holds: $P(X\leq a) = P(log(X) \leq log(a))$
+:::

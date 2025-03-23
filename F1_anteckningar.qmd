@@ -1,0 +1,361 @@
+---
+title: "F1. Grundläggande begrepp och regler inom sannolikhetslära"
+author: "Ullrika Sahlin"
+format:
+  html:
+    embed-resources: true
+---
+
+# Slumpmässigt försök
+
+Ett "försök" vars utfall vi inte exakt kan förutsäga
+
+A "trial" for which the outcome is unknown
+
+# Utfall
+
+Resultat av ett slumpmässigt försök $\omega$
+
+Result of a random experiment
+
+# Utfallsrum
+
+Alla möjliga utfall $\Omega$
+
+# Händelse
+
+Ett eller flera utfall (delmängd av utfallsrummet) t.ex. A, B eller C
+
+::: callout-tip
+## Exempel: Tärning
+
+Slumpmässigt försök: Kast med tärning
+
+Utfallsrum: $\{1, 2, 3, 4, 5, 6\}$
+
+Exempel på händelser: 
+
+A = "Få en 3:a" $\{3\}$ 
+
+B = "Få ett jämt tal" $\{2, 4, 6\}$ 
+
+C = "Få en 2:a eller 5:a" $\{2, 5\}$
+:::
+
+::: callout-tip
+## Exempel: Allergiker
+
+Slumpmässigt försök: Andel allergiker
+bland förskolebarn 
+
+Utfallsrum: Oändligt många utfall i intervallet $[0,100]$ 
+
+Exempel på händelse: A = "Andelen allergiker är högre än 6 %"
+:::
+
+::: callout-tip
+## Exempel: Väntetid
+
+Slumpmässigt försök: Väntetid i en kö till en kassa i affären (minuter)
+
+Utfallsrum: Alla tider mellan $(0,\infty)$ 
+
+Exempel på händelse: Q = "En person behöver vänta minst 1 minut"
+:::
+
+# Uteslutande händelser
+
+A och B är uteslutande om de inte kan inträffa samtidigt.
+
+$A \cap B = \emptyset$
+
+# Sannolikhet
+
+-   Klassiska sannolikhet: antal gynnsamma genom antal möjliga utfall
+
+-   Relativ frekvens: hur ofta ett utfall förekommer i oändligt upprepning av oberoende försök
+
+-   Subjektiv sannolikhet: någons osäkerhet/säkerhet för ett påstående
+
+# Regler för sannolikhet
+
+-   Axiomatisk sannolikhet: ett matematiskt mått som beskriver slumpmässiga försök
+
+Sannolikhet (probability) för händelse A skrivs som $P(A)$
+
+(i) $0\leq P(A) \leq 1$
+
+(ii) $P(\Omega)=1$
+
+(iii) Om $A_1$ och $A_2$ är disjunkta händelser, så gäller $P(A_1\cup A_2) = P(A_1) + P(A_2)$
+
+## Union och snitt
+
+Snitt: $A \cap B$ betyder **A och B**
+
+Union: $A \cup B$ betyder **A eller B**
+
+## Venn-diagram
+
+
+## Komplementhändelse
+
+$P(A) + P(\bar{A}) = 1$
+
+$P(\bar{A}) = 1 - P(A)$
+
+::: callout-tip
+## Exempel: Komplementhändelse
+
+A = "Tärning visar sex prickar" $\bar{A}$ = "Tärning visar **inte** sex prickar"
+
+$P(A) = \frac{1}{6}$
+
+$P(\bar{A}) = 1 - P(A) = 1 - \frac{1}{6} = \frac{5}{6}$
+:::
+
+# Additionssatsen
+
+$P(A \cup B) = P(A) + P(B) - P(A \cap B)$
+
+## Additionssatsen för uteslutande händelser
+
+$P(A \cup B) = P(A) + P(B)$ eftersom $P(A \cap B) = 0$
+
+# Oberoende händelser
+
+Om A och B är oberoende så gäller att $P(A \cap B) = P(A)\cdot P(B)$
+
+::: callout-tip
+## Exempel: Oberoende kast med tärning
+
+En tärning kastas två gånger
+
+A = "Första kastet är en 2:a" B = "Andra kastet är en 3:a"
+
+A och B är oberoende
+
+$P(A \cap B) = P(A) \cdot P(B) = \frac{1}{6}\cdot\frac{1}{6} = \frac{1}{36}$
+:::
+
+::: callout-warning
+## Skilj på oberoende och uteslutande händelser!
+
+Oberoende $P(A \cap B) = P(A) \cdot P(B)$
+
+Uteslutande $P(A \cap B) = 0$
+:::
+
+::: callout-tip
+## Exempel. Minst en
+
+I en patientpopulation vet vi att 40% har högt blodtryck. Vi väljer två patienter slumpmässigt.
+
+A = "Person 1 har högt blodtryck" B = "Person 2 har högt blodtryck"
+
+Vad är sannolikheten att **minst en** av patienterna har högt blodtryck, d.v.s. $P(A \cup B)$?
+
+Från informationen vet vi att P(A) = P(B) = 0.4
+
+Vi kan också anta att händelserna A och B är oberoende.
+
+$$\begin{split} & P(A \cup B) = P(A) + P(B) - P(A \cap B) = \\ & P(A) + P(B) - P(A)\cdot P(B) = \\ & 0.4 + 0.4 - 0.4\cdot 0.4 = 0.64 \end{split}$$
+:::
+
+::: callout-tip
+## Exempel. Exakt en
+
+Vad är sannolikheten att **exakt en** av patienterna har högt blodtryck, d.v.s. $P(A \cup B)-P(A \cap B)$?
+
+$P(A \cup B) -P(A \cap B) = P(A) + P(B) - 2P(A \cap B) =$
+
+$P(A) + P(B) - P(A)\cdot P(B) = 0.4 + 0.4 - 2\cdot 0.4\cdot 0.4 = 0.48$
+:::
+
+::: callout-tip
+## Exempel. Blodtransfusion
+
+I ett land är sannolikheten att smittas av HIV vid blodtransfusion 1%. Antag att en person fått blodtransfusion 20 gånger. Vad är sannolikheten att personen har smittats av HIV via blodtransfusion?
+
+Låt $A_i$ vara händelsen "smittad vid tillfälle i", där i = 1 till 20.
+
+Från informationen vet vi att $P(A_i)=0.01$.
+
+Sannolikheten vi söker är $P(A_1 \cup A_2 \cup ... \cup A_20)$ Den kan även skrivas som $1 - P(\bar{A_1}\cap\bar{A_2}\cap...\cap\bar{A_{20}})$
+
+Om vi antar att händelser är oberoende blir detta
+
+$1-P(\bar{A_1})P(\bar{A_2})...P(\bar{A}_{20}) = 1 - (1-0.01)^{20} = 0.182$
+:::
+
+# Betingad sannolikhet
+
+Om vi vet att B har hänt - vad är sannolikheten för att A händer?
+
+$P(A|B) = \frac{P(A \cap B)}{P(B)}$
+
+::: callout-tip
+## Exempel: Spela onlinepoker
+
+1000 slumpmässigt valda personer fick ange om de någon gång har spelat poker online och om de har ekonomiska problem. Här är resultaten.
+
+|                            | Spelar inte  | Spelar  |
+|----------------------------|--------------|---------|
+| Har ekonomiska problem     | 300          | 90      |
+| Har ej ekonomiska problem  | 500          | 110     |
+
+(a) Vad är sannolikheten att en slumpmässigt vald person har ekonomiska problem?
+
+Låt oss införa noteringarna: E = "har ekonomiska problem" och S = "spelar"
+
+$P(E) = \frac{300 + 90}{1000} = 0.39$
+
+(b) Vad är sannolikheten att en person som spelar har ekonomiska problem?
+
+$P(E|S) = \frac{90}{90+110} = 0.45$
+:::
+
+
+::: callout-tip
+## Exempel
+
+![](img/stlars.png)
+
+Vid kontrollen togs 45 bilister för fortkörning. 26 av dem var föräldrar som skulle lämna sina barn.
+
+Polisassistenten Patriks slutsats är enkel och tydlig: ”Det är föräldrarna själva som kör fortast”.
+
+Har polismannen rätt i sin slutsats?
+
+Låt oss införa noteringar:
+
+Händelse F är "en förälder är förare" Händelse K är "föraren kör för fort"
+
+Vi har information om P(F\|K)
+
+Patrik polis gör ett uttalande om P(K\|F). För att säga något om hur troligt det är att en förälder kör för fort behöver vi veta hur vanligt det är med fortkörare P(K) och hur många av förarna som är fölädrar P(F).
+
+Patrik drar en förhastad slutsats utifrån det material han har.
+:::
+
+::: callout-warning
+## Det går inte att bara vända
+
+$P(A|B) \neq P(B|A)$
+:::
+
+# Multiplikationssatsen
+
+För två händelser A och B gäller
+
+$P(A \cap B) = P(A|B) \cdot P(B)$ 
+
+$P(B \cap A) = P(B|A) \cdot P(A)$
+
+# Bayes sats
+
+Från multiplikationssatsen får vi att
+
+$\Rightarrow \frac{P(A|B) \cdot P(B)}{P(B)} = \frac{P(B|A) \cdot P(A)}{P(B)}$
+
+$\Rightarrow P(A|B) = \frac{P(B|A) \cdot P(A)}{P(B)}$
+
+# Satsen om total sannolikhet
+
+$H_1$,$H_2$,$H_3$ och $H_4$ är disjunkta händelser som täcker hela utfallsrummet $\Omega$.
+
+Då gäller för en händelse $A$ att
+
+$P(A)=P(A|H_1)\cdot P(H_1) + P(A|H_2)\cdot P(H_2) +$
+
+$P(A|H_3)\cdot P(H_3) + P(A|H_4)\cdot P(H_4)$
+
+::: callout-tip
+## Tentauppgift
+
+För att upptäcka livmodercancer i ett tidigt stadium undersöker man regelbundet cellprover från livmoderhalsen. Vid ett sådant test vet man att
+
+P(test positivt \| cancer) = 0.8
+
+P(test positivt \| ingen cancer) = 0.1
+
+Antag att det är 10 kvinnor på 10 000 som har denna typ av cancer. Vad är sannolikheten, om vi slumpmässigt väljer ut och testar en kvinna, att hennes test visar positivt?
+
+Vi inför en enklare beteckning.
+
+$P(+ | c) = 0.8$
+
+$P(+ | \bar{c}) = 0.1$
+
+Från informationen vet vi att $P(c) = 10/10000 = 0.001$
+
+Satsen om total sannolikhet gör det möjligt att beräkna den sökta sannolikheten som
+
+$P(+) = P(+|c)\cdot P(c) + P(+|\bar{c})\cdot P(\bar{c}) = 0.8 \cdot 0.001 + 0.1 \cdot (1-0.001) = 0.1007$
+:::
+
+::: callout-tip
+## Exempel. Komplementhändelser
+
+Händelserna A och B är oberoende med P(A) = 0.1 och P(B) = 0.05
+
+Beräkna $P(\bar{A}\cap \bar{B})$?
+
+$P(\bar{A}\cap \bar{B}) = P(\bar{A}) \cdot P(\bar{B}) =$
+
+$(1-P(A)) \cdot (1-P(B)) = (1-0.1)\cdot (1-0.05)=0.9\cdot 0.95 = 0.855$
+:::
+
+::: callout-tip
+## Exempel. Familjemiddag
+
+Familjerna A, B och C är bjudna på middag. De kommer med följande sannolikheter: P(A) = 0.8, P(B) = 0.6 och P(C) = 0.9. De kommer oberoende av varandra.
+
+Vad är sannolikheten att
+
+(a) Alla kommer? $P(A \cap B \cap C)=P(A) \cdot P(B) \cdot P(C)$
+
+(b) Ingen kommer? $P(\bar{A} \cap \bar{B} \cap \bar{C})=(1-P(A)) \cdot (1-P(B)) \cdot (1-P(C))$
+
+(c) Minst en kommer? $P(\text{minst en})=1-P(\text{ingen kommer}) = 1 - P(\bar{A} \cap \bar{B} \cap \bar{C})$
+:::
+
+
+
+# Kombinatorik
+
+Läran om hur man behandlar kombinationer, permutationer och uppräkningar
+
+::: callout-tip
+## Exempel: På hur många sätt kan man ordna A, B och C?
+
+ABC ACB BAC BCA CAB CBA
+
+$3 \cdot 2 \cdot 1 = 6$
+:::
+
+n-fakultet är $n! = n\cdot (n-1) \cdot (n-2) \cdot ... \cdot 2 \cdot 1$
+
+Man har bestämt att $0!=1$
+
+::: callout-tip
+## Exempel: På hur många sätt kan man blanda en kortlek?
+
+$52!$
+:::
+
+Ibland är man intresserad av att räkna ut hur många sätt man kan välja ut k element från totalt n element. Ordningen spelar ingen roll.
+
+$\binom{n}{k} = \frac{n!}{k!(n-k)!}$
+
+::: callout-tip
+## Exempel: På hur många sätt kan man välja ut fem kort?
+
+$\binom{52}{5} = \frac{52!}{5!47!}$
+:::
+
+::: callout-tip
+## Exempel: På hur många sätt kan man får 10 rätt på en tipspromenad med 13 frågor?
+
+$\binom{13}{10} = \frac{13!}{10!3!} = 286$
+:::

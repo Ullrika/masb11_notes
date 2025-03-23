@@ -1,0 +1,514 @@
+---
+title: "F8. Två stickprov"
+author: "Ullrika Sahlin"
+format: 
+  html:
+    embed-resources: true
+---
+
+# Kommentar om $\sim$ och $\in$
+
+Båda sätten att beskriva en fördelning för en slumpvariabel förekommer:
+
+$$X \sim N(\mu,\sigma)$$
+
+$$X \in N(\mu,\sigma)$$
+
+Ullrika använder $\sim$ med tolkning "fördelad som" och $\in$ med tolkning "som en delmängd i".
+
+Det är ok att använda $X \in N(\mu,\sigma)$.
+
+# Samplingsfördelning för stickprovsvariansen
+
+## $\chi^2$-fördelningen
+
+En summa av kvadraten av $k$ oberoende standardiserade normalfördelade slumpvariabler följer en $\chi^2$-fördelningen med $k$ frihetsgrader
+
+Om $Z_i\sim N(0,1)$ och alla $i=1,\dots,k$ är oberoende så gäller att
+
+$$\sum_{i=1}^k Z_i^2\sim \chi^2(k)$$
+
+## Simulering av $\chi^2$-fördelningen från N(0,1)
+
+```{r}
+# simulering av en chi2 med 1 frihetsgrad
+hist((rnorm(10^4))^2,probability=TRUE,main=latex2exp::TeX("$\\chi^2(1)$"))
+xx = seq(0,25,by = 0.1)
+lines(xx,dchisq(xx,1),col='darkred')
+```
+
+```{r}
+# simulering av en chi2 med fyra frihetsgrader
+hist((rnorm(10^4))^2+(rnorm(10^4))^2+(rnorm(10^4))^2+(rnorm(10^4))^2,probability=TRUE,ylim = c(0,0.2),main=latex2exp::TeX("$\\chi^2(4)$"))
+xx = seq(0,25,by = 0.1)
+lines(xx,dchisq(xx,4),col='darkred')
+```
+
+## Samplingsfördelning för stickprovsvariansen
+
+Föreställ dig att vi upprepande gör nya observationer av en normalfördelad slumpvariabel $X \sim N(\mu,\sigma)$ och beräknar stickprovsvariansen. På samma sätt som vi då kan betrakta stickprovsmedelvärdet $\bar{x}$ som en slumpvariabel, kan vi även göra med stickprovsvariansen $s_2$
+
+$$s^2 = \frac{\sum_{i=1}^n (X_i-\bar{x})^2}{n-1}$$
+
+Vi skriver om så det blir en summa $(n-1)s^2$. Om vi sen delar med det sanna värdet på variansen får vi kvoten
+
+$$\frac{(n-1)s^2}{\sigma^2} = \frac{\sum_{i=1}^n (X_i-\bar{x})^2}{\sigma^2}$$
+
+Denna kvot går sen att skriva om som en summa av kvadratiska slumpvariabler. Eftersom vi drar ifrån skattning av väntevärdet och delar med variansen, kan man visa att det är en summa av kvadrerade standardiserade slumpvariabler, dock endast n-1 stycken oberoende. Vi går inte igenom det i denna kursen, men man kan visa att kvoten följer en $\chi^2$-fördelning:
+
+$$\frac{(n-1)s^2}{\sigma^2} \sim \chi^2(n-1)$$
+
+## Simulering av samplingsfördelning för stickprovsvarians
+
+```{r}
+## simulering av samplingsfördelning för stickprovsvarians
+
+mu = 3.3 #välj vad ni vill
+sigma2 = 20 #välj vad ni vill
+n = 10 #antal värden i stickprovet
+niter = 1e4 #antal "gånger" vi samlar in nya data
+sam <- replicate(niter,
+  {
+  x <- rnorm(n,mu,sqrt(sigma2))
+  s2 <- var(x)
+  s2*(n-1)/sigma2
+  }
+)
+
+hist(sam,prob = TRUE,main=latex2exp::TeX("$\\chi\\^2(n-1)"),xlab = latex2exp::TeX("(n-1)s\\^2/\\sigma\\^2"))
+pp <- ppoints(200)
+xx <- qchisq(pp,n-1)
+yy <- dchisq(xx,n-1)
+lines(xx,yy,col='darkred')
+
+```
+
+Notera att kvoten mellan stickprovsvariansen och den verkliga variansen kan skrivas om till att vara en $\chi^2$-fördelad slumpvariabel genom $n-1$
+
+$$\frac{s^2}{\sigma^2}=\frac{(n-1)s^2}{(n-1)\sigma^2}=\frac{\frac{(n-1)s^2}{\sigma^2}}{(n-1)}$$ {#eq-kvot}
+
+# Jämföra två populationer
+
+Två situationer:
+
+-   Har en medicin någon effekt? Jämför en grupp som tar medicinen med en grupp som får placebo
+
+-   Är det någon skillnad före och efter behandling? Gör två mätningar på samma patienter.
+
+## Två oberoende stickprov
+
+$X_i = \text{"syresättning hos patient i som får medicinen"}$
+
+$Y_j = \text{"syresättning hos patient j som får placebo"}$
+
+**Strategi:** Studien bör utföras så man kan anta att $X_i$, $i=1,\dots,n_x$ och $Y_j$, $j=1,\dots,n_y$ är oberoende, t.ex. genom att slumpmässigt placera in patienter i de två grupperna (*randomisera*).
+
+## Stickprov i par
+
+$X_i = \text{"syresättning hos patient i före behandling"}$
+
+$Y_i = \text{"syresättning hos patient i efter behandling"}$
+
+**Strategi:** Bilda en ny slumpvariabel $\Delta_i = X_i - Y_i$ och gör statistisk analys på den.
+
+::: callout-note
+### Exempel: Ökar alkoholkonsumtion fetthalten i levern?
+
+Man valde ut 12 försökspersoner, vilka kan betraktas som ett slumpmässigt urval bland friska personer i 25-årsåldern. Försökspersonerna har under en längre tid avstått från all alkoholkonsumtion och prover på deras levrar har tagits. Därefter har de fått dricka 4 burkar öl per dag och efter en månad har nya leverprover tagits. Följande leverfetter erhölls:
+
+|                      |      |      |      |       |      |      |      |      |      |      |      |      |
+|------|------|------|------|------|------|------|------|------|------|------|------|------|
+| Person nr            | 1    | 2    | 3    | 4     | 5    | 6    | 7    | 8    | 9    | 10   | 11   | 12   |
+| Före                 | 0.25 | 0.19 | 0.13 | 0.23  | 0.15 | 0.14 | 0.24 | 0.23 | 0.17 | 0.15 | 0.10 | 0.17 |
+| Efter                | 0.50 | 0.28 | 0.18 | 0.18  | 0.34 | 0.41 | 0.33 | 0.26 | 0.35 | 0.42 | 0.22 | 0.29 |
+| Differens Efter-Före | 0.25 | 0.09 | 0.05 | -0.05 | 0.19 | 0.27 | 0.09 | 0.03 | 0.18 | 0.27 | 0.12 | 0.12 |
+:::
+
+**Modell:** $X=\text{"Förändring fetthalt"} \sim N(\mu,\sigma)$
+
+Detta ser ut att vara en rimlig modell när vi jämför teoretiska med empiriska kvantiler:
+
+```{r}
+diff <- c(0.25, 0.09, 0.05, -0.05, 0.19, 0.27, 0.09, 0.03, 0.18, 0.27, 0.12, 0.12)
+qqnorm(diff)
+qqline(diff)
+```
+
+Sätt upp lämpliga hypoteser och testa om dessa data stöder misstanken att alkoholkonsumtionen ökar fetthalten i levern.
+
+**Hypoteser:**
+
+$H_0: \mu = 0$ (Alkohol påverkar ej fetthalt i levern)
+
+$H_1: \mu > 0$ (Alkohol ökar fetthalt i levern)
+
+### Teststorhet med kritiskt område
+
+-   Om $\sigma$ är känd, bildar vi $z = \frac{\bar{x}-0}{\sigma/\sqrt{12}}$
+
+Förkasta $H_0$ på signifikansnivå $\alpha = 0.05$ om $z > \lambda_{\alpha}$
+
+-   Om $\sigma$ är okänd, bildar vi $t = \frac{\bar{x}-0}{s/\sqrt{12}}$
+
+Förkasta $H_0$ på signifikansnivå $\alpha = 0.05$ om $t > t_{\alpha}(n-1)$
+
+I detta exempel är standardavvikelsen okänd. Vi förkastar $H_0$ eftersom $t = \frac{ 0.1342-0}{0.1008/\sqrt{12}} = `r round(mean(diff)/sd(diff)*sqrt(length(diff)),2)` > `r round(qt(0.95,length(diff)-1),2)`$
+
+### Test med konfidensintervall
+
+Vi skapar ett nedåt begränsat konfidensintervall för väntevärdet.
+
+$\begin{split} I_\mu: & (\bar{x} - t_{\alpha}(n-1)\frac{s}{\sqrt{n}},\infty) = \\ & (0.1342 - 1.796 \frac{0.1008}{\sqrt{12}}, \infty) = (0.082,\infty) \end{split}$
+
+Vi förkastar $H_0$ på signifikansnivå $\alpha = 0.05$ eftersom det 95%-iga konfidensintervallet inte täcker 0.
+
+### Test med direktmetoden
+
+Om $H_0$ är sann gäller att $t=\frac{\bar{x}-0}{s/\sqrt{n}} \sim t(n-1)$ (t-fördelad).
+
+$P(\text{"vad vi fick eller värre"}|H_0) = P(t > 4.61) =$ 
+$1 - P(t \leq 4.61) = 1 - `r round(pt(4.61,11),4)` = `r 1-round(pt(4.61,11),4)`$
+
+Vi förkastar $H_0$ på signifikansnivå $\alpha = 0.05$ eftersom $p$-värdet $< \alpha$.
+
+## Varför använda p-värde
+
+-   p-värde används ofta i utskrifter från statistiska program
+
+-   det är smidigt att använda i situationer då man inte kan normalapproximera
+
+::: callout-tip
+### Exempel. Sjukdomsfall
+
+I ett område, beläget nära ett raffinaderi, inträffade under en 5-årsperiod 9 fall av leukemi mot "förväntade" 4.3 fall. Är området mer drabbat än resten av landet? För en "ovanlig" sjukdom kan ofta variationen i antalet sjukdomsfall beskrivas med en poissonfördelning.
+
+**Modell:** $X = \text{"antal leukemifall i området"} \sim Po(\lambda)$
+
+**Hypoteser:**
+
+$H_0: \lambda = 4.3$
+
+$H_1: \lambda > 4.3$
+
+Om $H_0$ är sann gäller att $X\sim Po(4.3)$
+
+Vi observerade $x = 9$ fall. Hur troligt är det under $H_0$-fördelningen?
+
+```{r}
+#| echo: false
+#| warning: false
+
+library(ggplot2)
+
+df <- data.frame(xx = 0:16, px = dpois(0:16,4))
+
+ggplot(df,aes(x=xx,y=px)) +
+  geom_col(fill="#5897c7", width = 0.5) +
+  geom_col(data=data.frame(xx=9:16,px = dpois(9:16,4)),fill="#9e2510", width = 0.5) +
+  labs(y=expression(f(x)),x=expression(X)) 
+```
+:::
+
+### Användning av p-värde när man kan normalapproximera
+
+Testa hypoteserna med en signifikansnivå på $\alpha=0.05$.
+
+$\begin{split} p\text{-värdet} & = P(\text{"det vi fick eller värre"}) = P(X\geq 9) = \\& 1-P(X\leq 8) = `r round(1-ppois(8,4.3),3)` \end{split}$
+
+Vi kan förkasta $H_0$ eftersom $p$-värdet \< 0.05.
+
+Om vi istället hade valt en signifikansnivå på $\alpha = 0.01$, så hade vi inte kunnat förkasta $H_0$ eftersom $p$-värdet \> 0.01.
+
+::: callout-warning
+-   p-värdet är inte sannolikheten att nollhypotesen är sann
+
+-   man måste välja signifikansnivå även om man använder direktmetoden
+
+-   p-värdet säger inget om hur stor skillnaden är
+:::
+
+### Hur det kunde sett ut om vi kunde normalapproximera
+
+Man kan normalapproximera en Poissonfördelning när väntevärdet $\lambda > 15$. Vad händer om vi istället hade haft en mer vanligt förekommande sjukdom?
+
+**Modell:** $Y = \text{"antal influensafall i området"} \sim Po(\lambda)$
+
+**Hypoteser:**
+
+$H_0: \lambda = 16$
+
+$H_1: \lambda > 16$
+
+Om $H_0$ är sann gäller att $X\sim Po(16)$
+
+Vi observerade $x = 30$ fall. Hur troligt är det under $H_0$-fördelningen?
+
+Testa hypoteserna med en signifikansnivå på $\alpha=0.05$.
+
+$\begin{split} p\text{-värdet} & = P(\text{"det vi fick eller värre"}) = P(Y\geq 30) = \\& 1-P(Y\leq 29) = 1 - P(\frac{Y-\lambda}{\sqrt{\lambda}} \leq \frac{29-16}{4}) = \\ & 1 - P(Z \leq 3.25) \overset{A} = 1 -\Phi(3.25) = `r round(1-pnorm((29-16)/4),3)` \end{split}$
+
+Vi kan förkasta $H_0$ eftersom $p$-värdet \< 0.05.
+
+# Två oberoende stickprov
+
+::: callout-tip
+### Exempel. Jämförelse mellan behandlingar
+
+För att undersöka om en viss medicin har som primar biverkan att förändra ett visst levervärde mäts detta - dels på 50 personer som ej behandlats med medicinen och dels på 25 personer som behandlats med medicinen. Resultat:
+
+| Behandling   | Medelvärde | Standardavvikelse | $n$ antal |
+|--------------|------------|-------------------|-----------|
+| Utan medicin | 148.2      | 10.0              | 50        |
+| Med medicin  | 151.7      | 8.0               | 25        |
+
+Kan man dra några slutsatser om att medicinen påverkar levervärdet?
+:::
+
+## Testa differens i väntevärden
+
+**Modell:**
+
+$X = \text{"levervärde utan medicin"} \sim N(\mu_x,\sigma_x)$
+
+$Y = \text{"levervärde med medicin"} \sim N(\mu_y,\sigma_y)$
+
+Vi antar att varianserna är lika $\sigma^2_x=\sigma^2_y=\sigma^2$
+
+**Hypoteser:** Vi vill testa
+
+$H_0: \mu_x = \mu_y$
+
+$H_1: \mu_x \neq \mu_y$
+
+Vilket är samma sak som
+
+$H_0: \mu_x - \mu_y = 0$
+
+$H_1: \mu_x - \mu_y \neq 0$
+
+**Skattning:** Vi skattar väntevärdet med stickprovsmedelvärden $\hat{\mu}_x = \bar{x}= 148.2$ och $\hat{\mu}_y = \bar{y}= 151.7$
+
+**Testregel:** Vi testar hypoteserna på en signifikansnivå $\alpha$ genom att skapa ett $(1-\alpha)\cdot 100$%-igt konfidensintervall för differensen i väntevärden.
+
+Konfidensintervallet vi skapar ska ha formen *skattning* plus/minus *en lämplig kvantil* multiplicerat med *standardavvikelsen på skattningen beräknad från dessa samplingsfördelning*.
+
+$$I_{\mu_x - \mu_y} = \hat{\mu}_x-\hat{\mu}_y \pm \text{kvantil}\cdot\sqrt{V(\hat{\mu}_x-\hat{\mu}_y)}$$
+
+## Variansen för skattning av differens i väntevärden
+
+$\begin{split} & V(\hat{\mu}_x-\hat{\mu}_y) = V(\bar{x}-\bar{y}) \underset{antar \\ oberoende} = V(\bar{x})+V(\bar{y}) = \\ & \frac{\sigma_x^2}{n_x} + \frac{\sigma_y^2}{n_y} \underset{lika \\ varians} = \frac{\sigma^2}{n_x} + \frac{\sigma^2}{n_y} = \sigma^2 (\frac{1}{n_x} + \frac{1}{n_y}) \end{split}$
+
+-   Hur skattar vi variansen med två stickprov? Jo, genom att kombinera ihop (Engelska *pool*) de två stickprovens kvadratiska avvikelser till respektive medelvärde.
+
+$$s^2_{pooled}=\frac{\sum (x_i-\bar{x})^2 + \sum (y_i-\bar{y})^2}{n_x+n_y-2} = \frac{(n_x-1)s_x^2 + (n_y-1)s_y^2}{n_x+n_y-2}$$
+
+där $s_x^2 = \frac{\sum (x_i-\bar{x})^2}{n-1}$ och motsvarande för $s_y^2$ kan fås genom att köra en rutin på miniräknare eller program.
+
+$s^2_x = 10.0^2$, $s^2_y = 8.0^2$
+
+$n_x = 50$, $n_y = 25$
+
+```{r}
+#| echo: false
+#| results: false
+
+s3pool = round((49* 10.0^2 + 24* 8.0^2)/(50+25-2),1)
+```
+
+$s^2_{pooled} = \frac{49\cdot 10.0^2 + 24\cdot 8.0^2}{50+25-2} = `r s3pool`$
+
+## Samplingsfördelning för skattning av differens i väntevärden
+
+Eftersom både $X$ och $Y$ är normalfördelade kommer samplingsfördelningen för stickprovsmedelvärdena $\bar{x}$ och $\bar{y}$ också vara det. Likaså differensen mellan dessa, d.v.s.
+
+$$\bar{x} - \bar{y} \sim N(\mu_x - \mu_y, \sqrt{\sigma^2 (\frac{1}{n_x} + \frac{1}{n_y})})$$
+
+## Konfidensintervall för differens i väntevärden
+
+Eftersom variansen $\sigma^2$ är okänd och skattas med stickproven, kommer vi använda en t-fördelning med $n_x+n_y-2$ frihetsgrader när vi bygger konfidensintervallet.
+
+$$I_{\mu_x - \mu_y} = \bar{x}-\bar{y} \pm t_{\alpha/2}(n_x+n_y-2)\cdot\sqrt{s^2_{pooled}(\frac{1}{n_x} + \frac{1}{n_y})}$$
+
+::: callout-tip
+### Exempel. Jämförelse mellan behandlingar (forts.)
+
+$$\begin{split} I_{\mu_x - \mu_y} & = 148.2-151.7 \pm \underbrace{t_{0.05/2}(50+25-2)}_{`r round(qt(1-0.05/2,50+25-2),2)`}\sqrt{`r s3pool`(\frac{1}{50} + \frac{1}{25})}   = \\ & (`r round(148.2-151.7 -1.99*sqrt(s3pool*(1/50+1/25)),2)`,`r round(148.2-151.7+1.99*sqrt(s3pool*(1/50+1/25)),2)`) \end{split}$$
+
+Vi kan inte förkasta $H_0$ på signifikansnivå 5% eftersom det 95%-iga konfidensintervallet täcker noll.
+:::
+
+# Lika och olika varians
+
+När man ska jämföra två väntevärden med hjälp av två oberoende stickprov finns följande alternativ för skattning av varians i samplingsfördelning för differensen i stickprovsmedelvärden:
+
+-   Antag lika varians
+
+$\sigma_x^2 = \sigma_y^2 = \sigma^2$
+
+Skatta varians med poolade stickprovsvariansen och sätt in i formeln för skattning av varians i differensen:
+
+$\hat{V}(\hat{\mu}_x-\hat{\mu}_y) = \hat{\sigma}^2 (\frac{1}{n_x} + \frac{1}{n_y}) = s^2_{pooled} (\frac{1}{n_x} + \frac{1}{n_y})$
+
+Använd t-kvantil med $n_x+n_y-2$ frihetsgrader.
+
+-   Antag olika varians
+
+$\sigma_x^2 \neq \sigma_y^2$
+
+Skatta varje varians med respektive stickprovsvarians och sätt in i formeln för skattning av varians i differensen:
+
+$\hat{V}(\hat{\mu}_x-\hat{\mu}_y) = \frac{\hat{\sigma_x}^2}{n_x} + \frac{\hat{\sigma_y}^2}{n_y} = \frac{s_x^2}{n_x} + \frac{s_y^2}{n_y}$
+
+::: callout-note
+### Frihetsgrader - överkurs
+
+:::: {.columns}
+
+::: {.column width="20%"}
+
+Överkurs
+:::
+::: {.column width="80%"}
+
+![](img/skriet.jpg)
+:::
+::::
+Antal frihetsgrader för samplingsfördelningen är krånglig, men det går att visa att den blir ungefär
+
+$$f = \frac{(s_x^2/n_x +s_y^2/n_y)^2}{\frac{(s_x^2/n_x)^2}{n_x-1}+\frac{(s_y^2/n_y)^2}{n_y-1}}$$
+
+Vilket om $n_x$ och $n_y$ är stora kan förenklas till $f = min(n_x-1,n_y-1)$
+:::
+
+Om $n_x$ och $n_y$ är stora, använd t-kvantil med $min(n_x-1,n_y-1)$ frihetsgrader.
+
+# Testa om lika varians
+
+Det blir ett starkare test om man kan anta att de två populationerna (t.ex. $X$ och $Y$) har lika varians. Ofta räcker det inte med att anta lika varians, utan man behöver även testa detta antagande.
+
+**Hypoteser:**
+
+$H_0: \sigma^2_x = \sigma^2_y$
+
+$H_1: \sigma^2_x \neq \sigma^2_y$
+
+## Samplingsfördelning för kvoten mellan två stickprovsvarianser
+
+### F-fördelning
+
+En F-fördelning är, liksom t-fördelningen, en konstruerad samplingsfördelning (av Fisher), men som visar sig vara användbar i flera sammanhang. Den är fördelningen för kvoten av två $\chi^2$-fördelade slumpvariabler.
+
+$$\frac{\chi_1^2/\nu_1}{\chi_2^2/\nu_2} \sim F(\nu_1,\nu_2)$$
+
+där $\nu_1$ och $\nu_2$ är F-fördelningens frihetsgrader.
+
+### Kvoten mellan två stickprovsvarianser
+
+Låt oss bilda följande kvot och använda det vi visade i @eq-kvot
+
+$$\frac{s^2_x/\sigma_x^2}{s^2_y/\sigma_y^2}=\frac{\frac{(n_x-1)s^2_x/\sigma_x^2}{n_x-1}}{\frac{(n_y-1)s^2_y/\sigma_y^2}{n_y-1}} \sim F(n_x-1,n_y-1)$$
+
+Om populationerna $X$ och $Y$ är normalfördelade, eller $n_x$ och $n_y$ är tillräckligt höga för att tillämpa centrala gränsvärdessatsen, kommer både täljaren och nämnaren att vara kvoter av $\chi^2$-fördelade slumpvariabler och respektive frihetsgrad. Det innebär att kvoten följer en F-fördelning med $n_x-1$ och $n_y-1$ frihetsgrader.
+
+Men vi känner inte till varianserna!
+
+### Kvoten under $H_0$
+
+Under $H_0$ är varianserna lika, och då kan vi förenkla kvoten eftersom varianserna tar ut varandra. F-fördelningen är då samplingsfördelningen för kvoten $F$ av stickprovsvarianser om nollhypotesen är sann.
+
+$$F = \frac{s^2_x/\sigma^2}{s^2_y/\sigma^2} = \frac{s^2_x}{s^2_y} \sim F(n_x-1,n_y-1)$$
+
+### Testregel
+
+Vi förkastar $H_0$ med vald signifikansnivå $\alpha$ genom att jämföra teststorheten $F$ med en kvantil ur F-fördelningen:
+
+$$F = \frac{s^2_x}{s^2_y} > F_{\alpha}(n_x-1,n_y-1)$$
+
+där kvantilen definieras utifrån sannolikhetsarean ovanför kvantilen.
+
+![](img/f_tab.png)
+
+::: callout-tip
+## Jämförelse mellan behandlingar (forts.)
+
+Låt oss nu testa på en signifikansnivå $\alpha=0.05$ om antagandet om lika varians stämmer.
+
+$F = \frac{s^2_x}{s^2_y} = \frac{10.0^2}{8.0^2} = `r 10^2/8^2`$
+
+$H_0$ förkastas ej eftersom teststorheten ligger i samplingsfördelningen under $H_0$, d.v.s. $F < F_{0.025}(n_x-1,n_y-1) = `r round(qf(1-0.025,50-1,25-1),2)`$
+
+> Om du inte kan räkna ut exakt eller frihetsgraderna du har saknas i tabellen, läs av i tabellen för de frihetsgrader som ligger närmast. I detta fall $f_1 = 50$ och $f_2=24$ för $\alpha=0.05$
+
+![](img/f_tab_2.png)
+
+> Tips - F-fördelningen är inte symmetrisk. Du kan ändå jämföra mot en kvantil även om du har en tvåsidig hypotes, genom att se till att den stösta stickprovsvariansen är i täljaren och att du har rätt ordning på frihetsgraderna
+:::
+
+# Sammanfattning jämföra två stickprov
+
+Vi har observationer från två statistiska populationer som definieras av slumpvariablerna $X$ och $Y$, där vi är intresserade av att jämföra väntevärden mellan populationerna
+
+(1) Är observationer stickprov i par?
+
+-   Om ja, bilda parvisa differenser $\Delta_i = X_i - Y_i$, släng bort de gamla stickproven och fortsätt enbart med stickprovet på differenserna. Formulera modell för differensen och ställ upp hypoteser för väntevärdet på differensen. Eftersom vi slänger bort de gamla, kan vi kalla slumpvariabeln för differenserna vad vi vill, såsom $X$. I tabellen ser du olika sätt att testa för slumpvariabel $X$ med väntevärde $\mu$ och standardavvikelse $\sigma$. 
+
+> Välj lämplig kvantil beroende på om differenserna är normalfördelade eller ej, om du kan använda centrala gränsvärdessatsen eller ej och om variansen för differensen är känd eller ej. 
+
+
++------------------------------+--------------------------------------------------------+-------------------------------------------+
+|                              | Konfidensintervall för $\mu$                           | Teststorhet                               |
++==============================+========================================================+===========================================+
+| Population normal (nf)       | $\bar{x}\pm \lambda_{\alpha/2}\frac{\sigma}{\sqrt{n}}$ | $z = \frac{\bar{x}-\mu}{\sigma/\sqrt{n}}$ |
+|                              |                                                        |                                           |
+| $\sigma$ är känd             |                                                        |                                           |
++------------------------------+--------------------------------------------------------+-------------------------------------------+
+| Population nf                | $\bar{x}\pm t_{\alpha/2}(n-1)\frac{s}{\sqrt{n}}$       | $t = \frac{\bar{x}-\mu}{s/\sqrt{n}}$      |
+|                              |                                                        |                                           |
+| $\sigma$ är okänd, $n$ litet |                                                        |                                           |
++------------------------------+--------------------------------------------------------+-------------------------------------------+
+| Ej antagande att pop är nf   | $\bar{x}\pm \lambda_{\alpha/2}     \frac{s}{\sqrt{n}}$ | $z = \frac{\bar{x}-\mu}{s/\sqrt{n}}$      |
+|                              |                                                        |                                           |
+| $\sigma$ är okänd, $n$ stort |                                                        |                                           |
++------------------------------+--------------------------------------------------------+-------------------------------------------+
+
+
+-   Om nej (observationerna är **inte** stickprov i par), formulera modell för $X$ och $Y$ separat och formulera hypoteser för skillnad i väntevärdena. 
+
+> Det minimala sättet att formulera modellen är att definiera vad $X$ och $Y$ är och att ange att väntevärdet och standardavvikelse för $X$ är $\mu_x$ och $\sigma_x$, och att väntevärdet och standardavvikelse för $Y$ är $\mu_y$ och $\sigma_y$. 
+
+(2) Är varianserna kända?
+
+-   Om ja, använd normalkvantil och fortsätt med hypotestestningen.
+
+-   Om nej, gör antagande om varianserna och skatta utifrån antagandet.
+
+(3) Kan man anta att varianserna är lika?
+
+-   Om ja, skatta varians genom att poola stickprovsvarianserna $s^2_{pooled}$. Om normalfördelade populationer, använd lämplig normal-kvantil vid hypotestestningen. Testa även om varianserna är lika med ett F-test.
+
+-   Om nej, skatta varianserna var för sig. Om normalfördelade populationer eller stickprov tillräckligt stora för att tillämpa centrala gränsvärdessatsen, använd lämplig t-kvantil vid hypotestestning.
+
+
++-----------------------------------------------+------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------+
+|                                               | Konfidensintervall för $\mu_x-\mu_y$                                                     | Teststorhet                                                                                       |
++===============================================+==========================================================================================+===================================================================================================+
+| Båda pop. nf                                  |$\bar{x}-\bar{y}\pm\lambda_{\alpha/2}\sqrt{\frac{\sigma_x^2}{n_x}+\frac{\sigma_y^2}{n_y}}$|$z = \frac{(\bar{x}-\bar{y})-(\mu_x-\mu_y)}{\sqrt{\frac{\sigma_x^2}{n_x}+\frac{\sigma_y^2}{n_y}}}$ |
+|                                               |                                                                                          |                                                                                                   |
+| $\sigma_x$ och $\sigma_y$ är kända            |                                                                                          |                                                                                                   |
++-----------------------------------------------+------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------+
+| Båda pop. nf                                  |$\bar{x}-\bar{y}\pm t_{\alpha/2}(n_x+n_y-2)s_{pooled}\sqrt{\frac{1}{n_x}+\frac{1}{n_y}}$  |   $t = \frac{(\bar{x}-\bar{y})-(\mu_x-\mu_y)}{s_{pooled}\sqrt{\frac{1}{n_x}+\frac{1}{n_y}}}$      |
+|$\sigma_x$ och $\sigma_y$ är okända,           |                                                                                          |                                                                                                   |
+| $n_x$ och $n_y$ små                           |                                                                                          |                                                                                                   |
++-----------------------------------------------+------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------+
+| Ej antagande att pop. är nf                   |$\bar{x}-\bar{y}\pm\lambda_{\alpha/2}\sqrt{\frac{s_x^2}{n_x}+\frac{s_y^2}{n_y}}$          | $z = \frac{(\bar{x}-\bar{y})-(\mu_x-\mu_y)}{\sqrt{\frac{s_x^2}{n_x}+\frac{s_y^2}{n_y}}}$          |
+| $\sigma_x$ och $\sigma_y$ är okända,          |                                                                                          |                                                                                                   |
+|  $n_x$ och $n_y$ stora                        |                                                                                          |                                                                                                   |
++-----------------------------------------------+------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------+
+
+$s^2_{pooled} = \frac{(n_x-1)s_x^2 + (n_y-1)s_y^2}{n_x+n_y-2}$
+
+(4) Om normalfördelning inte gäller eller normalapproximation med CGS inte är motiverad?
+
+-   Gör lämplig transformation för att få en snabbare konvergens mot normalfördelning
+
+-   Använd direktmetoden och räkna ut p-värde utan normalapproximation

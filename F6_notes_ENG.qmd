@@ -1,0 +1,426 @@
+---
+title: "F6. Estimation and confidence intervals"
+author: "Ullrika Sahlin"
+format: 
+  html:
+    embed-resources: true
+---
+
+
+```{r}
+#| echo: false
+#| warning: false
+
+
+library(latex2exp)
+library(dplyr)
+library(ggplot2)
+```
+# Estimation and sampling distributions for known and unknown variance
+
+## Population and random samples
+
+- Population
+
+Any random variable (regardless of distribution) has an expected value and variance 
+$$\mu = E(X)$$
+$$\sigma^2 = V(X)=E((X-\mu)^2) = E(X^2)-\mu^2$$
+
+- Random sample
+
+Sample mean and sample variance are measures of the location and spread in a sample of a population
+
+$$\bar{x} = \frac{\sum x_i}{n}$$
+
+$$s^2 = \frac{\sum (x_i-\bar{x})^2 }{n-1} = \frac{\sum x^2 - n(\bar{x})^2 }{n-1}$$
+
+
+## Unbiased estimates of the expected value and variance 
+
+- Unbiased estimates are 
+
+$$\hat{\mu} = \frac{\sum_{i=1}^n x_i}{n} = \bar{x}$$
+
+$$\hat{\sigma}^2 = \frac{\sum_{i=1}^n (x_i - \bar{x})^2}{n-1} = s^2$$ 
+
+## Sampling distribution for $\bar{x}$ when variance is known
+
+$$\bar{x} \sim N(\mu,\frac{\sigma}{\sqrt{n}})$$
+
+Which when we **standardise** is the same thing as 
+
+$$\frac{\bar{x} - \mu}{\sigma / \sqrt{n}} \sim N(0,1)$$
+
+
+## Sampling distribution for $\bar{x}$ when the variance is unknown and estimated with $s^2$ 
+
+The Student-t distribution is the sampling distribution for the ratio  
+$$\frac{\bar{x}-\mu}{s/\sqrt{n}} \sim t(n-1)$$
+
+The expected value and variance of a Student-t distribution is always 0 and 1, respectively. The shape of the density distribution depends on the degrees of freedom of the distribution, which for the ratio above is $n-1$. 
+
+:::.callout-note
+### Simulation of a t-distribution
+
+```{r}
+mu = 3.3
+sigma = 2
+
+n = 5
+
+t_sample <- replicate(1000,{
+  x <- rnorm(n,mu,sigma)
+  m <- mean(x)
+  s <- sd(x)
+  (m-mu)/(s/sqrt(n))})
+```
+
+
+```{r}
+tt = seq(min(t_sample),max(t_sample),by=0.01)
+pdf_norm = dnorm(tt)
+pdf_t = dt(tt,n-1)
+hist(t_sample,prob=TRUE,ylim=c(0,max(pdf_norm)),breaks = 20)
+lines(tt,pdf_norm,col='red')
+lines(tt,pdf_t,col='blue')
+
+```
+
+:::: {.columns}
+::: {.column width="50%"}
+
+
+```{r}
+qqnorm(t_sample, main = "")
+qqline(t_sample, col='red')
+title('QQ-plot for a Normal')
+```
+
+:::
+
+::: {.column width="50%"}
+
+
+```{r}
+plot(qt(ppoints(1000),n-1),sort(t_sample))
+abline(0,1,col='blue')
+title('QQ-plot for a Student-t')
+
+```
+
+:::
+::::
+
+
+
+```{r}
+t = seq(-6,6,by=0.01)
+pdf_norm = dnorm(tt)
+plot(tt,pdf_norm,type = 'l',xlab='t',ylab='density',col='red')
+n = 5
+pdf_t_5 = dt(tt,n-1)
+lines(tt,pdf_t_5,col = 'blue')
+n = 10
+pdf_t_10 = dt(tt,n-1)
+lines(tt,pdf_t_10,col = 'green')
+title('Student-t goes towards a normal distribution when n increase')
+```
+
+
+:::
+
+## Quantile in a t distribution
+
+The same way as we can create a quantile in a normal distribution based on a quantile from a quantile in a standardised normal distribution 
+$$\bar{x}_{1-\alpha} = \mu + \lambda_{\alpha} \cdot \frac{\sigma}{\sqrt{n}}$$
+
+we can also create a quantile in the sampling distribution for the sample mean when the variance is unknown and must be estimated by $s^2$ 
+
+$$\bar{x}_{1-\alpha} = \mu + t_{\alpha}(n-1) \cdot \frac{s}{\sqrt{n}}$$
+
+where $t_{\alpha}(n-1)$ is a quantile in the t-distribution with $n-1$ degrees of freedom. 
+
+![](\img\ttabhela.png)
+
+# Confidence interval
+
+::: callout-note
+## Example: radon
+
+The limit for radon in a house is 200 $Bq/m^3$. We make 10 measurements with an average of 195 $Bq/m^3$. Can we be certain that the radon-levels in the house is below the limit?  
+
+To answer this question we make a confidence interval. 
+:::
+
+> A confidence interval is an area where the estimator is expected to fall if repeating the measurements and deriving the estimate based on the new samples many times. It is used for making a summary of the sampling distribution for an estimator. 
+
+$$\bar{x} \pm k$$
+
+How to choose a good value on  $k$? 
+
+One way is to choose  $k$ so the interval corresponds to a certain probability area in the sampling distribution, e.g. the 95% probability area.
+
+:::: {.columns}
+::: {.column width="50%"}
+
+```{r, fig.height=4}
+#| echo: false
+
+prob = 0.95
+
+fill = paste0(round(100*(prob),0),"% probability")
+data.frame(pp = ppoints(1000)) %>%
+  mutate(x = qnorm(pp)) %>%
+  mutate(y = dnorm(x)) %>%
+  ggplot(aes(x=x,y=y)) +
+  geom_ribbon(data=. %>% filter(pp > ((1-prob)/2) & pp < (1-(1-prob)/2)), 
+              aes(ymin=0, ymax=y, fill=fill), alpha = 0.75) +
+  geom_line() +
+  theme_bw() + 
+  xlab("") + 
+  ylab("density") +
+  theme(legend.position="bottom")+
+  scale_x_continuous(breaks = c(qnorm((1-prob)/2),0,qnorm(1-(1-prob)/2)), 
+                   labels = c(TeX("$\\bar{x}-k$"),TeX("$\\bar{x}$"),TeX("$\\bar{x}+k$"))) 
+```
+
+
+:::
+
+::: {.column width="50%"}
+
+```{r, fig.height=4}
+#| echo: false
+
+
+fill = paste0(round(100*(1-prob),0),"% probability")
+data.frame(pp = ppoints(1000)) %>%
+  mutate(x = qnorm(pp)) %>%
+  mutate(y = dnorm(x)) %>%
+  ggplot(aes(x=x,y=y)) +
+  geom_ribbon(data=. %>% filter(pp < ((1-prob)/2)), 
+              aes(ymin=0, ymax=y, fill=fill)) +
+  geom_ribbon(data=. %>% filter(pp > (1-(1-prob)/2)), 
+              aes(ymin=0, ymax=y, fill=fill)) +
+  geom_line() +
+  theme_bw() + 
+  xlab("") + 
+  ylab("density") +
+  theme(legend.position="bottom") +
+  scale_x_continuous(breaks = c(qnorm((1-prob)/2),0,qnorm(1-(1-prob)/2)), 
+                   labels = c(TeX("$\\bar{x}-k$"),TeX("$\\bar{x}$"),TeX("$\\bar{x}+k$")))
+```
+
+:::
+::::
+
+
+::: callout-note
+## Example: radon continuation
+
+Let $X_i = \text{"radon measurement number i"}$. 
+
+Assume that the radon measurements are independent, identically distributed and that they follow a normal distribution: 
+
+$X_i \sim N(\mu, \sigma)$ where $i=1,\dots,n$ and $n=10$
+
+We want to say something about the actual radon level which is the expected value $\mu$.
+
+We estimate the expected value with the sample mean $\hat{\mu} = \bar{x}$ where $x_1,\dots,x_{10}$ is our sample. 
+
+Assume that we know the measurement error good enough to say that $\sigma=3$. 
+
+The sampling distribution for $\bar{x}$: 
+
+$$\bar{x} \sim N(\mu,\frac{\sigma}{\sqrt{n}})$$
+
+An interval is obtained by removing 2.5% probability in each tail of the sampling distribution of $\bar{x}$
+
+$$I_{\mu}: \bar{x} \pm \lambda_{.025} \frac{\sigma}{\sqrt{n}} = 195 \pm 1.96 \frac{3}{\sqrt{10}} = (`r round(195-1.96*3/sqrt(10),1)`, `r round(195+1.96*3/sqrt(10),1)` )$$
+:::
+
+This type of interval is called a confidence interval with confidence level 95%
+
+##  Interpretation of a confidence interval 
+
+Confidence intervals occur in frequentistic statistical inference. Their interpretation is how often an interval derived the same way but on new random samples would cover the true parameter value. 
+
+Below we illustrate a 95% confidence interval with 10 and 20 measurements, where we can see that the measurements are narrower with more measurements. 
+
+The red intervals corresponds to the intervals not covering the true expected value. This should happen in $1-0.95 = 5\%$ of the cases.
+
+
+
+```{r}
+
+source("kod/funktioner_raknamedvariation_light.R")
+
+skattningar(mu=195, sigma=3, n1=10, n2=20, alternativ = 'konfint') 
+```
+
+
+::: callout-note
+## Example: radon continuation
+
+The limit for radon in a house is 200 $Bq/m^3$. We make 10 measurements with an average of 195 $Bq/m^3$. Can we be certain that the radon-levels in the house is below the limit?  
+
+After calculating the 95% confidence interval $I_{\mu}: (193.1, 196.9)$, we can say that we are quite confident that the radon level is below the limit.  
+
+:::
+
+
+::: callout-warning
+## Where does the word confidence come from and why is not the word probability used? 
+
+To put it simple, the term probability was taken by Bayesian statistical inference. Probability intervals are used within Bayesian inference with the interpretation  *how certain we are that the true value on the parameter is in the interval*. It is common that the confidence interval is given the same interpretation. 
+
+Another reason is that those that invented confidence intervals did not want it to be misunderstood as a probability for the true value of the parameter  $\mu$, which according to frequentist way of thinking cannot in itself be a random variable and therefore cannot have a distribution. 
+
+Note that all intervals are not confidence intervals, even if it is common to call them that. For something to be a confidence interval it must be preceded by a model for a population and a derived sampling distribution for the estimated parameter. 
+
+:::
+
+# Confidence interval with known and unknown variance 
+## Known variance
+
+The confidence interval for expected value when the variance is known is obtained by taking a quantile from the standardised normal distribution multiplied with the standard error $\frac{\sigma}{\sqrt{n}}$
+
+$$I_{\mu}: \bar{x} \pm \lambda_{\alpha/2} \frac{\sigma}{\sqrt{n}}$$
+
+We want as narrow confidence intervals as possible. The interval becomes narrower when 
+
+- the confidence level $1-\alpha$ is reduced 
+
+- the number of measurements $n$ is increased
+
+- the spread in measurements $\sigma$ is reduced
+
+
+## Unknown variance
+
+When the variance $\sigma_2$ is unknown, we estimate it with the sample variance $s^2$
+
+Since we have estimated the variance, we use a quantile from the sampling distribution for the ratio $t$ and the standard error $\frac{s}{\sqrt{n}}$
+
+$$I_{\mu}: \bar{x} \pm t_{\alpha/2}(n-1) \frac{s}{\sqrt{n}}$$
+
+::: callout
+
+### Exercise 1
+
+We have a random sample from $X\sim N(\mu,2)$
+
+44.3 45.1 46.1 45.3
+
+The sample mean is $\bar{x} = 45.2$
+
+- Provide a 95% confidence interval with the expected value $\mu$
+
+$\alpha = 0.05$
+
+The standard deviation $\sigma=2$ is known
+
+$$I_{\mu}: \bar{x} \pm \lambda_{0.05/2} \frac{\sigma}{\sqrt{n}} = 45.2 \pm 1.96 \frac{2}{\sqrt{4}} = (`r 45.2-1.96`, `r 45.2+1.96`)$$
+
+- What does a 99% confidence interval looks like? 
+
+$$I_{\mu}: \bar{x} \pm \lambda_{0.01/2} \frac{\sigma}{\sqrt{n}} = 45.2 \pm 2.58 \frac{2}{\sqrt{4}} = (`r 45.2-2.58`, `r 45.2+2.58`)$$
+:::
+
+
+::: callout
+### Exercise 2
+
+We have 10 measurements from $X\sim N(\mu,\sigma)$
+
+7.3 7.2 7.8 7.1 8.0 6.9 7.5 8.1 7.7 7.5 
+
+```{r}
+x = c(7.3, 7.2, 7.8, 7.1, 8.0, 6.9, 7.5, 8.1, 7.7, 7.5)
+m = mean(x)
+s = sd(x)
+```
+
+
+Derive a 95% confidence interval for the expected value $\mu$!
+
+Sample mean is $\bar{x} = `r round(m,2)`$
+
+$\alpha = 0.05$
+
+The standard deviation of the population $\sigma$ is unknown and is estimated with the sample standard deviation $s = `r round(s,3)`$ 
+
+$$I_{\mu}: \bar{x} \pm t_{0.05/2}(n-1) \frac{s}{\sqrt{n}} = `r round(m,2)` \pm 2.26 \frac{`r round(s,3)`}{\sqrt{10}} = (`r round(m-2.26*s/sqrt(10),2)`,`r round(m+2.26*s/sqrt(10),2)`)$$
+
+:::
+
+# One-sided confidence intervals 
+
+A one-sided confidence interval can be specified as bounded from below or from above
+
+- Known variance, bounded from above 
+
+$$I_{\mu} = (-\infty, \bar{x} + \lambda_{\alpha} \frac{\sigma}{\sqrt{n}})$$
+
+- Known variance, bounded from below
+
+$$I_{\mu} = (\bar{x} - \lambda_{\alpha} \frac{\sigma}{\sqrt{n}}, \infty)$$
+
+- Unknown variance, bounded from above 
+
+$$I_{\mu} = (-\infty, \bar{x} + t_{\alpha}(n-1)  \frac{s}{\sqrt{n}})$$
+
+- Unknown variance, bounded from below
+
+$$I_{\mu} = (\bar{x} - t_{\alpha}(n-1)  \frac{s}{\sqrt{n}}, \infty)$$
+
+::: callout
+
+### Exercise 1
+
+We have a random sample from $X\sim N(\mu,2)$
+
+44.3 45.1 46.1 45.3
+
+The sample mean is $\bar{x} = 45.2$
+
+- Specify a 95% confidence interval for a low value on $\mu$
+
+$\alpha = 0.05$
+
+The population standard deviation $\sigma=2$ is known 
+
+A confidence interval bounded from below for the expected value is 
+
+$$I_{\mu}: (\bar{x} - \lambda_{0.05} \frac{\sigma}{\sqrt{n}},\infty) = (45.2 - 1.64 \frac{2}{\sqrt{4}},\infty) = (`r 45.2-1.64`,\infty)$$
+
+:::
+
+# Confidence interval with the normal approximation
+
+What happens when the measured values (population) cannot be assumed to be normally distributed? 
+
+According to the Central Limit Theorem is the sample mean approximately normally distributed under the condition that the number of measurements  $n$ is large enough (and the assumption of independence and identically distributed measurements holds).
+
+- Known variance
+
+The sampling distribution for the sample mean is approximated by a normal distribution: 
+
+$$\frac{\bar{x} - \mu}{\sigma / \sqrt{n}} \overset{A} \sim N(0,1)$$
+
+A two-sided confidence interval is: 
+
+$$I_{\mu}: \bar{x} \pm \lambda_{\alpha/2} \frac{\sigma}{\sqrt{n}}$$
+
+- Unknown variance that is estimated by $s^2$
+
+The sampling distribution for the sample mean is approximated by a normal distribution, and one can argue that so is the ratio 
+
+$$\frac{\bar{x} - \mu}{s / \sqrt{n}} \overset{A} \sim N(0,1)$$
+
+A two-sided confidence interval is: 
+
+
+$$I_{\mu}: \bar{x} \pm \lambda_{\alpha/2} \frac{s}{\sqrt{n}}$$
+
+

@@ -1,0 +1,699 @@
+---
+title: "F5. Summor, centrala gränsvärdessatsen, och statistisk modell"
+author: "Ullrika Sahlin"
+format: 
+  html:
+    embed-resources: true
+---
+
+# Skattning av okända parametrar
+
+::: columns
+::: {.column width="60%"}
+Hittills har vi tittat på slumpvariabler med kända parametrar
+
+I verkligheten vet vi oftast inte vilka värden dess parametrar har.
+
+Vi måste "skatta" parametrar från de observationer vi har gjort (d.v.s. från våra insamlade data)
+:::
+
+::: {.column width="40%"}
+![](img/popstick.png)
+:::
+:::
+
+# Om att hitta en bra modell för populationen
+
+Antag att vi är intresserade av att studera mängden av ett visst hormon hos människor
+
+Vilken fördelning har hormon-mängden i männsiskor?
+
+Hormon-mängd är en kontinuerlig s.v. men är det en Exp($\lambda$), N($\mu$,$\sigma$) eller R(a,b)?
+
+Finns det något som talar för att hormon-mängd skulle kunna beskrivas med någon av dessa modeller?
+
+Vi samlar in data på hormonmängder.
+
+Vi testar hur väl modellen beskriver data genom att använda data för att skatta modellens parametrar, och sen undersöka hur väl modellen passar med data.
+
+# Modellanpassning - histogram och täthetsfunktion
+
+```{r}
+#| echo: false
+load("data/lab1_filer/jordprov.Rdata")
+```
+
+Vi kan se vilka fördelningar som passar bra givet de data vi har genom att jämföra
+
+::: columns
+::: {.column width="50%"}
+-   Histogram med täthetsfunktion i skattad modell
+
+> Ett histogram räknar antal som faller inom intervall på en kontinuerlig skala (engelska *bins*). Glöm inte att arean av histogrammet behöver vara 1 för att man ska kunna jämföra med täthetsfunktionen. Detta fås genom att skala om höjden. I R skriver man `hist(jordprov$al,probability=TRUE)`
+:::
+
+::: {.column width="50%"}
+```{r}
+#| echo: false
+
+m = mean(jordprov$al)+10
+s = sd(jordprov$al)
+hist(jordprov$al,probability=TRUE)
+xx <- seq(40,120,by=0.2)
+lines(xx,dnorm(xx,m,s),col='darkred')
+```
+
+```{r}
+#| echo: false
+
+m = mean(jordprov$al)
+s = sd(jordprov$al)
+hist(jordprov$al,probability=TRUE)
+xx <- seq(40,120,by=0.2)
+lines(xx,dnorm(xx,m,s),col='blue')
+```
+:::
+:::
+
+# Modellanpassning - fördelningsfunktion
+
+Vi kan se vilka fördelningar som passar bra givet de data vi har genom att jämföra
+
+::: columns
+::: {.column width="50%"}
+-   Histogram med täthetsfunktion i skattad modell
+
+-   Empirisk fördelningsfunktion med teoretisk fördelningsfunktion
+:::
+
+::: {.column width="50%"}
+```{r}
+#| echo: false
+
+m = mean(jordprov$al)+10
+s = sd(jordprov$al)
+plot.ecdf(jordprov$al)
+xx <- seq(40,120,by=0.2)
+lines(xx,pnorm(xx,m,s),col='darkred')
+```
+
+```{r}
+#| echo: false
+
+m = mean(jordprov$al)
+s = sd(jordprov$al)
+plot.ecdf(jordprov$al)
+xx <- seq(40,120,by=0.2)
+lines(xx,pnorm(xx,m,s),col='blue')
+```
+:::
+:::
+
+# Modellanpassning - kvantil-kvantil plot
+
+Vi kan se vilka fördelningar som passar bra givet de data vi har genom att jämföra
+
+::: columns
+::: {.column width="50%"}
+-   Histogram med täthetsfunktion i skattad modell
+
+-   Empirisk fördelningsfunktion med teoretisk fördelningsfunktion
+
+-   Kvantil-kvantil plot som jämför empiriska med teoretiska kvantiler (lättare att undersöka anpassning på en rak linje)
+:::
+
+::: {.column width="50%"}
+
+```{r}
+#| echo: false
+
+# m = mean(jordprov$al)
+# s = sd(jordprov$al)
+# hist(jordprov$al,probability=TRUE)
+# xx <- seq(40,120,by=0.2)
+# lines(xx,dnorm(xx,m,s),col='blue')
+```
+
+```{r}
+#| echo: false
+
+# m = mean(jordprov$al)
+# s = sd(jordprov$al)
+# plot.ecdf(jordprov$al)
+# xx <- seq(40,120,by=0.2)
+# lines(xx,pnorm(xx,m,s),col='blue')
+```
+
+```{r}
+#| echo: false
+
+
+qqnorm(jordprov$al)
+qqline(jordprov$al, col='blue')
+```
+:::
+:::
+
+# Beta-fördelning
+
+::: columns
+::: {.column width="20%"}
+Överkurs
+:::
+
+::: {.column width="80%"}
+![](img/skriet.jpg)
+:::
+:::
+
+Det är få saker i naturen som följer en likformig fördelning. Däremot finns det många storheter som är både uppåt och nedåt begränsade. Ett exempel är en proportion som ligger i intervallet 0 till 1.
+
+Beta-fördelningen är en fördelning definerad för en kontinuerlig slumpvariabel över ett intervall. Den är mer flexibel än en likformig fördelning. En likformig fördelning är ett specialfall av beta-fördelningen.
+
+$X \sim Beta(\alpha,\beta)$
+
+Beta-fördelningen ingår inte i denna kurs, men jag vill att ni ska ha hört talas om den och jag kommer nämna den på sista föreläsningen.
+
+```{r}
+#| echo: false
+
+library(ggplot2)
+
+pp = ppoints(100)
+df <- data.frame(x=rep(pp,3),pdf=c(dbeta(pp,1,1),dbeta(pp,2,4),dbeta(pp,6,1)),parametervärden=rep(c("1,1 (likformig)","2,4","6,1"),each=100))
+ggplot(df,aes(x=x,y=pdf,col=parametervärden)) +
+  geom_line() +
+  ggtitle("Beta-fördelning")
+
+```
+
+[Beta-distribution on wiki](https://en.wikipedia.org/wiki/Beta_distribution)
+
+# Fördelningar för stickprov (Samplingsfördelningar)
+
+## Exempel. Myrors vikt.
+
+::: columns
+::: {.column width="70%"}
+-   Antag att vikt hos myror följer en normalfördelning, men där vi vi inte vet vad väntevärdet är.
+
+-   Vi hittar en myrstack och väljer ut 10 myror
+
+**Modell:** $X_i=\text{"myra i's vikt i mg"}$ $$X_i \sim N(\mu,\sigma)$$
+
+**stickprov:** $\{x_1,x_2,\dots,x_{10}\}$
+
+-   Vi skattar väntevärdet med stickprovsmedelvärdet
+
+$$\hat{\mu} = \bar{x}$$
+:::
+
+::: {.column width="30%"}
+![](img/myrstack.jpg)
+:::
+:::
+
+-   Vi beräknar medelvärdet på stickprovet till $\bar{x} = 5.2$ mg.
+
+> Om vi väljer ut 10 nya myror, kommer medelvärdet av dessa också vara 5.2 mg? Troligtvis inte.
+
+Föreställ dig att du samlar in stickprov av myror många gånger och beräknar medelvärdet varje gång. Det finns en slumpmässig variation hos stickprovsmedelvärdena. Man kan säga att medelvärdet av upprepade stickprov är en slumpvariabel som vi kan beteckna som $\bar{X}$.
+
+## När populationen antas vara normalfördelad
+
+-   Vi antog att en myras vikt är normalfödelad.
+
+-   Enligt regeln "en summa av normalfördelade blir också normalfördelad" kommer stickprovsmedelvärdet också vara normalfördelad
+
+-   Vi betraktar myrors vikter som observationer från samma fördelning (de är likafördelade)
+
+-   Vi betrakter dem även som oberoende
+
+Då gäller: $$\bar{X} \sim N(\mu,\frac{\sigma}{\sqrt{n}})$$
+
+där $n=10$. Vi kan sen skatta väntevärdet $\mu$ och standardavikelsen $\sigma$ med stickprovet vi har.
+
+```{r}
+mu = 5 # väntevärde
+sigma = 1 # standardavvikelse
+
+n = 10 # antal värden i stickprovet
+
+iter = 1000 # antal gånger vi gör ett nytt stickprov och beräknar dess medelvärde
+
+stickprovsmedelvärde <- replicate(iter,mean(rnorm(n,mu,sigma))) 
+
+hist(stickprovsmedelvärde,prob = TRUE)
+xx = seq(4,6,by=0.01)
+yy = dnorm(xx,mu,sigma/sqrt(n))
+lines(xx,yy,col='blue') #lägger på täthetsfunktionen för N(mu,sigma/sqrt(n))
+```
+
+
+:::callout-note
+### $\bar{X}$ eller $\bar{x}$
+Det går bra att använda $\bar{x}$ för att beteckna slumpvariabeln för stickprovsmedelvärdet, så länge det framgår av sammanhanget att det är en slumpvariabel och inte ditt framräknade värde. T.ex.   
+
+$$\bar{x} \sim N(\mu,\frac{\sigma}{\sqrt{n}})$$
+
+:::
+
+
+## När vi inte vet vilken fördelning populationen har
+
+-   Vad händer om vi inte vet vilken fördelning myrornas vikt kan tänkas ha?
+
+-   Vilken fördelning kommer då stickprovsmedelvärdet att ha?
+
+```{r}
+n = 10 # antal värden i stickprovet
+
+iter = 1000 # antal gånger vi gör ett nytt stickprov och beräknar dess medelvärde
+```
+
+```{r}
+stickprovsmedelvärde <- replicate(iter,mean(rexp(n))) # den sanna fördelningen är exponential
+hist(stickprovsmedelvärde,prob = TRUE)
+stickprovsmedelvärde <- replicate(iter,mean(runif(n))) # den sanna fördelningen är likformig
+hist(stickprovsmedelvärde,prob = TRUE)
+stickprovsmedelvärde <- replicate(iter,mean(rlnorm(n))) # den sanna fördelningen är lognormal
+hist(stickprovsmedelvärde,prob = TRUE)
+
+```
+
+# Centrala gränsvärdessatsen (CGS)
+
+> Centrala gränsvärdessatsen (CGS) säger att om man adderar ett stort antal oberoende slumpvariabler från en godtycklig fördelning med väntevärde $\mu$ och varians $\sigma^2$, blir summan (eller medelvärdet) approximativt normalfördelad.
+
+Om $n$ är tillräckligt stort gäller att $Y_n = X_1+X_2+...+X_n$ är approximativt normalfördelad oavsett vilket fördelning $X_1, ..., X_n$ tillhör
+
+$$\frac{Y_n}{n} \overset{A} \sim N(\mu,\frac{\sigma}{\sqrt{n}})$$
+
+::: callout.note
+## Exempel. 100 tabletter
+
+Vikten (i gram) av en slumpmässigt vald värktablett från ett parti med likadana tabletter är en s.v. med väntevärde $\mu = 0.65$ och varians $\sigma^2=0.0004$
+
+(a) Vad är väntevärde och varians för den totala vikten av 100 tabletter (vars vikter är oberoende av varandra)?
+
+**Modell:** Låt $X_i = \text{"vikt hos tablett i"}$, där $i = 1,\dots,100$
+
+Sätt $Y_{100} = \sum_{i=1}^{100} X_i$
+
+$E(Y_{100})=100\cdot \mu = 65$
+
+$V(Y_{100})=100\cdot \sigma^2 = 0.04$
+
+(b) Vad är sannolikheten att 100 värktabletter tillsammans väger högst 65.3 gram?
+
+Eftersom 100 är ett ganska stor antal, säger vi att enligt centrala gränsvärdessatsen är summan av vikterna approximativt normalfördelad.
+
+```{r}
+#| echo: false
+#| results: false
+pnorm(1.5)
+```
+
+$$\begin{split} & P(Y_{100} \leq 65.3) = P(\frac{Y_{100}-\mu}{\sigma} \leq \frac{65.3-\mu}{\sigma}) = \\ & \Phi(\frac{65.3-65}{\sqrt{0.04}}) = \Phi(\frac{0.3}{0.2}) = \Phi(1.5) =  0.9332 \end{split}$$
+
+:::
+
+# CGS och Binomialfördelningen
+
+-   Binomialfördelning
+
+$Y = \text{"antal gånger händelse A inträffar i n försök"}$
+
+$Y \sim Bin(n,p)$ där $p = P(A)$ och försök antas vara oberoende.
+
+$E(Y) = np$ och $V(Y) = np(1-p)$
+
+-   Alternativt sätt - tänk på binomialfördelning som en summa av oberoende slumpvariabler
+
+$X_i = \left\{ \begin{array}{lr}  1 & \text{om A händer i försök i}\\  0 & \text{annars}  \end{array}\right.$
+
+$Y_n = \sum_{i=1}^n X_i$
+
+Om $np(1-p)\geq 10$ kan man använda CGS och säga att $Y_n$ är approximativt normalfördelad
+
+$Y_n \overset{A} \sim N(np,\sqrt{np(1-p)})$
+
+::: callout-note
+## Exempel. Rökare
+
+100 slumpmässigt valda svenskar frågades huruvida de röker. Vad är sannolikheten att fler än 40 svarade att de röker? Det är tidigare känt att ca 30% av alla svenskar röker.
+
+Låt $X=\text{"antal som svarade att röker bland de tillfrågade"}$
+
+$$X\sim Bin(100,0.3)$$
+
+$P(X \geq 40) = ?$ räkna ut exakt, använda tabell eller annat?
+
+Kan vi använda CGS och approximera till en normalfördelning?
+
+```{r}
+#| echo: false
+#| results: false
+(39-100*0.3)/sqrt(21)
+pnorm(1.96)
+1-pnorm(1.96)
+
+```
+
+Ja, eftersom $V(X) = np(1-p) = 100\cdot 0.3 \cdot (1-0.3) = 21 \geq 10$
+
+$$\begin{split} & P(X \geq 40) = 1 - P(X \leq 39) = \\ & 1 - P(\frac{X-\mu}{\sigma} \leq \frac{39-\mu}{\sigma}) \overset{A} = 1 - \Phi(\frac{39-100\cdot 0.3}{\sqrt{21}}) = \\ & 1 - \Phi(1.96) = 1 - 0.975 = 0.025 \end{split}$$
+:::
+
+# När kan vi normalapproximera?
+
+-   $Bin(n,p) \overset{A} \sim N(np,\sqrt{np(1-p)})$ om $np(1-p)\geq 10$
+
+-   $Po(\lambda) \overset{A} \sim N(\lambda,\sqrt{\lambda})$ om $\lambda \geq 15$
+
+-   generellt för annan fördelning - antar att det är en summa av oberoende likafördelade slumpvariabler variabler, där n ska vara stort och variansen av summan ska vara tillräckligt stor
+
+::: callout-note
+## Exempel. Flygplan
+
+```{r}
+#| echo: false
+#| results: false
+
+75*40
+12*sqrt(40)
+(3120-3000)/75.9
+pnorm(1.58)
+1-pnorm(1.58)
+3000 + 2.3263 * 75.9
+```
+
+En slumpmässigt vald flygplanspassagerares vikt har en fördelning med väntevärde 75 kg och standardavvikelse 12 kg. Ett flygplan kan ha max 3120 kg passagerarvikt.
+
+(a) Vad är sannolikheten att vikten av 40 slumpvis valda passagerare överstiger maxkapaciteten?
+
+Låt $X_i = \text{"vikt hos passagerare i"}$ där $i=1,\dots, 40$ vara likafördelade slumpvariabler.
+
+$Y_{40} = \text{"vikten hos 40 passagerare"}$
+
+Enligt CGS är $Y_{40} \overset{A} \sim N$ där väntevärdet är $\mu \cdot n = 75\cdot 40 = 3000$ och standardavvikelsen $\sigma \sqrt{n}= 12\sqrt{40} = 75.9$
+
+Vi söker $$\begin{split} & P(Y_{40} > 3120) = 1 - P(Y_{40} \leq 3120) \overset{A} = \\ & 1 - \Phi(\frac{3120-3000}{75.9}) = 1 - \Phi(1.58) = \\ & 1-  0.9429 = 0.0571 \end{split}$$
+
+(b) Man vill sänka risken att överstiga maxkapaciteten med 40 passagerare ombord till ungefär 1/100. Hur stor behöver maxkapaciteten vara som minst?
+
+Maxkapaciteten motsvarar kvantilen som delar in sannolikhetsfördelningen i 99% och 1%. Det motsvarar $\mu \cdot n + \lambda_{.01} \cdot \sigma \sqrt{n} = 3000 + 2.3263 \cdot 75.9 = 3177$
+
+![](img/kvantiler.png)
+:::
+
+::: callout-note
+## Exempel. Familjer
+
+I ett bostadsområde bor det 1000 familjer. Sannolikhetsfunktionen för $X = \text{"antal barn i förskoleålder i en slumpmässigt vald familj"}$ är
+
+$$f(x) = \left\{ \begin{array}{lr}
+        0.4 & x = 0\\
+        0.2 & x = 1\\
+        0.3 & x = 2\\
+        0.1 & x = 3\\
+        0 & x \geq = 4
+        \end{array}\right.$$
+
+```{r}
+#| echo: false
+
+df <- data.frame(x = c("0","1","2","3","4 eller fler"), p = c(0.4,0.2,0.3, 0.1,0))
+ggplot(df,aes(x=x,y=p)) +
+  geom_col() +
+  ggtitle("Antal barn i förskoleålder")
+```
+
+Antal barn mellan olika familjer är oberoende av varandra.
+
+Hur många daghemsplatser ska planeras om sannolikheten att alla barn ska få daghemsplats ska vara 90%?
+
+Eftersom 1000 är stort, kan vi engligt CGS säga att $$Y_{1000} = \sum_{i=1}^{1000} X_i \overset{A} \sim N(\mu \cdot 1000, \sqrt{\sigma^2\cdot 1000})$$
+
+```{r}
+#| echo: false
+#| results: false
+
+0.4* 0 + 0.2*1 + 0.3* 2 + 0.1* 3
+0.4* 0 + 0.2*1^2 + 0.3* 2^2 + 0.1* 3^2
+1.1^2
+ 2.3-1.21
+sqrt(1.09*1000)
+
+1100 + 1.2816 * 33
+```
+
+$\begin{split} & \mu = E(X) = \sum_{\text{all x}} x\cdot f(x) = \\ & 0 \cdot 0.4 + 1 \cdot 0.2 + 2 \cdot 0.3 + 3 \cdot 0.1 = 1.1 \end{split}$
+
+$\begin{split} &  \sigma^2 = V(X) = E(X^2) - [E(X)]^2 = \\ & 0^2 \cdot 0.4 + 1^2 \cdot 0.2 + 2^2 \cdot 0.3 + 3^2 \cdot 0.1 - 1.1^2 = \\& 2.3 - 1.21 = 1.09 \end{split}$
+
+Vi vill hitta kvantilen $y_{.90}$ för vilken $P(Y_{1000} \leq y_{.90}) = 0.90$.
+
+Eftersom 1000 är ett stort antal, kan vi engligt CGS betrakta behovet av förskoleplatser för de 1000 familjerna som approximativt normalfördelad med väntevärde $\mu \cdot 1000 = 1100$ och varians $\sigma^2 \cdot 1000 = 1090$.
+
+```{r}
+prob = 0.9
+fill = paste0(round(100*(prob),0),"% sannolikhet")
+
+pp = ppoints(200)
+x = qnorm(pp,1100,33)
+pdf = dnorm(x,1100,33)
+df <- data.frame(x=x,pdf=pdf,pp=pp)
+ggplot(df,aes(x=x,y=pdf)) +
+         geom_line() +
+  ggtitle("Behov av förskoleplatser") +
+  geom_ribbon(data=df[df$pp < prob,], 
+              aes(ymin=0, ymax=pdf, fill=fill)) +
+  theme_bw() + 
+  xlab("x") + 
+  ylab("f(x)") 
+```
+
+Den sökta kvantilen är $$\mu \cdot n + \lambda_{.10} \cdot \sqrt{\sigma^2 \cdot n} = 1100 + 1.2816 \cdot 33 = 1143$$
+:::
+
+# Statistisk inferens
+
+|                   | Population         | Stickprov                                |
+|-------------------|--------------------|------------------------------------------|
+| Enhet             | $X$                | $\{x_1,\dots ,x_n\}$                     |
+| Antal enheter     | n                  | n                                        |
+| Medelvärde        | $\mu$ (väntevärde) | $\bar{x}$ (stickprovsmedelvärde)         |
+| Varians           | $\sigma^2$         | $s^2$ (stickprovsvarians)                |
+| Standardavvikelse | $\sigma$           | $s$                                      |
+| Parameter         | $\lambda$          | $\hat{\lambda}$ (skattning av parameter) |
+
+
+## Vad är skillnaden mellan sannolikhetsteori och statistisk inferens? 
+
+Sannolikhetsteori
+
+- Sannolikhetsfördelningarna är helt kända (vi känner till alla populationsparametrar i modellen)
+
+Statistisk inferens
+
+- Sannolikhetsfördelningarna är inte kända, typ av fördelning eller innehåller okända parametrar
+
+- Vi använder data för att skatta parametrar och välja modell, och dra slutsatser med hjälp av modellerna
+
+# Parameterskattning
+
+En estimator (*på engelska: estimator*) är en skattning av en parameter
+
+Estimatorn beror på stickprovet och är själv en slumpvariabel 
+
+En bra estimator $\hat{\theta}$ för parametern $\theta$ ska 
+
+- vara väntevärdesriktig $E(\hat{\theta}) = \theta$
+
+och 
+
+- ha en så liten varians $V(\hat{\theta})$ som möjligt (vara effektiv) 
+
+:::callout-note
+## Exempel. Effektiv estimator
+
+Låt $X_1$, $X_2$, och $X_3$ vara oberoende slumpvariabler med lika väntevärde $\mu$ och varians $\sigma^2$
+
+Vilken av följande estimatorer är bäst för att skatta väntevärdet? 
+
+$\hat{\theta}_1 = \frac{X_1+X_2+X_3}{3}$
+
+$\hat{\theta}_2 = X_2$
+
+- Båda är väntevärdesriktiga 
+
+$E(\hat{\theta}_1)=\frac{E(X_1)+E(X_2)+E(X_3)}{3} = \mu$
+
+$E(\hat{\theta}_2)=E(X_2) = \mu$
+
+- $\hat{\theta}_1$ är mest effektiv och därmed bäst
+
+$V(\hat{\theta}_1)=\frac{V(X_1)+V(X_2)+V(X_3)}{3^2} = \frac{3\sigma^2}{3^2}=\frac{\sigma^2}{3}$
+
+$V(\hat{\theta}_2) = V(X_2) = \sigma^2$
+
+:::
+
+## Skevhet och precision 
+
+- Väntevärdesriktig (VVR) innebär ingen skevhet (*på engelska: bias*) 
+
+- Låg varians motsvarar hög precision hos en estimator
+
+```{r}
+#| echo: false
+#| 
+# code modified from https://www.datawim.com/post/art-with-r/
+  
+# target board function
+target_board <- function(title) {
+  plot(0, 0, cex = 45, pch = 21, bg = "orange", col = "black", axes=F, main = title, xlab = NA, ylab = NA)
+  points(0, 0, cex = 39, pch = 21, bg = "white", col = "white")
+  points(0, 0, cex = 33, pch = 21, bg = "orange", col = "orange")
+  points(0, 0, cex = 27, pch = 21, bg = "white", col = "white")
+  points(0, 0, cex = 21, pch = 21, bg = "orange", col = "orange")
+  points(0, 0, cex = 15, pch = 21, bg = "white", col = "white")
+  points(0, 0, cex = 9, pch = 21, bg = "orange", col = "orange")
+  points(0, 0, cex = 3, pch = 21, bg = "white", col = "white")
+}
+
+# 2 by 2 grid
+par(mfrow = c(2, 2))
+
+# remove extra white space
+par(mar = c(1, 1, 1.5, 1)) 
+
+# High Accuracy High Precision
+s1 = 0.1
+target_board(title = "VVR & låg varians")
+#target_board(title = "High Accuracy High Precision")
+points(rnorm(1,0,s1), rnorm(1,0,s1), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+points(rnorm(1,0,s1), rnorm(1,0,s1), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+points(rnorm(1,0,s1), rnorm(1,0,s1), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+points(rnorm(1,0,s1), rnorm(1,0,s1), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+points(rnorm(1,0,s1), rnorm(1,0,s1), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+
+# Low Accuracy High Precision
+m2 = 0.2
+s2 = 0.1
+target_board(title = "Ej VVR & låg varians")
+#target_board(title = "Low Accuracy High Precision")
+points(rnorm(1,m2,s2), rnorm(1,m2,s2), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+points(rnorm(1,m2,s2), rnorm(1,m2,s2), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+points(rnorm(1,m2,s2), rnorm(1,m2,s2), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+points(rnorm(1,m2,s2), rnorm(1,m2,s2), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+points(rnorm(1,m2,s2), rnorm(1,m2,s2), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+
+# High Accuracy Low Precision
+s3 = 0.3
+target_board(title = "VVR & hög varians")
+#target_board(title = "High Accuracy Low Precision")
+points(rnorm(1,0,s3), rnorm(1,0,s3), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+points(rnorm(1,0,s3), rnorm(1,0,s3), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+points(rnorm(1,0,s3), rnorm(1,0,s3), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+points(rnorm(1,0,s3), rnorm(1,0,s3), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+points(rnorm(1,0,s3), rnorm(1,0,s3), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+
+# Low Accuracy Low Precision
+m4 = 0.2
+s4 = 0.3
+target_board(title = "Ej VVR & hög varians")
+#target_board(title = "Low Accuracy Low Precision")
+points(rnorm(1,m4,s4), rnorm(1,m4,s4), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+points(rnorm(1,m4,s4), rnorm(1,m4,s4), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+points(rnorm(1,m4,s4), rnorm(1,m4,s4), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+points(rnorm(1,m4,s4), rnorm(1,m4,s4), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+points(rnorm(1,m4,s4), rnorm(1,m4,s4), pch = 4, lwd = 2, cex = 1.5, col = "blue")
+```
+
+# Parameterskattning av $\mu$ och $\sigma^2$
+
+
+- VVR:a estimatorer för väntevärde och varians 
+
+$$\hat{\mu} = \frac{\sum_{i=1}^n x_i}{n} = \bar{x}$$
+
+$$\hat{\sigma}^2 = \frac{\sum_{i=1}^n (x_i - \bar{x})^2}{n-1} = s^2$$ 
+
+- Samplingsfördelning för $\bar{x}$ är 
+
+$$\bar{x} \sim N(\mu,\frac{\sigma}{\sqrt{n}})$$
+
+men bara om vi känner till $\sigma$! 
+
+
+# Medelfel
+
+Medelfelet (*på engelska: standard error of the mean (SEM)*) är standardavvikelsen i skattningen av väntevärdet, d.v.s. 
+
+$$D(\hat{\mu})$$
+
+När populationsvariansen är känd: 
+
+$$SEM = \frac{\sigma}{\sqrt{n}}$$
+
+
+När populationsvariansen är okänd och skattas med stickprovsvariansen $s^2$: 
+
+$$SEM = \frac{s}{\sqrt{n}}$$
+
+# t-fördelning
+
+Student t-fördelning är samplingfördelningen för kvoten
+$t=\frac{\bar{x}-\mu}{s/\sqrt{n}}$
+
+> t-kvoten är en standardisering av en skattning av väntevärdet (som är normalfördelad eller approximativt normalfödelad enligt CGS), men där vi delar med en skattning av standardavvikelsen istället för bara $\sigma$
+
+```{r}
+## simulering av samplingsfördelning för t
+
+mu = 0 # välj vad ni vill
+sigma = 1 # välj vad ni vill
+n = 6 # antal värden i stickprovet
+niter = 1000 # antal "gånger" vi samlar in nya data
+
+t_kvot <- replicate(niter,
+  {
+  x <- rnorm(n,mu,sigma)
+  s <- sd(x)
+  (mean(x)-mu)/(s/sqrt(n))
+  }
+)
+```
+
+
+::: columns
+::: {.column width="50%"}
+
+```{r}
+#| echo: false
+
+hist(t_kvot,probability = TRUE, ylim = c(0,0.4))
+pp <- ppoints(200)
+xx <- qt(pp,n-1)
+lines(xx,dt(xx,n-1),col='blue')
+```
+
+:::
+
+::: {.column width="50%"}
+
+```{r}
+#| echo: false
+
+plot(xx,dt(xx,n-1),col='blue',type='l',xlab="t-kvot",ylab="täthet",ylim = c(0,0.4),main="Jämförelse t med normal", bty = "n")
+lines(xx,dnorm(xx),col='darkred')
+text(x=3,y=0.1,"t har tjockare \n svans",col="blue")
+```
+
+:::
+:::
+
+
+[Student-t distribution on wiki](https://en.wikipedia.org/wiki/Student%27s_t-distribution)

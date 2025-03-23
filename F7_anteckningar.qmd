@@ -1,0 +1,479 @@
+---
+title: "F7. Hypotestest"
+author: "Ullrika Sahlin"
+format: 
+  html:
+    embed-resources: true
+---
+
+# Hypotesprövning
+
+::: callout-note
+
+## Exempel. Rattonykterhet
+
+Gräns för rattonykterhet är 0.2 promille. Vid en trafikkontroll görs tre bestämningar av alkoholhalten i blodet.
+
+**Modell:** De tre mätningarna $x_1, x_2, x_3$ antas vara ett stickprov från slumpvariabeln $X = \text{"uppmätt alkoholhalt"}$ som antas vara normalfördelat $N(\mu,0.07)$ där $\mu$ är personsens verkliga alkoholhalt och 0.07 är ett mått på mätinstrumentets precision.
+
+För Kalle blev $\bar{x}=0.27$ promille. Ska han dömas för rattonykterhet?
+:::
+
+
+
+# Hypotesprövning - grundläggande begrepp
+
+(1) Bestäm en passande sannolikhetsmodell
+
+(2) Formulera hypoteser:
+
+- nollhypotes $H_0$ - "det vi ifrågasätter"
+
+- mothypotes $H_1$ - "det vi vill bevisa" 
+
+(3) Identifiera en testregel
+
+-   Bestäm vilka sannolikheter för felslut man kan acceptera - välj signifikansnivå $\alpha$ 
+
+$$\alpha = P(\text{fel av typ I}) = P(\text{förkasta }H_0|H_0\text{ är sann})$$
+
+$$\beta = P(\text{fel av typ II}) = P(\text{förkasta inte }H_0|H_1\text{ är sann})$$
+
+(4) Planera data-insamling för att få ett bra styrka på testet 
+
+$$1-\beta \text{ är testets stryka}$$
+
+(5) Dra slutsatser
+
+::: callout-note
+## Exempel. Rattonykterhet
+
+Hypoteser: 
+
+$H_0: \mu \leq 0.2$
+
+$H_1: \mu > 0.2$
+
+
++-----------------------+-----------------------+-----------------------+
+|                       | | $H_0$ sann          | | $H_1$ sann          |
+|                       | | Kalle oskyldig      | | Kalle skydlig       |
++-----------------------+-----------------------+-----------------------+
+| | $H_0$ förkastas ej  | OK!                   | | Fel typ II          |
+| | Kalle går fri       |                       | | $\beta$             |
++-----------------------+-----------------------+-----------------------+
+| | $H_0$ förkastas     | | Fel typ I           | OK!                   |
+| | Kalle döms          | | $\alpha$            |                       |
++-----------------------+-----------------------+-----------------------+
+: **Tänkbara felslut**
+
+:::
+
+
+# Hypotestest på tre sätt
+
+-   Konfidensintervall
+
+-   Teststorhet och kritiskt område
+
+-   Med ett p-värde (direktmetoden)
+
+::: callout-note
+## Exempel. Rattonykterhet
+
+Vi sätter signifikansnivå till $\alpha = 0.05$ och skapar ett $1-\alpha$ =  95\%-igt konfidens intervall: 
+
+$I_{\mu}: (\bar{x}-\lambda_{\alpha}\frac{\sigma}{\sqrt{n}},\infty) = (0.27 - `r round(qnorm(0.95),2)`\frac{0.07}{\sqrt{3}},\infty) = (`r round(0.27-qnorm(0.95)*0.07/sqrt(3),3)`,\infty )$
+
+0.2 ($H_0$) finns inte i intervallet. Vi kan därför förkasta nollhypotesen och säga att Kalle är skyldig. 
+
+:::
+
+# Hypotesprövning med konfidensintervall 
+
+### Två-sidig mothypotes 
+
+$H_0: \mu = \mu_0$
+
+$H_1: \mu \neq \mu_0$
+
+Gör ett 2-sidigt konfidensintervall $I_{\mu}$ med konfidensgrad $1 - \alpha$
+
+$I_{\mu}$ täcker **ej** över $\mu_0$ &#8596; $H_0$ förkastas på nivå $\alpha$
+
+$I_{\mu}$ täcker över $\mu_0$ &#8596; $H_0$ **kan ej** förkastas på nivå $\alpha$
+
+### En-sidig mothypotes 
+
+$H_0: \mu \leq \mu_0$
+
+$H_1: \mu > \mu_0$
+
+Gör ett nedåt begränsat konfidensintervall $I_{\mu}$ med konfidensgrad $1 - \alpha$
+
+$I_{\mu}$ täcker **ej** över $\mu_0$ &#8596; $H_0$ förkastas på nivå $\alpha$
+
+$I_{\mu}$ täcker över $\mu_0$ &#8596; $H_0$ **kan ej** förkastas på nivå $\alpha$
+
+
+# Hypotesprövning och felrisk
+
+::: callout-note
+## Exempel. Rattonykterhet
+
+I vårt tidigare test fanns det en risk på 5% att vi har fel, och felaktigt dömer Kalle. Vad händer om vi minskar felrisken till $\alpha = 1\%$?  
+
+$I_{\mu}: (\bar{x}-\lambda_{0.01}\frac{\sigma}{\sqrt{n}},\infty) = (0.27 - `r round(qnorm(0.99),2)`\frac{0.07}{\sqrt{3}},\infty) = (`r round(0.27-qnorm(0.99)*0.07/sqrt(3),3)`,\infty )$
+
+0.2 ($H_0$) finns nu i intervallet. Vi kan därför **inte** förkasta nollhypotesen. Beslutet är att **inte** döma Kalle. 
+
+:::
+
+# Nollhypotesen är aldrig sann
+
+> Man ska aldrig dra slutsatsen att nollhypotesen är sann! 
+
+$H_0$ kan ej förkastas &#8655; $H_0$ är sann
+
+> Istället kan man förkasta eller ej förkasta nollhypotesen
+
+::: callout-warning 
+
+Man ser ett djur
+
+$H_0: \text{det är en häst}$
+
+$H_1: \text{det är inte en häst}$
+
+**Test:** $H_0$ förkasats om antal ben är annat än 4
+
+**Observation:** Djuret har fyra ben
+
+**Slutsats:** $H_0$ kan ej förkastas
+
+> Det vore fel att säga att $H_0$ är sann eftersom det kan finnas andra djur än hästar som har fyra ben
+:::
+
+
+
+# Hypotesprövning med teststorhet och kritiskt område
+
+**Modell:** $X$ är en slumpvariabel med okänt väntevärde $\mu$ och känd standardavvikelse $\sigma$
+
+**Observationer:** Stickprov $x_1, \dots, x_n$
+
+**Skattning:** Väntevärdet skattas med stickprovsmedelvärdet $\hat{\mu} = \bar{x}$
+
+**Hypoteser:** $H_0: \mu = \mu_0$ och $H_1: \mu \neq \mu_0$
+
+(1) Ta fram samplingsfördelningen för estimatorn när $H_0$ är sann 
+
+$$ \bar{x}|H_0 \text{ sann}\sim N(\mu_0, \frac{\sigma}{\sqrt{n}})$$
+
+(2) Undersök om värdet på estimatorn verkar ligga i samplingsfördelningen genom att bilda ett kritiskt område där man kan anse att den inte gör det 
+
+
+(3) Förkasta $H_0$ om det beräknande värdet på estimatorn ligger utanför det kritiska området
+
+Till exempel: Förkasta $H_0$ om $\bar{x} > \mu_0 + \lambda_{\alpha}\frac{\sigma}{\sqrt{n}}$
+
+Alternativt: Förkasta $H_0$ om $z = \frac{\bar{x}- \mu_0}{\sigma/\sqrt{n}} > \lambda_{\alpha}$
+
+$z$ är en teststorhet
+
+### Illustrering av kritiskt område 
+
+Man kan illustrera testet med funktionen hypotes som finns i räknamedvariation. Där jämför man medelvärdet med ett kritiskt område som styrs av k.
+
+```{r}
+source("kod/funktioner_raknamedvariation_light.R")
+```
+
+::: callout-note
+### Exempel. Rattonykterhet
+
+Signifikansnivå $\alpha=5\%$
+
+```{r}
+hypotes(sigma=0.07,n=3,mu0=0.2,alfa=0.05,riktning=">")
+```
+
+ &#8658; $H_0$ förkastas eftersom $\bar{x}=0.27$ är i det kritiska området. 
+
+
+Signifikansnivå $\alpha=1\%$
+
+```{r}
+hypotes(sigma=0.07,n=3,mu0=0.2,alfa=0.01,riktning=">")
+
+```
+
+&#8658; $H_0$ förkastas **ej** eftersom $\bar{x}=0.27$ **inte** är i det kritiska området
+
+:::
+
+# Sannolikhet för felslut när $H_0$ är sann 
+
+Låt oss förvissa om att testregeln med teststorheten ger önskad sannolikhet för felslut d.v.s. att $P(\text{Fel av typ I}) = \alpha$
+
+::: callout-note
+## Exempel: Rattonykterhet 
+
+$\begin{split} &  P(\text{Fel av typ I}) = P(\text{Kalle döms fast han är oskydlig}) = \\ &  P(H_0\text{ förkastas fast } H_0 \text{ är sann}) = \\ & P(\frac{\bar{x}- \mu_0}{\sigma/\sqrt{n}} > \lambda_{\alpha})=\alpha \end{split}$ 
+
+:::
+
+
+# Teststorhet med två-sidig mothypotes
+
+En två-sidig mothypotes för rattonykterheten kan vara
+
+$H_0: \mu = 0.2$ mot $H_1: \mu \neq 0.2$
+
+Teststorheten jämförst mot ett kritiskt område i båda svansar av samplingsfördelningen. 
+
+Förkasta $H_0$ om $z = |\frac{\bar{x}- \mu_0}{\sigma/\sqrt{n}}| > \lambda_{\alpha/2}$
+
+
+```{r}
+hypotes(sigma=0.07,n=3,mu0=0.2,alfa=0.05,riktning="!=")
+```
+
+# Sammanfattning
+
+**Hypoteser:**
+
+$H_0: \mu = \mu_0$
+
+$H_1: \mu \neq \mu_0$
+
+## Konfidensintervall 
+
+**Konfidensintervall:**
+
+Om $\sigma$ är känd: 
+
+$I_{\mu}: \bar{x} \pm \lambda_{\alpha/2}\frac{\sigma}{\sqrt{n}}$
+
+Om $\sigma$ är okänd och skattas med $s$: 
+
+$I_{\mu}: \bar{x} \pm t_{\alpha/2}(n-1)\frac{s}{\sqrt{n}}$
+
+**Regel:** Förkasta $H_0$ om $\mu_0$ inte ligger i $I_\mu$
+
+## Teststorhet med kritiskt området 
+
+**Teststorhet:**
+
+Om $\sigma$ är känd: 
+
+$z = |\frac{\bar{x}-\mu_0}{\sigma/\sqrt{n}}|$
+
+Om $\sigma$ är okänd och skattas med $s$: 
+
+$t = |\frac{\bar{x}-\mu_0}{s/\sqrt{n}}|$
+
+**Regel:** Förkasta $H_0$ om $z > \lambda_{\alpha/2}$ alternativt om $t > t_{\alpha/2}(n-1)$ 
+
+## Hypotesprövning med direktmetoden 
+
+**Regel:** Förkasta $H_0$ om 
+
+$\begin{split} & \text{p-värdet} = \\&  P(\text{"att få det vi fick eller värre"}|H_0 \text{ är sann}) < \alpha \end{split}$
+
+::: callout-note
+## Exempel. Rattonykterhet
+
+**Hypoteser:** 
+
+$H_0: \mu \leq 0.2$ mot $H_1: \mu > 0.2$
+
+$\begin{split} & \text{p-värdet} = P(\bar{x} \geq 0.27|\mu = 0.2) = \\ &  P(\frac{\bar{x}-\mu}{\sigma/\sqrt{n}} \geq \frac{0.27 - 0.2}{0.07/\sqrt{3}}) = P(Z \geq \sqrt{3}) =  1-\Phi(\sqrt{3}) = \\ & 1 - \Phi(`r round(sqrt(3),2)`) = 1 - `r round(pnorm(sqrt(3)),3)` =`r 1-round(pnorm(sqrt(3)),3)` \end{split}$
+
+**Regel:** Förkasta $H_0$ eftersom p-värdet är mindre än den valda signifikansnivån på 0.05.
+
+Om vi hade valt signifikansnivå 0.01 istället, hade vi istället **inte** förkastat $H_0$ eftersom p-värdet är högre än den valda signifikansnivån.
+
+:::
+
+::: callout-warning
+## Ändra inte signfikansnivå under testets gång
+Man ska välja signifikansnivå innan man gör testet. Det är tyvärr vanligt att forskare/statistiker väljer den lägsta signifikansnivån som leder till att nollhypotesen förkasats, men det leder i det långa loppet till övertro på resultat. 
+
+Signifikansnivå bestäms när man planerar en studie. 
+
+:::
+
+# Hypotesprövning tre sätt
+
+::: callout
+## Exempel: radon
+
+Vi gör 10 mätningar av radon i ett hus. Varje radonmätning har ett mätfel som vi kan säga är normalfördelat. Slumpvariabeln $X$ är normalfördelad. $X \sim N(\mu,\sigma)$ där väntvärdet $\mu$ är det verkliga randonvärdet och där mätfel kan beskrivas som en systematisk slumpmässig variation kring väntevärdet, där $\sigma=3$.
+
+Medelvärdet på mätningar är $\bar{x} = 195$ $Bq/m^3$.
+
+Vi vill testa om radonnivån är lägre än 200 $Bq/m^3$ med en signifikansnivå på $\alpha = 0.05$.
+
+$H_0: \mu \geq 200$
+
+$H_1: \mu < 200$
+:::
+
+### Test med konfidensintervall
+
+Vi skapar ett uppåt ensidigt konfidensintervall
+
+$I_{\mu} : (-\infty, \bar{x} + \lambda_{\alpha} \cdot \frac{\sigma}{\sqrt{n}}) = (-\infty, 195 + `r round(qnorm(0.95),2)` \cdot \frac{3}{\sqrt{10}}) = (-\infty, `r round(195 + qnorm(0.95)*3/sqrt(10),1)`)$
+
+$H_0$ förkastas med en signifikansnivå på $\alpha=5\%$ eftersom intervallet inte täcker 200.
+
+### Test med teststorhet och kritiskt område
+
+Vi definierar teststorheten $z$ som
+
+$z=\frac{\bar{x}-\mu_0}{\sigma/\sqrt{n}} = \frac{195-200}{3/\sqrt{10}} = `r round((195-200)/(3/sqrt(10)),1)`$
+
+Teststorheten jämförs med kvantil i teststorhetens fördelning om nollhypotesen är sann $\lambda_{0.05} = `r round(qnorm(0.05),3)`$
+
+$H_0$ förkastas med en signifikansnivå på 5% eftersom teststorheten $z$ är extrem under nollhypotesen.
+
+```{r}
+hypotes(sigma=1,n=1,mu0=0,alfa=0.05,riktning="<")
+```
+
+### Test med p-värde (direktmetoden)
+
+Direktmetoden går ut på att räkna ut *sannolikheten att vi fick det vi fick eller värre om nollhypotesen är sann*. I fallet med radonmätningar är det att man uppmäter en halt som är lägre än den som uppmättes givet att väntevärdet är 200.
+
+```{r}
+#| echo: false
+#| results: false
+
+(195-200)/(3/sqrt(10))
+pnorm(-(195-200)/(3/sqrt(10)))
+
+pnorm(195,200,3/sqrt(10))
+```
+
+
+$\begin{split} & P(\bar{x} < 195|\mu = 200) = P(\frac{\bar{x}-\mu_0}{\sigma/\sqrt{n}} < \frac{195-200}{3/\sqrt{10}}) = \\ & 
+P(Z < -5.27) = \Phi(-5.27) = 1 - \Phi(5.27) = 
+\\ & 1-0.99 = `r pnorm(195,200,3/sqrt(10))` \end{split}$
+
+Eftersom p-värdet är lägre än vald signifikansnivå 5% så förkastar vi nollhypotesen.
+
+
+# Styrka på ett hypotestest
+
+::: callout-note
+## Exempel: Rattonykterhet
+
+**Några intressanta frågor:**
+
+(a) Antag att Kalles alkoholhalt är $\mu = 0.25$ (rattonykter), hur stor är sannolikheten att vi, med tekniken ovan, ska upptäcka att han är rattonykter och därmed förklara honom skyldig?
+
+(b) Vi ska göra $n$ mätningar av alkoholhalten. Antag att vi har ett krav som säger att om Kalle har en alkholhalt på $\mu = 0.3$ så ska vi förklara honom skyldig med stor sannolikhet (t.ex. 0.99). Hur många mätningar ska vi ta för att kravet ska vara uppfyllt? 
+
+:::
+
+## Definition av styrka
+
+Sannolikheten att förkasta nollhypotesen när den är falsk är styrkan av ett test. 
+
+Styrkan beror på det sanna värdet på parametern som testas. 
+
+$S(\mu) = P(\text{Förkasta }H_0 |\mu\text{ är det sanna väntevärdet})$
+
+Styrkan är $1-\beta = 1 - P(\text{Fel av typ II})$ 
+
+::: callout-note
+## Exempel: Rattonykterhet
+
+**Hypoteser:** $H_0: \mu = 0.2$ mot $H_1: \mu > 0.2$ 
+
+**Signifikansnivå:** $\alpha = 0.05$
+
+**Testregel:** Förkasta $H_0$ om $\bar{x} > \mu_0 + \lambda_{\alpha}\frac{\sigma}{\sqrt{n}} = 0.2 + 1.64 \frac{0.07}{\sqrt{3}} = `r round(0.2+1.64*0.07/sqrt(3),2)`$
+
+$\begin{split} & S(\mu) = P(\bar{x} > 0.27|\mu) = P(\frac{\bar{x}-\mu}{\sigma/\sqrt{n}} > \frac{0.27-\mu}{0.07/\sqrt{3}}) = // & P(Z > \frac{0.27-\mu}{0.07/\sqrt{3}}) = 1 - \Phi(\frac{0.27-\mu}{0.07/\sqrt{3}}) \end{split}$
+
+```{r}
+#| echo: false
+library(ggplot2)
+```
+
+```{r}
+df <- data.frame(mu = seq(0.1,0.4,by=0.005)) # möjliga mu-värden
+n = 3
+teststorhet = 0.2+1.64*0.07/sqrt(n)
+df$styrka_mu_n3 <- 1 - pnorm((teststorhet-df$mu)/(0.07/sqrt(n))) #styrka då n=3
+n = 6
+teststorhet = 0.2+1.64*0.07/sqrt(n)
+df$styrka_mu_n6 <- 1 - pnorm((teststorhet-df$mu)/(0.07/sqrt(n)))
+
+ggplot(df,aes(x=mu,y=styrka_mu_n3)) +
+  geom_line() +
+  geom_line(aes(x=mu,y=styrka_mu_n6), col = 'blue') +
+  ylab("P(Kalle döms)") +
+  xlab("Faktisk promille hos Kalle") +
+  ggtitle("Testets strykefunktion") +
+  annotate("text",x = 0.3, y = 0.6, label = "n = 3") + 
+  annotate("text",x = 0.25, y = 0.75, label = "n = 6", col = "blue")
+```
+:::
+
+Styrkefunktionen beror på 
+
+- Det sanna värdet på parametern $\mu$
+
+- Stickprovsstorleken $n$
+
+- Variansen i populationen $\sigma^2$
+
+- Signifikansnivån - ju lägre $\alpha$, desto sämre styrka
+
+> Ett hypotestest innebär en avvägning mellan att göra fel av typ I och II
+
+
+```{r}
+hypotes(sigma=0.07,n=3,mu0=0.2,alfa=0.05,riktning=">",mu.sant = 0.35)
+```
+
+::: callout-note
+## Exempel: Livsmedelsfärg
+
+En läkemedelstillverkare använder en viss livsmedelsfärg. Man vill veta hur färgen påverkar utseendet på läkemedlet. Utan färgämnet brukar grumlighet vara 4.0. 
+**Modell:** $X = \text{"Grumlighet"}$
+$X \sim N(\mu, 0.2)$
+
+Man mäter grumligheten på $n=10$ slumpmässigt valda tabletter. Stickprovsmedelvärdet på grumligheten blev $\bar{x}=4.1$.
+
+(a) Testa om läkemedlet är för grumligt på signifikansnivå $\alpha = 0.05$
+
+**Hypoteser:** $H_0: \mu = 4.0$ mot $H_1: \mu > 4.0$
+
+**Testregel:** Förkasta $H_0$ om $\bar{x} > \mu_0 + \lambda_{0.05}\frac{\sigma}{\sqrt{n}} = 4.0 + 1.64 \frac{0.2}{\sqrt{10}} = `r round(4 + 1.64*0.2/sqrt(10),3)`$
+
+&#8658; Vi kan ej förkasta $H_0$
+
+```{r}
+#| echo: false
+#| results: false
+mu = 4.3
+z = (4.104-mu)/(0.2/sqrt(10))
+p = pnorm(z)
+1-pnorm(z)
+pnorm(-z)
+```
+
+(b) Vad är testets styrka när grumligheten är 3.8? 
+
+$\begin{split} & S(\mu) = P(\text{Reject }H_0|\mu = `r mu`) = \\ & P(\bar{x} > 4.104|\mu = `r mu`) = P(\frac{\bar{x}-\mu}{\sigma/\sqrt{n}} > \frac{4.104-`r mu`}{0.2/\sqrt{10}}) = \\ &  P(Z >`r round((4.104- mu)/(0.2/sqrt(10)),2)`) = 1-\Phi(`r round(z,2)`) = \Phi(`r -round(z,2)`) = `r round(1 - p,3)` \end{split}$
+
+&#8658; Styrkan är `r round(1 - p,3)`
+
+:::
+
+
+

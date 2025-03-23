@@ -1,0 +1,268 @@
+---
+title: "Föreläsningsanteckningar"
+---
+
+# F0. Beskrivande statistik (självstudier)
+
+Kvalitativa och kvantitativa data
+
+Median
+
+Medelvärde
+
+Varians
+
+Standardavvikelse
+
+Kvantil
+
+Stapeldiagram
+
+Histogram
+
+Lådadiagram
+
+Korrelationskoefficient
+
+Kvantil-kvantil plot
+
+# F1. Grunderna i sannolikhetslära
+
+Sannolikhet
+
+Slumpmässigt försök
+
+Utfall
+
+Utfallsrum
+
+Händelse
+
+Regler för sannolikhet
+
+Venn-diagram
+
+Komplementhändelse
+
+Uteslutande händelse
+
+Additionssatsen
+
+Oberoende händelser
+
+Betingad sannolikhet
+
+Multiplikationssatsen
+
+Total sannolikhet
+
+Bayes sats
+
+Kombinatorik
+
+[Föreläsning 1](F1_anteckningar.qmd)
+
+
+# F2. Diskreta slumpvariabler
+
+Slumpvariabler
+
+Diskreta och kontinuerliga slumpvariabler
+
+Sannolikhetsfunktion
+
+Fördelningsfunktion
+
+Bernoullifördelning
+
+Likformig heltalsfördelning
+
+Väntevärde, varians, standardavvikelse
+
+Väntevärde för en diskret s.v.
+
+Variansen för en diskret s.v.
+
+Poissonfördelning
+
+Binomialfördelning
+
+Väntevärde av en funktion av en slumpvariabel
+
+
+[Föreläsning 2](F2_anteckningar.qmd)
+
+
+
+# F3. Diskreta och kontinuerliga slumpvariabler
+
+Kontinuerliga slumpvariabler
+
+Likformig fördelning
+
+Täthetsfunktion
+
+Fördelningsfunktion för en kontinuerlig s.v.
+
+Komplementhändelse för kontinuerlig s.v.
+
+Väntevärde och varians för en kontinuerlig s.v.
+
+Varians för en kontinuerlig s.v.
+
+Exponentialfördelning
+
+Normalfördelning
+
+[Föreläsning 3](F3_anteckningar.qmd)
+
+
+
+# F4. Kontinuerliga slumpvariabler, normalfördelning
+
+Lognormalfördelning
+
+Standardiserad normalfördelning
+
+Normalkvantil
+
+Väntevärde och varians av en linjärkombination av en slumpvariabel
+
+Väntevärde och varians för summor av slumpvariabler
+
+Fördelningen för en summa av normalfördelade slumpvariabler
+
+Population/parametrar – Stickprov/statistiska (stickprovsmått)
+
+[Föreläsning 4](F4_anteckningar.qmd)
+
+
+
+# F5. Stickprovsfördelningar, Centrala gränsvärdessatsen
+
+Statistisk modell
+
+Fördelning för stickprov
+
+Centrala gränsvärdessatsen (CGS)
+
+CGS och binomialfördelningen
+
+Normalapproximationer
+
+Från sannolikhetsteori till statistisk inferens
+
+Skattningar av parameter (estimator)
+
+Väntevärdesriktig och effektiv estimator
+
+t-fördelning
+
+[Föreläsning 5](F5_anteckningar.qmd)
+
+
+
+# F6. Skattning, Konfidensinterval
+
+Stickprovsfördelningar för känd och okänd varians
+
+Skattning och konfidensintervall
+
+Konfidensintervall känd och okänd varians t-fördelning
+
+Skattning av parametrar i en lognormalfördelning
+
+[Föreläsning 6](F6_anteckningar.qmd)
+
+
+# F7. Hypotestest
+
+Hypotestest på tre sätt
+
+-   Teststorhet och kritiskt område
+
+-   Konfidensintervall
+
+-   Med ett p-värde (direktmetoden)
+
+Möjliga felslut
+
+Styrka på ett hypotestest
+
+
+[Föreläsning 7](F7_anteckningar.qmd)
+
+
+
+# F8. Två stickprov
+
+$\chi^2$-fördelningen
+
+Hypotestest för varians
+
+Jämföra två populationer
+
+Stickprov i par
+
+Två oberoende stickprov
+
+Lika och olika varians
+
+Testa om lika varians
+
+F-fördelningen
+
+[Föreläsning 8](F8_anteckningar.qmd)
+
+
+
+# F9. Inferens för diskret och kategorisk data
+
+Direkt-metoden och Normalapproximation
+
+Icke-parametriskt test
+
+Inferens om en proportion
+
+Inferens om skillnad mellan två proportioner
+
+Analys av kategoriska data:
+
+-   Testa modellanpassning
+
+-   Homogenitetstest
+
+-   Oberoendetest
+
+Parametriskt vs Icke-parametriskt test
+
+[Föreläsning 9](F9_anteckningar.qmd)
+
+# F10. Enkel linjär regression
+
+Bivariat normalfördelning
+
+Kovarians
+
+Korrelation
+
+Korrelationsanalys
+
+Regressionsanalys
+
+[Föreläsning 10](F10_anteckningar.qmd)
+
+# F11. Variansanalys
+
+Variansanalys
+
+Repetition
+
+[Föreläsning 11](F11_anteckningar.qmd)
+
+# F12. Reserv och repetition
+
+Repetition
+
+
+

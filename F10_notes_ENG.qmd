@@ -1,0 +1,724 @@
+---
+title: "F10. Correlation and regression analyses"
+format: 
+  html:
+    embed-resources: true
+editor: visual
+---
+
+```{r}
+#| echo: false 
+#| warning: false
+#| message: false
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(gganimate)
+```
+
+# Covariance
+
+-   (Theoretical) covariance for two random variables $X$ and $Y$
+
+$$\sigma_{XY}=Cov(X,Y)=E[(X-E(X))(Y-E(Y))] = E(XY) - E(X)E(Y)$$
+
+-   (Empirical) covariance for paired random samples from $X$ and $Y$
+
+$$c_{xy}= \frac{\sum_{i=1}^n (x_i- \bar{x})
+(y_i- \bar{y})} {n-1}= \frac{1}{n-1}
+\left[\sum_{i=1}^n x_i y_i- n \bar{x} \bar{y}\right]$$
+
+# Correlation
+
+-   (Theoretical) \[Pearson\]-correlation describes a linear association between $X$ and $Y$ on a unit less scale
+
+$$\rho = \frac{Cov(X,Y)}{\sqrt{V(X)}\sqrt{V(Y)}}$$
+
+The correlation $\rho$ takes values in the interval $-1 \leq \rho \leq 1$, where -1 corresponds to perfect negative linear association and 1 a perfect postive linear association.
+
+-   The (empirical) correlation coefficient $r_{xy}$ or just $r$ estimates the linear association between sample $x_1,\dots,x_n$ and sample $y_1,\dots,y_n$
+
+$$r_{xy}= \frac{c_{xy}}{s_x s_y} = \frac{\sum_{i=1}^n (x_i- \bar{x})
+(y_i- \bar{y})}{\sqrt{\sum_{i=1}^n (x_i- \bar{x})^2} \sqrt{\sum_{i=1}^n
+(y_i- \bar{y})^2}} = \frac{SS_{xy}}{\sqrt{SS_x}\sqrt{SS_y}}$$
+
+> Be careful to distinguish between the theoretical correlation and the empirical correlation coefficient $\hat{\rho}=r$
+
+# Correlation analysis
+
+::: callout-note
+### Example. Wine
+
+Several red wines went through a chemical analysis. We would like to know if there is an association between the density of the wine and the levels of sulfates.
+
+<!-- https://archive.ics.uci.edu/dataset/186/wine+quality -->
+
+<!-- Cortez,Paulo, Cerdeira,A., Almeida,F., Matos,T., and Reis,J.. (2009). Wine Quality. UCI Machine Learning Repository. https://doi.org/10.24432/C56S3T. -->
+
+```{r}
+#| warning: false
+#| message: false
+#| eval: false
+#| echo: false 
+
+winequality_red <- 
+read_delim("data/winequality/winequality-red.csv", delim = ";", , show_col_types = FALSE, escape_double = FALSE, trim_ws = TRUE)
+
+df_sam <- winequality_red[sample.int(nrow(winequality_red),30),]
+save(df_sam, file="data/winequality/winequality_small.Rdata")
+```
+
+```{r}
+#| warning: false
+#| message: false
+
+load("data/winequality/winequality_small.Rdata")
+ggplot(df_sam,aes(x=density,y=sulphates)) +
+   geom_point()
+```
+:::
+
+## Hypothesis test of a correlation
+
+**Model:** Let $X = \text{"density"}$ and $Y = \text{"sulfate level"}$.
+
+**Hypotheses:** $H_0: \rho = 0$ (no linear association)
+
+$H_1: \rho \neq 0$ (some linear association)
+
+**Assumption:** $X$ and $Y$ come from a bivariate normal distribution
+
+**Test rule:** The test quantity is $t=r\sqrt{\frac{n-2}{1-r^2}}$. The sampling distribution for $t$ under $H_0$ is a t-distribution with $n-2$ degrees of freedom. Reject $H_0$ if $|t| > t_{\alpha/2}$
+
+```{r}
+#| echo: false
+df <- data.frame(x = df_sam$density, y = df_sam$sulphates)
+n = nrow(df)
+ssxy = sum(df$x*df$y)-n*mean(df$x)*mean(df$y)
+ssx = sum(df$x^2) - n*mean(df$x)^2
+ssy = sum(df$y^2) - n*mean(df$y)^2
+r = ssxy/sqrt(ssx)/sqrt(ssy)
+tstor = r*sqrt((n-2)/(1-r^2))
+tkvant <- qt(1-0.025,n-2)
+```
+
+$$SS_{xy} = `r ssxy`$$
+
+$$SS_{x} = `r ssx`$$
+
+$$SS_{y} = `r ssy`$$
+
+Then we estimate the correlation by the sample correlation $$\hat{\rho}=r_{xy}= \frac{SS_{xy}}{\sqrt{SS_x}\sqrt{SS_y}} = `r round(r,3)` $$
+
+## Comparison of a test quantity to a quantile
+
+Then, we derive the test quantity
+
+$$t = `r round(r,3)`\sqrt{\frac{`r n`-2}{1-`r round(r,3)`^2}} = `r round(tstor,3)`$$
+
+If we reject $H_0$ or not, depends if the test quantity is larger than the critical threshold set by the quantile $`r round(tkvant,3)`$
+
+## Correlation test in R
+
+In R we use the function `cor.test` generating the test quantity $t$, degrees of freedom for the t-distribution (df), the p-value (i.e. the probability that the test quantity takes the value we got or worse given that the null hypothesis is true), confidence interval for the correlation $I_\rho$
+
+```{r}
+cor.test(df_sam$density,df_sam$sulphates)
+```
+
+One can specify
+
+-   type of alternative hypothesis
+
+-   method to estimate the correlation (Pearson is default)
+
+-   confidence level $1-\alpha$
+
+## Examine the assumption
+
+If $X$ and $Y$ come from a bivariate normal distribution, then both $X$ and $Y$ are normally distributed.
+
+::::: columns
+::: {.column width="70%"}
+```{r}
+qqnorm(df_sam$sulphates)
+qqline(df_sam$sulphates)
+```
+
+```{r}
+qqnorm(df_sam$density)
+qqline(df_sam$density)
+```
+:::
+
+::: {.column width="30%"}
+There is no strong reason to not assume a bivariate normal distribution.
+:::
+:::::
+
+## Non-parametric alternatives
+
+One alternative that does not require an assumption about the distribution of $X$ and $Y$ is to do a rang correlation test. Then the correlation is based on ranks and one uses a different test statistic.
+
+```{r}
+cor.test(df_sam$density,df_sam$sulphates, method = "spearman")
+```
+
+As before, the non-parametric test is a less powerful test.
+
+The third alternative, Kendall - estimates the correlation in a different way than Spearman's rang correlation.
+
+# Correlation analysis example 2
+
+::: callout-note
+## Example. Cholesterol and triglycerid levels
+
+In a study from Italy they measured levels of cholesterol (mmol/l) and triglycerides (mmol/l) on ten men with high fat content in their blood.
+
+| Patient $i$       | 1    | 2    | 3    | 4    | 5    | 6    | 7    | 8    | 9     | 10    |
+|-------------------|------|------|------|------|------|------|------|------|-------|-------|
+| Cholesterol $x_i$ | 5.12 | 6.18 | 6.77 | 6.65 | 6.36 | 5.90 | 5.48 | 8.02 | 10.34 | 8.51  |
+| Triglycerid $y_i$ | 2.30 | 2.54 | 2.95 | 3.77 | 4.18 | 5.31 | 5.53 | 8.83 | 9.48  | 14.20 |
+
+```{r}
+#| echo: false 
+
+df = data.frame(x=c(5.12,6.18,6.77,6.65,6.36,5.90,5.48,8.02,10.34,8.51), y = c(2.30,2.54,2.95,3.77,4.18,5.31,5.53,8.83,9.48,14.20))
+
+ggplot(df,aes(x=x,y=y)) +
+  geom_point() +
+  xlab("Cholesterol") +
+  ylab("Triglycerid")
+```
+
+-   Is there an association between the two variables?
+:::
+
+## Specifying the model, hypotheses and assumptions
+
+**Significance level:** We choose a significance level $\alpha = 0.05$
+
+**Model:** Let $X = \text{"Cholesterol"}$ and $Y = \text{"Triglycerid"}$.
+
+**Hypotheses:** $H_0: \rho = 0$ against $H_1: \rho \neq 0$
+
+**Assumption:** $X$ and $Y$ come from a bivariate normal distribution
+
+## Derive the quadrat and product sums to use for the estimation of the correlation
+
+Based on 10 measurements $\{x_1,y_1\},\{x_2,y_2\},\dots,\{x_{10},y_{10}\}$ we estimate the correlation coefficient by calculating quadrat and product sums:
+
+```{r}
+#| echo: false
+
+n = 10
+ssxy = sum(df$x*df$y)-n*mean(df$x)*mean(df$y)
+ssx = sum(df$x^2) - n*mean(df$x)^2
+ssy = sum(df$y^2) - n*mean(df$y)^2
+r = ssxy/sqrt(ssx)/sqrt(ssy)
+tstor = r*sqrt((n-2)/(1-r^2))
+tkvant <- qt(1-0.025,8)
+```
+
+$$SS_{xy} = `r ssxy`$$
+
+$$SS_{x} = `r ssx`$$
+
+$$SS_{y} = `r ssy`$$
+
+Then we estimate the correlation $\hat{\rho}$ by the sample correlation $$r_{xy}= \frac{SS_{xy}}{\sqrt{SS_x}\sqrt{SS_y}} = `r r` $$
+
+## Comparison of a test quantity to a quantile
+
+Then, we derive the test quantity
+
+$$t = `r r`\sqrt{\frac{10-2}{1-`r r`^2}} = `r tstor`$$
+
+**Test rule:** The null hypothesis $H_0$ is rejected since the test quantity $t>t_{0.025}(10-2) = `r tkvant`$
+
+## Examine assumptions
+
+Before we can conclude, we check the assumption of a normal distribution for $X$ and $Y$.
+
+::::: columns
+::: {.column width="50%"}
+```{r}
+qqnorm(df$x)
+qqline(df$x)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+qqnorm(df$y)
+qqline(df$y)
+```
+:::
+:::::
+
+Based on comparisons of empirical and theoretical quantiles, there is no reason to no assume the assumption of bivariate normal.
+
+## Conclusion
+
+Since we reject the null hypothesis that the correlation is zero and the assumption underlying the test seems to hold, we conclude that there is a linear relationship between Cholesterol and Triglycerides.
+
+> Note that a statistical relationship does not imply a causal relationship! In other words, we cannot conclude that the level of cholesterol affects the level of triglycerides or vice versa.
+
+## Printouts from statistical programs
+
+Here you can compare what you get when you run the command `cor.test`
+
+```{r}
+cor.test(df$x,df$y)
+```
+
+# Regression analysis
+
+::: callout-note
+## Example. Age and resting heart rate
+
+In a study, age and heart rate at rest was measured on randomly chosen patients to investigate if heart rate at rest is influenced by age.
+
+-   Is there a linear association between age and resting heart rate?
+
+```{r}
+#| echo: false 
+#| warning: false
+#| message: false
+
+heart <- read_csv("data/Heart.csv", show_col_types = FALSE)
+```
+
+```{r}
+ggplot(heart,aes(x=Age,y=RestBP)) +
+   geom_point() 
+```
+:::
+
+The regression analysis is based on a model where one of the variables is a function of the other and some random variation
+
+**Model:** $y_i = \text{function of}(x_i) + \text{random errors/noise}$ where $i=1,\dots,n$
+
+-   Simple linear regression occurs when when the function is $\beta_0 + \beta_1 x$
+
+$\beta_0$ is the intercept
+
+$\beta_1$ is the slope
+
+-   $Y$ is the response variable or dependent variable
+
+-   $X$ is the explanatory variable or independent variable
+
+The regression is **simple** when there are only **one** explanatory variable and *multiple* when there are *several* (not in this course).
+
+Here we focus on a continuous response variable where we assume that the random errors $\varepsilon_i$ (residuals, deviations from the linear model) are independent and comes from a normal distribution with equal variance $\sigma^2$.
+
+The model for a simple linear regression is:
+
+$$y_i = \beta_0+\beta_1x_i+\varepsilon_i$$ where residuals for observations $i = 1, ...,n$ are independent and equally distributed according to $\varepsilon_i \sim N(0,\sigma)$
+
+## Ordinary Least Squares
+
+One way to decide which values on the parameters to use is to minimise the sum of the quadratic differences from the line to the data at every data point. This is the idea behind *Ordinary Least Square (OLS) regression*.
+
+$$Q(\beta_0,\beta_1)=\sum \varepsilon_i^2 = \sum (y_i - (\beta_0 + \beta_1 x_i))^2$$
+
+We would like to find values on $\beta_0$ and $\beta_1$ such that the quadratic sum $Q(\beta_0,\beta_1)$ is as small as possible!
+
+The parameters of the model are estimated as follows:
+
+(1) Calculate $\bar{x}$, $\bar{y}$, $SS_x$, $SS_y$ and $SS_{xy}$
+
+(2) Estimate the parameters according to the following
+
+$$\hat{\beta}_1=b_1 = \frac{SS_{xy}}{SS_x}$$
+
+$$\hat{\beta}_0=b_0 = \bar{y} - b_1 \bar{x}$$
+
+If the line is estimated in this way, then we estimate the variation
+
+$$\hat{\sigma}^2=s_e^2 = \frac{\sum (y_i - \hat{y}_i)^2}{n-2} =\frac{\sum (y_i - (b_0+b_1x_i))^2}{n-2}  = \frac{1}{n-2}\left( SS_y - \frac{(SS_{xy})^2}{SS_x}\right)$$
+
+We can also estimate the variance of the estimators:
+
+$$\hat{V}(b_1) = \frac{s_e^2}{SS_x}$$
+
+$$\hat{V}(b_0) = s_e^2\left(\frac{1}{n}+\frac{\bar{x}^2}{SS_x}\right)$$
+
+## Inference in simple linear regression
+
+It is common that we would like to make conclusions by deriving confidence intervals for
+
+-   the parameters
+
+-- the slope of the line $\beta_1$
+
+-- the intercept $\beta_0$ - not so commmon
+
+-   prognosis
+
+-- the expected value on the response variable given a certain value on the explanatory variable $\mu(x_0)=\beta_0 + \beta_1 x_0$
+
+-- a future observation of the response variable conditional on a certain value on the explanatory variable $y(x_0)$
+
+::: callout-note
+## Example. Age and resting heart beat (cont.)
+
+We make an hypothesis test to answer if there is a linear association between age and resting heart beat
+
+**Hypotheses:** $H_0: \beta_1 = 0$ (the slope is zero, there are no linear association)
+
+$H_1: \beta_1 \neq 0$ (the slope is not zero, it cannot be excluded that there is a linear association)
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+
+ggplot(heart,aes(x=Age,y=RestBP)) +
+   geom_point() +
+  geom_smooth(method=lm)
+```
+:::
+
+## Quadrat and product sums and sample means
+
+This is how Ullrika calculates summary measures to proceed. Some calculators have built-in functions to perform these calculations. Use a calculator or R to do the exercises. You will receive calculated sums of squares and products as well as sample means on the written exam.
+
+```{r}
+df <- data.frame(x=heart$Age, y = heart$RestBP)
+n = nrow(df)
+ssxy = sum(df$x*df$y)-n*mean(df$x)*mean(df$y)
+ssx = sum(df$x^2) - n*mean(df$x)^2
+ssy = sum(df$y^2) - n*mean(df$y)^2
+m_y = mean(df$y)
+m_x = mean(df$x)
+
+b1 = ssxy/ssx
+b0 = m_y-b1*m_x
+se2 = (ssy-(ssxy)^2/ssx)/(n-2)
+```
+
+## Confidence interval for the slope
+
+To test if the slope is different from zero, increasing, or decreasing, we construct a confidence interval for the slope.
+
+Given the model for linear regression and if the assumption of independent and normally distributed residuals with the same variance holds, we can use a t-quantile to create confidence intervals for the slope of the line.
+
+$$I_{\beta_1} = b_1 \pm t_{\alpha/2}(n-2)\sqrt{\hat{V}(b_1)}$$
+
+$b_1 = \frac{SS_{xy}}{SS_x} = \frac{`r ssxy`}{`r ssx`} = `r round(b1,3)`$
+
+$n=`r n`$
+
+$\hat{V}(b_1) = \frac{s_e^2}{SS_x} = \frac{`r se2`}{`r ssx`} = `r round(se2/ssx,3)`$
+
+A 95% confidence interval becomes
+
+```{r}
+lb = b1-qt(1-0.025,n-2)*sqrt(se2/ssx) #lower bound
+ub = b1+qt(1-0.025,n-2)*sqrt(se2/ssx) #upper bound
+```
+
+$I_{\beta_1} = `r round(b1,3)` \pm t_{0.025}(`r n`-2)\sqrt{`r round(se2/ssx,3)`} = (`r round(lb,3)`,`r round(ub,3)`)$
+
+## Residual analyses - study if the assumptions hold
+
+Before we can draw any conclusions, we need to examine if the model appears reasonable. Are the residuals normally distributed and independent? This can be investigated by plotting residuals against $x$ and examining if they follow a normal distribution.
+
+To calculate the residuals, I need to estimate the intercept.
+
+$$b_0 = \bar{y} - b_1 \bar{x} = `r round(m_y,1)` - `r round(b1,1)`\cdot `r round(m_x,1)` = `r round(m_y-b1*m_x,1)`$$
+
+where every residual is
+
+$$e_i = y_i - b_0 - b_1x_i$$
+
+```{r}
+res = df$y - b0 - b1*df$x 
+```
+
+::::: columns
+::: {.column width="50%"}
+```{r}
+qqnorm(res)
+qqline(res)
+```
+
+⇒ There is no reason to not assume a normal distribution
+:::
+
+::: {.column width="50%"}
+```{r}
+# if independent and equal variance - no pattern
+plot(df$x,res)
+```
+
+⇒ here is no reason to not assume independence and equal variance
+:::
+:::::
+
+## Make a conclusion from the hypothesis test
+
+Since the interval $I_{\beta_1}$ does not cover zero, we reject the null hypothesis on the significance level $\alpha = 0.05$.
+
+## Printouts from statistical software
+
+In R, one can perform linear regression with the function `lm`. The function `summary` creates a printout of different things, where you need to understand what you need to do the analysis you would like to do.
+
+```{r}
+mod = lm(formula = RestBP ~ Age, data = heart)
+summary(mod)
+```
+
+A confidence interval is calculated by the function `confint` were you are to provide the confidence level (95% is default)
+
+```{r}
+confint(mod)
+```
+
+You can also ask the program to plot residuals. When you do this, you will get several plots showing things that we do not go through in this course.
+
+```{r}
+plot(mod)
+```
+
+You can get residuals by the function `residuals` and examine if the residuals are normally distributed, independent and has equal variance in your own way.
+
+```{r}
+res = residuals(mod)
+```
+
+# Confidence intervals in linear regression
+
+-   Slope of the line
+
+$$I_{\beta_1} = b_1 \pm t_{\alpha/2}(n-2)\sqrt{s_e^2\frac{1}{SS_x}}$$
+
+-   Intercept for the line
+
+$$I_{\beta_0} = b_0 \pm t_{\alpha/2}(n-2)\sqrt{s_e^2\left(\frac{1}{n}+\frac{\bar{x}^2}{SS_x}\right)}$$
+
+-   Expected value on the response variable given that the explanatory variable is $x_0$
+
+$$I_{\beta_0+\beta_1x_0} = b_0+b_1x_0 \pm t_{\alpha/2}(n-2)\sqrt{s_e^2\left(\frac{1}{n}+\frac{(x_0-\bar{x})^2}{SS_x}\right)}$$
+
+-   A future observation of the response variable given that the explanatory variable is $x_0$
+
+$$I_{\beta_0+\beta_1x_0+\varepsilon} = b_0+b_1x_0 \pm t_{\alpha/2}(n-2)\sqrt{s_e^2\left(1 + \frac{1}{n}+\frac{(x_0-\bar{x})^2}{SS_x}\right)}$$
+
+# Regression analysis example 2
+
+::: {callout-note}
+## Example. Lung capacity
+
+In a study, researchers wanted to examine how lung capacity (measured in liters using a spirometer) is influenced by individuals' weight (in kilograms). The two variables were measured in 20 randomly selected women aged 17 to 19 years.
+
+| Person    | 1    | 2    | 3    | 4    | 5    | 6    | 7    | 8    | 9    | 10   |
+|-----------|------|------|------|------|------|------|------|------|------|------|
+| weight    | 54.4 | 56.2 | 49.0 | 63.5 | 60.8 | 59.9 | 62.6 | 62.1 | 52.2 | 50.8 |
+| lung cap. | 3.87 | 3.26 | 2.14 | 4.13 | 3.44 | 2.78 | 2.91 | 3.33 | 3.20 | 2.17 |
+
+| Person    | 11   | 12   | 13   | 14   | 15   | 16   | 17   | 18   | 19   | 20   |
+|-----------|------|------|------|------|------|------|------|------|------|------|
+| weight    | 57.2 | 48.1 | 54.0 | 50.8 | 49.9 | 46.3 | 59.0 | 56.2 | 61.2 | 53.1 |
+| lung cap. | 3.13 | 2.47 | 3.03 | 2.88 | 2.65 | 2.03 | 3.21 | 3.45 | 3.61 | 2.53 |
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+
+df <- data.frame(x = c(54.4,56.2,49.0,63.5,60.8,59.9, 62.6, 62.1, 52.2,50.8, 57.2,48.1, 54.0, 50.8, 49.9, 46.3, 59.0, 56.2, 61.2, 53.1), y = c(3.87,3.26, 2.14, 4.13, 3.44, 2.78, 2.91, 3.33, 3.20, 2.17, 3.13, 2.47, 3.03, 2.88, 2.65, 2.03, 3.21, 3.45, 3.61, 2.53)) 
+
+n = nrow(df)
+ssxy = sum(df$x*df$y)-n*mean(df$x)*mean(df$y)
+ssx = sum(df$x^2) - n*mean(df$x)^2
+ssy = sum(df$y^2) - n*mean(df$y)^2
+m_y = mean(df$y)
+m_x = mean(df$x)
+
+b1 = ssxy/ssx
+b0 = m_y-b1*m_x
+se2 = (ssy-(ssxy)^2/ssx)/(n-2)
+
+ggplot(df,aes(x=x,y=y)) +
+  geom_point() +
+  xlab("Weight (kg)") +
+  ylab("Lung capacity (l)") +
+  ggtitle("Lung capacity against weight")
+```
+
+## Interesting questions
+
+-   Is there an association between weight and lung capacity?
+
+-   Could this association be linear, i.e. if $Y = \text{lung capacity}$ and $X=\text{weight}$, $$y = \beta_0+\beta_1x$$
+
+-   What does it mean in this model when $\beta_1=0$?
+
+-   How much does the lung capacity increase in average when the weight increase with one kg?
+
+-   What is the average lung capacity for women weigthing 60 kg - i.e. what is the **expected** lung capacity for women weigthing 60 kg?
+
+-   What lung capacity can a woman have that weights 60 kg - i.e. what lung capacty would we **predict** for a randomly chosen woman weigthing 60 kg?
+
+-   How much of the variation in lung capacity is explained by their weigths?
+:::
+
+## Hypothesis test - Is there an association between lung capacity and weigth?
+
+**Model:** $Y = \text{lung capacity}$ and $X=\text{weight}$ with a linear relation
+
+$$y_i = \beta_0+\beta_1x_i+\varepsilon_i$$
+
+**Assumptions:** We assume that the residuals are independent and equally distributed accordingt to $\varepsilon_i \sim N(0,\sigma)$
+
+**Hypothesis:** $H_0: \beta_1 = 0$ against $H_1: \beta_1 \neq 0$ are tested with significance level $\alpha = 0.05$
+
+## Derive descriptive measures from the samples
+
+$n = `r n`$, $\bar{x} = `r m_x`$, $\bar{y} = `r m_x`$
+
+$SS_{xy} = `r ssxy`$, $SS_x = `r ssx`$, $SS_y = `r ssy`$
+
+## Derive a confidence interval for the slope
+
+```{r}
+#| echo: false
+
+lb = b1-qt(1-0.025,n-2)*sqrt(se2/ssx) #lower bound
+ub = b1+qt(1-0.025,n-2)*sqrt(se2/ssx) #upper bound
+```
+
+$$I_{\beta_1} = b_1 \pm t_{0.025}(`r n-2`)\sqrt{\frac{s_e^2}{SS_x}} = `r round(b1,3)` \pm `r round(qt(1-0.025,n-2),3)`\sqrt{`r round(se2/ssx,5)`} = (`r round(lb,3)`,`r round(ub,3)`) $$
+
+The null hypothesis is rejected on significance level $\alpha=0.05$ since the interval does not cover zero.
+
+⇒ There is support of a linear association between weight and lung capacity. The lung capacity increases in average `r b1` when the weight increases with one kg?
+
+## Make prognosis
+
+### Expected value of the response variable
+
+-   What is the average lung capacity for women weighting $x_0=60$ kg - i.e. what is the **expected** lung capacity for women with weight 60 kg?
+
+```{r}
+#| echo: false
+x0 = 60
+
+y_x0 = b0+b1*x0
+lb = b0+b1*x0-qt(1-0.025,n-2)*sqrt(se2*(1/n + (x0-m_x)^2/ssx)) #lower bound
+ub = b0+b1*x0+qt(1-0.025,n-2)**sqrt(se2*(1/n + (x0-m_x)^2/ssx)) #upper bound
+```
+
+The expected value is $\mu(60) = b_0+b_1\cdot 60 = `r round(b0,2)`+`r round(b1,2)` \cdot 60 = `r round(y_x0,2)`$
+
+A 95% confidence interval for this expected value is
+
+$$\begin{split} & I_{\beta_0+\beta_1x_0} = b_0+b_1\cdot 60 \pm t_{0.025}(`r n-2`)\sqrt{s_e^2\left(\frac{1}{n}+\frac{(x_0-\bar{x})^2}{SS_x}\right)} = \\ & `r round(b0,2)`+`r round(b1,2)` \cdot 60 \pm `r round(qt(1-0.025,n-2),3)` \sqrt{`r round(se2,3)`\left(\frac{1}{`r n`}+\frac{(60-`r round(m_x,1)`)^2}{`r round(ssx,2)`}\right)} = \\ & (`r round(lb,2)`,`r round(ub,2)`) \end{split}$$
+
+### Illustration of the confidence interval for the expected value
+
+```{r}
+mod = lm(y~x,data=df)
+newdf = data.frame(x=seq(min(df$x),max(df$x),length.out=50))
+konf = data.frame(predict(mod,newdata=newdf,interval = "confidence"))
+
+plot(y~x,data=df,ylim=c(1,5),xlab = 'weight', ylab='lung capacity')
+lines(newdf$x,konf$fit,col='darkred')
+lines(newdf$x,konf$lwr,col = 'blue',lty=2)
+lines(newdf$x,konf$upr,col = 'blue',lty=2)
+```
+
+### A future observation of the response variable
+
+-   What lung capacity can a woman have that weights 60 kg - i.e. what lung capacity would we **predict** for a randomly chosen women weigthing 60 kg?
+
+```{r}
+#| echo: false
+x0 = 60
+
+y_x0 = b0+b1*x0
+lb = b0+b1*x0-qt(1-0.025,n-2)*sqrt(se2*(1+1/n + (x0-m_x)^2/ssx)) #lower bound
+ub = b0+b1*x0+qt(1-0.025,n-2)**sqrt(se2*(1+1/n + (x0-m_x)^2/ssx)) #upper bound
+```
+
+A 95% confidence interval for this prediction is
+
+$$\begin{split} & I_{\beta_0+\beta_1x_0+\varepsilon} = b_0+b_1\cdot 60 \pm t_{0.025}(`r n-2`)\sqrt{s_e^2\left(1+\frac{1}{n}+\frac{(x_0-\bar{x})^2}{SS_x}\right)} = \\ & `r round(b0,2)`+`r round(b1,2)` \cdot 60 \pm `r round(qt(1-0.025,n-2),3)` \sqrt{`r round(se2,3)`\left(1+\frac{1}{`r n`}+\frac{(60-`r round(m_x,1)`)^2}{`r round(ssx,2)`}\right)} = \\ & (`r round(lb,2)`,`r round(ub,2)`) \end{split}$$
+
+> The confidence interval for the prediction (also referred to as the prediction interval) is wider than the confidence interval for the expected value.
+
+> Be aware that the model is valid over the interval of observed x-values. This means that prognoses outside this interval are less reliable.
+
+### Illustration of prediction and confidence intervals for the response variable
+
+```{r}
+mod = lm(y~x,data=df)
+newdf = data.frame(x=seq(min(df$x),max(df$x),length.out=50))
+konf = data.frame(predict(mod,newdata=newdf,interval = "confidence"))
+
+pred = data.frame(predict(mod,newdata=newdf,interval = "prediction"))
+
+plot(y~x,data=df,ylim=c(1,5),xlab = 'weight', ylab='lung capacity')
+lines(newdf$x,konf$fit,col='darkred')
+lines(newdf$x,konf$lwr,col = 'blue',lty = 2)
+lines(newdf$x,konf$upr,col = 'blue',lty = 2)
+lines(newdf$x,pred$lwr,lty = 2)
+lines(newdf$x,pred$upr,lty = 2)
+```
+
+## Coefficient of determination $R^2$
+
+-   How much of the variation in lung capacity is explained by weight?
+
+The coefficient of determination ($R^2$) express how large part of the variance in the dependent variable ($Y$) that can be explained by the variation in the independent variable ($X$) under the condition that there is a linear association between $X$ and $Y$.
+
+```{r}
+#| echo: false
+
+icke_var = sum((df$y - (b0 + b1*df$x))^2)
+tot_var = sum((df$y - m_y)^2)
+r2 = 1-icke_var/tot_var
+```
+
+$$R^2 = 1 - \frac{\sum (y_i-\hat{y}_i)^2}{\sum (y_i-\bar{y})^2} = `r round(100*r2,1)`\%$$
+
+where the nominator corresponds to non-explained variance $\sum (y_i-\hat{y}_i)^2 = `r icke_var`$ and the denominator corresponds to the total variation $\sum (y_i-\bar{y})^2 = `r tot_var`$
+
+In this example, weigth explains $`r round(100*r2,1)`\%$ of the variation in lung capacity.
+
+> The coefficient of determination is the same as the squared correlation coefficient when the mdoel is linear, i.e. $R^2 = r^2$
+
+> The coefficient of determination does not say anything of how good the model is. One should always visualise the model and data.
+
+# The importance of visualising data and model
+
+[Anscombe's dataset](https://en.wikipedia.org/wiki/Anscombe%27s_quartet) have the same descriptive measures (sample means, correlation coefficient, estimated regression line, coefficient of determination) but show different patterns when plotted.
+
+![](img/anscombe.png)
+
+# Correlation or regression?
+
+-   Correlation analysis
+
+-- Both $X$ and $Y$ varies
+
+-- None of the variables can be seen as dependent of the other
+
+-- $X$ and $Y$ are assumed to be variables from a bivariate normal distribution
+
+-   Regression analysis
+
+-- The values on $X$ are measures with relatively small errors
+
+-- $Y$ can be seen to be dependent on $X$
+
+-- The purpose of the statistical analysis is to make a prognosis of $Y$ given specific values on $X$
+
+-- The residuals are assumed to come from a normal distribution
+
+> Choose the analysis that is most suitable for your problem. Avoid using both analyses for the same problem!
+
+> Be sure to state hypotheses and examine model assumptions for both forms of analysis!

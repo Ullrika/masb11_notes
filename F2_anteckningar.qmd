@@ -1,0 +1,456 @@
+---
+title: "F2. Diskreta slumpvariabler"
+author: "Ullrika Sahlin"
+format:
+  html:
+    embed-resources: true
+---
+
+# Slumpvariabler
+
+En slumpvariabel beskriver ett slumpmässigt försök genom att ange en sannolikhet för alla utfall i utfallsrummet. 
+
+En slumpvariabel kallas även för **stokastisk variabel** (engleska random variable) och brukar betecknas med stora bokstäver, t.ex. $X$.
+
+::: callout-tip
+## Exempel: Tärningskast med en n-sidig tärning
+
+$X$ = "antal prickar"
+
+Sannolikheten för att $X=1$ är $\frac{1}{n}$
+
+Kuriosa - det finns numer en tärning som flippas som ett mynt
+[The First Dice You Flip Like A Coin](https://yarrostudios.com/pages/flipdie-1)
+
+:::
+
+::: callout-tip
+## Exempel: Blodsockerhalten
+
+$X$ = "blodsockerhalten (mmol/l) hos en slumpmässigt vald person ur en population"
+
+:::
+
+## Slumpvariabler - diskreta och kontinuerliga
+
+Det finns två olika sorters slumpvariabler: 
+
+- Diskreta s.v. antar specifika värden såsom heltal, naturliga tal eller vissa kategorier
+
+- Kontinuerliga s.v. antar reella tal 
+
+::: callout-note
+### Är följande s.v. diskret eller kontinuerlig? 
+
+(A) Myntkast som ger krona eller klave
+
+(B) Antal stjärnor i universum
+
+(C) Tiden (i sekunder) det tar för vinnaren att komma i mål i vasaloppet
+
+(D) Uppmätt vikt av en myra i milligram 
+:::
+
+## Från kvalitativ till kvantitativ beskrivning av en händelse
+
+Utfallsrummet vid kast med mynt är {krona,klave}
+
+Låt oss definiera en diskret slumpvariabel som beskriver detta slumpförsök 
+
+$$X = \left\{ \begin{array}{lr}
+        1 & \text{om utfallet är krona}\\
+        0 & \text{om utfallet är klave}
+        \end{array}\right.$$
+        
+
+::: callout-tip
+
+Ett utfall för slumpvariabeln $X$ betecknas med "lilla" $x$. 
+
+:::
+
+        
+# Diskret slumpvariabel - sannolikhetsfunktion
+
+En s.v. definieras med sannolikheter för utfall. För en diskret s.v. gör man det med sannolikhetsfunktionen $f_X(x) = P(X=x)$
+
+::: callout-tip
+Man kan välja att förenkla beskrivningen av sannolikhetsfunktionen genom att skriva $f(x)$. 
+
+Sannolikhetsfunktionen kan även betecknas som $p(x)$.
+
+:::
+
+
+# Diskret slumpvariabel - Fördelningsfunktion
+
+Alla slumpvariabler beskrivs med en (kumulativ) fördelningsfunktion
+
+$F_X(x) = P(X \leq x)$
+
+För en diskret s.v. är fördelningsfunktionen summan av alla sannolikheter för alla utfall som är lägre eller lika med $x$: 
+
+$F_X(x) = \sum_{x_i\leq x} P(X=x_i) = \sum_{x_i\leq x} f_X(x_i)$
+
+Detta gäller alltid
+
+- $0\leq F_X(x) \leq 1$
+
+- $F_X(-\infty) = 0$
+
+- $F_X(\infty) = 1$
+
+::: callout-tip
+Man kan välja att förenkla beskrivningen av fördelningsfunktionen genom att skriva $F(x)$. 
+
+Den engelska termen är Cumulative Density Function och brukar förkortas CDF.
+:::
+
+# Sannolikhetsfördelningar
+
+En sannolikhetsfördelning (eller bara fördelning) för en slumpvariabel gör det möjligt att beräkna sannolikheter för utfall och händelser.
+
+En del sannolikhetsfördelningar har fått namn. 
+
+Det är bra att känna till vanliga fördelningar.  
+
+# Likformig heltalsfördelning 
+
+::: callout-tip
+## Den klassiska tärningen
+
+Slumpvariabeln för försöket att kasta en sex-sidig tärning
+
+![](img/dice.jpg){width=20%}
+
+Sannolikhetsfunktion: 
+
+$P(\text{tärningen visar }x\text{ prickar})=\frac{1}{6}$ där $x=1,...,6$
+
+Annat skrivsätt
+
+$f(x)=P(X=x)=\frac{1}{6}$ där $x=1,...,6$
+
+- Rita upp fördelningsfunktionen!
+
+- Vad är sannolikheten att få minst femma?
+
+- Vad är sannolikheten att få högst en tvåa?
+
+- Vad förväntar vi oss att få för resultat på träningen "i genomsnitt"? 
+
+:::
+
+## Simulering av kast med tärning 
+
+```{r}
+#| warning: false
+#| echo: false 
+
+iter = 20
+prickar = sample.int(6,size = iter, replace = TRUE)
+plot(prickar,ylim=c(1,6),ylab="prickar",xlab="kast",col='gray',
+     title='genomsnittsvärde sett över kast')
+lines(cumsum(sample.int(6,size = iter, replace = TRUE))/1:iter,col='darkred')
+```
+
+
+
+```{r}
+#| warning: false
+#| echo: false 
+
+iter = 150
+prickar = sample.int(6,size = iter, replace = TRUE)
+plot(prickar,ylim=c(1,6),ylab="prickar",xlab="kast",col='gray',
+     title='genomsnittsvärde sett över kast')
+lines(cumsum(sample.int(6,size = iter, replace = TRUE))/1:iter,col='darkred')
+```
+
+# Poissonfördelning
+
+Vi använder Poissonfördelning när vi vill veta hur många gånger något händer under ett visst tidsintervall 
+
+- Antal bilar som passerar under en timme
+
+
+:::: {.columns}
+::: {.column width="60%"}
+![](img/bilar.png){width="80%"}
+
+- Antal vulkanutbrott under 100 år
+
+- Antal fåglar man ser när man går längs med ett transekt (linje)
+:::
+
+::: {.column width="40%"}
+![](img/fågel.jpg)
+:::
+::::
+
+## Krav på Poissonfördelning
+
+För att en slumpvariabel ska anses följa en Poissonfördelning måste följande gälla:
+
+- Det sker i snitt lika många händelser per tidsenhet
+
+- Antal händelser i icke överlappande intervall är oberoende
+
+- Två händelser kan inte hända samtidigt
+
+::: callout-tip
+## Vulkanutbrott
+
+Det är tveksamt om antal vulkanutbrott under 100 år stämmer på dessa krav - vilket?
+:::
+
+
+## Poisson-fördelning - Sannolikhetsfunktion
+
+$X \sim Po(\lambda)$ (symbolen $\sim$ ("tilde") och det som följer läses som "*är fördelad som en Poissonfördelning*")
+
+$\lambda$ (grekisk bokstav "lambda") är parameter i sannolikhetsfunktionen
+
+$f_X(x) = P(X = x)=\frac{e^{-\lambda}\cdot \lambda^x}{x!}$ där utfallsrummet består av alla icke-negativa heltal $x \in \{0,1,2,3,...\}$
+
+[Poisson distribution on wikipedia](https://en.wikipedia.org/wiki/Poisson_distribution)
+
+## Poissonfördelning
+
+::: callout-tip
+### Exempel. Poissonfördelning
+
+För ett antal år sedan slog en hudläkare larm att i ett område i Lund, beläget i närheten av en kemisk industri, var antalet fall av en sällsynt cancersjukdom ovanligt stort. I det aktuella området hade **nio personer** (sex kvinnor och tre män) drabbats av sjukdomen under en femårsperiod. Då läkaren studerade det rikstäckande cancerregistret såg han att i en population like astor som den i det aktuella området borde man under denna femårsperiod förväntat sig att antalet sjukdomsfall skulle vara fyra. 
+
+**Modell:** $X=$ "antalet sjuka i området under femårsperioden
+
+$X\sim Po(\lambda=4)$
+
+$P(\text{precis x sjuka}) = P(X=x) = f(x) =  \frac{e^{-4}\cdot 4^x}{x!}$
+
+```{r}
+#| echo: false
+#| warning: false
+
+library(ggplot2)
+
+df <- data.frame(xx = 0:16, px = dpois(0:16,4))
+
+
+
+ggplot(df,aes(x=xx,y=px)) +
+  geom_col(fill = '#5897c7', width = 0.5) +
+  labs(y=expression(f(x)),x=expression(X))
+```
+
+
+- Vad är sannolikheten att man observerar precis 5 sjuka? 
+
+- Vad är sannolikheten att man observerar högst 2 sjuka? 
+
+- Vad är sannolikheten att man observerar 9 eller fler sjuka? 
+
+### Exempel. Poissonfördelning
+
+- Vad är sannolikheten att man observerar precis 5 sjuka? 
+
+```{r}
+#| echo: false
+#| warning: false
+
+ggplot(df,aes(x=xx,y=px)) +
+  geom_col(fill="#5897c7", width = 0.5) +
+  geom_col(data=data.frame(xx=5,px = dpois(5,4)),fill="#9e2510", width = 0.5) +
+  labs(y=expression(f(x)),x=expression(X)) +
+  ggtitle("P(X=5)")
+
+```
+
+### Exempel. Poissonfördelning
+
+- Vad är sannolikheten att man observerar högst 2 sjuka? 
+
+$P(X\leq 2) = P(X=0) + P(X = 1) + P(X = 2)$
+
+```{r}
+#| echo: false
+#| warning: false
+
+ggplot(df,aes(x=xx,y=px)) +
+  geom_col(fill="#5897c7", width = 0.5) +
+  geom_col(data=data.frame(xx=c(0,1,2),px = dpois(c(0,1,2),4)),fill="#9e2510", width = 0.5) +
+  labs(y=expression(f(x)),x=expression(X)) 
+
+```
+
+### Exempel. Poissonfördelning
+
+- Vad är sannolikheten att man observerar 9 eller fler sjuka? 
+
+$P(X\geq 9) = P(X=9) + P(X = 10) + ....$
+
+kan också skrivas som
+
+$P(X\geq 9) = 1 - P(X \leq 8)$
+
+
+```{r}
+#| echo: false
+#| warning: false
+
+ggplot(df,aes(x=xx,y=px)) +
+  geom_col(fill="#5897c7", width = 0.5) +
+  geom_col(data=data.frame(xx=9:16,px = dpois(9:16,4)),fill="#9e2510", width = 0.5) +
+  labs(y=expression(f(x)),x=expression(X)) 
+
+```
+:::
+
+## Ta fram värdet på sannolikhet med hjälp av sannolikhetstabell
+
+Tabell för fördelningsfunktionen för olika parametervärden.
+
+$P(X \leq 8) = 0.97864$
+
+$P(X \geq 9) = 1- P(X \leq 8) = 1 - 0.97864 = 0.02136$ 
+
+![](img/tabpo.png)
+
+# Binomialfördelning
+
+Binomialfördelningen uppstår när man gör $n$ oberoende försök och räknar antalet gånger som försöket ”lyckades”
+
+::: callout-tip
+## Exempel. Binomialfördelning
+
+- Du försöker träffa en papperskorg med 10 pappersbollar
+
+![](img/bin.jpg){fig-align="center" width=60%}
+
+- Du kastar ett mynt 20 gånger och räknar hur många gånger du fick krona 
+:::
+
+## Binomialfördelning - försök till härledning av sannolikhetsfunktionen
+
+Vi gör $n=10$ försök där sannolikheten att lyckas i ett försök är $p$
+
+$X=$ "antal lyckade försök"
+
+$P(X=0) = P(\text{misslyckats i 10 försök}) = (1-p)(1-p)\cdots (1-p) = (1-p)^{10}$
+
+$P(X=1)$? 
+
+$X=1$ motsvarar att lyckas i ett försök och misslyckas i nio försök, där ordnigen inte spelar någon roll
+
+lyckas i första försöket: $p(1-p)\dots (1-p) = p(1-p)^{9}$
+
+detta kan ske på 10 sätt, vilket ger $P(X=1) = 10\cdot p(1-p)^{9}$
+
+På samma sätt: $P(X=2) = \frac{10\cdot 9}{2}\cdot p^2(1-p)^8$
+
+## Binomialfördelning - sannolikhetsfunktionen
+
+$X \sim Bin(n,p)$ 
+
+Parametrarna är $n$, antal försök, och $p$, sannolikheten att "lyckas" i ett försök.
+
+$f_X(x) = P(X = x)== \frac{n!}{x!(n-x)!}p^x\cdot (1-p)^{n-x}$ där utfallsrummet består av heltal mellan 0 och $n$, d.v.s. $x \in \{0,1,2,3,...,n\}$
+
+[Binomial distribution on wikipedia](https://en.wikipedia.org/wiki/Binomial_distribution)
+
+## Binomialfördelning
+
+::: callout-tip
+### Exempel: Vi kastar en fyr-sidig tärning 7 gånger
+
+$X=$ "antal tärningar som visar en 1:a" 
+
+$X \sim Bin(n,p)$ där $n=7$ och $p=\frac{1}{4}$
+
+![](img/f4.png){fig-align="center" width=20%}
+
+- Vad är sannolikheten att få fyra 1:or?
+
+$P(X=4) = \binom{n}{x}p^x\cdot (1-p)^{n-x} = \binom{7}{4}\frac{1}{4}^4\cdot (1-\frac{1}{4})^{3}$
+
+- Vad är sannolikheten att få högst fyra 1:or?
+
+$P(X\leq 4) = \sum_{x = 0}^4 P(X=x) = \sum_{x = 0}^4 \binom{7}{x}\frac{1}{4}^{x}\cdot (\frac{3}{4})^{7-x}$
+
+Jobbigt att räkna ut
+:::
+
+## Ta fram värdet på sannolikhet med hjälp av sannolikhetstabell
+
+Tabell för fördelningsfunktionen för olika parametervärden.
+
+$P(X\leq 4) = 0.98712$
+
+
+![](img/tabbin.png)
+
+# Väntevärde och varians 
+
+Det finns flera sätt att sammanfatta den slumpmässiga variation som finns hos en slumpvariabel $X$
+
+Mått på centralt läge: 
+
+- **Väntevärde** ”vilket värde som $X$ antar i snitt”
+
+- $E(X)$ (E står för Expected value)
+
+- $\mu$ (grekisk bokstav som uttalas *my*)
+
+Mått på spridning: 
+
+- **Varians** - ”hur sprider sig värdena som $X$ antar kring väntevärdet”
+
+- $V(X)$
+
+- $\sigma^2$ (grekisk bokstav som uttalas *sigma* i kvadrat)
+
+- **Standardavvikelse** - $\sqrt{V(X)}$
+
+- $\sigma$
+
+::: callout-tip
+Alla slumpvariabler har väntevärde och varians som kan betecknas med $\mu$ och $\sigma^2$ oavsett vilken sannoliketsfördelning de tillhör. 
+
+T.ex. Väntevärde och varians för s.v. $X$ är $\mu_X$ och $\sigma^2_X$
+
+Väntevärde och varians för s.v. $Y$ är $\mu_Y$ och $\sigma^2_Y$
+
+:::
+
+# Väntevärde för en diskret slumpvariabel 
+
+$E(X) = \sum_{\text{alla }x} x\cdot P(X=x) = \sum_{\text{alla }x} x\cdot f(x) $ 
+
+::: callout-tip
+## Väntevärde för en likformig fördelning
+
+$E(X)=\sum_{x=1}^6 x\cdot \frac{1}{6} = \frac{1}{6} \cdot (1 + 2+ 3 +4+5+6) = 3.5$ 
+:::
+
+## Väntevärde för en Poisson-fördelning
+
+$X \sim Po(\lambda)$
+
+$E(X) = \lambda$
+
+I formelsamlingen heter parametern för Poissonfördelningen $\mu$
+
+## Väntevärde för en Binomialfördelning
+
+$X \sim Bin(n,p)$
+
+$E(X) = n\cdot p$
+
+# Väntevärde av en funktion av en slumpvariabel 
+
+$g(x)$ är en funktion 
+
+$E(g(X)) = \sum_{\text{alla }x} g(x)\cdot f(x)$
+
+*sannolikhetsfunktionen förändras inte för transformerade värden*
+

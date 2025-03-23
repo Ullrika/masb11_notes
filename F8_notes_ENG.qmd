@@ -1,0 +1,515 @@
+---
+title: "F8. Two samples"
+author: "Ullrika Sahlin"
+format: 
+  html:
+    embed-resources: true
+---
+
+# Comment about $\sim$ and $\in$
+
+Both ways to assign a distribution for a random variable are used:
+
+$$X \sim N(\mu,\sigma)$$
+
+$$X \in N(\mu,\sigma)$$
+
+Ullrika uses $\sim$ with the interpretation "distributed as" and $\in$ with the interpretation "an element in".
+
+It it ok to use $X \in N(\mu,\sigma)$.
+
+# Sampling distribution for the sample variance 
+
+## $\chi^2$-distribution
+
+A sum of squared $k$ independent standardised normal distributed random variables follows a $\chi^2$-distribution with $k$ degrees of freedom.
+
+If $Z_i\sim N(0,1)$ and all $i=1,\dots,k$ are independent then 
+
+$$\sum_{i=1}^k Z_i^2\sim \chi^2(k)$$
+
+## A simulation of $\chi^2$-distribution from N(0,1)
+
+```{r}
+# simul av eation of chi2 with 1 degrees of freedom
+hist((rnorm(10^4))^2,probability=TRUE,main=latex2exp::TeX("$\\chi^2(1)$"))
+xx = seq(0,25,by = 0.1)
+lines(xx,dchisq(xx,1),col='darkred')
+```
+
+```{r}
+# simulation of a chi2 with four degress of freedom
+hist((rnorm(10^4))^2+(rnorm(10^4))^2+(rnorm(10^4))^2+(rnorm(10^4))^2,probability=TRUE,ylim = c(0,0.2),main=latex2exp::TeX("$\\chi^2(4)$"))
+xx = seq(0,25,by = 0.1)
+lines(xx,dchisq(xx,4),col='darkred')
+```
+
+## Sampling distribution for the sample variance
+
+Imagine that we repeatedly make new observations of a normally distributed random variable $X \sim N(\mu,\sigma)$ and calculate the sample variance. In the same way as we can consider the sample mean $\bar{x}$ as a random variable, we can also do so with the sample variance $s^2$.
+
+$$s^2 = \frac{\sum_{i=1}^n (X_i-\bar{x})^2}{n-1}$$
+
+We rewrite it to a sum $(n-1)s^2$. If we then divide by the true value of the variance we get the ratio
+
+$$\frac{(n-1)s^2}{\sigma^2} = \frac{\sum_{i=1}^n (X_i-\bar{x})^2}{\sigma^2}$$
+
+The ratio can be written as a sum of the square root of random variables. Because we subtract the estimate of the expected value and divide by the variance, one can show that it is a sum of squared standardised random variables, however only $n-1$ independent ones. We will not go through this proof in this course, but one can show that the ratio follows a $\chi^2$-distribution:
+
+$$\frac{(n-1)s^2}{\sigma^2} \sim \chi^2(n-1)$$
+
+## Simulation of the sampling distribution of the sample variance
+
+```{r}
+# Simulation of the sampling distribution of the sample variance
+
+mu = 3.3 #choose what you want
+sigma2 = 20 #choose what you want
+n = 10 #sample size
+niter = 1e4 #number of times we "make" new observations
+sam <- replicate(niter,
+  {
+  x <- rnorm(n,mu,sqrt(sigma2))
+  s2 <- var(x)
+  s2*(n-1)/sigma2
+  }
+)
+
+hist(sam,prob = TRUE,main=latex2exp::TeX("$\\chi\\^2(n-1)"),xlab = latex2exp::TeX("(n-1)s\\^2/\\sigma\\^2"))
+pp <- ppoints(200)
+xx <- qchisq(pp,n-1)
+yy <- dchisq(xx,n-1)
+lines(xx,yy,col='darkred')
+```
+
+Note that the ratio between the sample variance and the real variance can be rewritten to be a $\chi^2$-distributed random variable divided by $n-1$
+
+$$\frac{s^2}{\sigma^2}=\frac{(n-1)s^2}{(n-1)\sigma^2}=\frac{\frac{(n-1)s^2}{\sigma^2}}{(n-1)}$$ {#eq-kvot}
+
+# Compare two populations
+
+Two situations:
+
+- Does a medicine have any effect? Compare a group taking the medicine with a group receiving a placebo.
+
+- Is there any difference before and after treatment? Take two measurements on the same patients.
+
+## Two independent samples
+
+$X_i = \text{"oxygen saturation in patient i receiving the medicine}$
+
+$Y_j = \text{"oxygen saturation in patient j receiving a placebo"}$
+
+**Strategy:** The study needs to be conducted so one can assume that $X_i$, $i=1,\dots,n_x$ och $Y_j$, $j=1,\dots,n_y$ are independent, e.g. by randomly placing the patients in the two groups (*randomise*).
+
+## Samples in pairs
+
+$X_i = \text{"oxygen saturation in patient i before treatment"}$
+
+$Y_i = \text{"oxygen saturation in patient i after treatment"}$
+
+**Strategy:** Make a new random variable $\Delta_i = X_i - Y_i$ and continue with the statistical inference on $\Delta_i$.
+
+::: callout-note
+### Example: Does alcohol consumption increase fat in the liver?
+
+Twelve test subjects were selected, who can be considered a random sample among healthy individuals in their mid-twenties. The test subjects have abstained from all alcohol consumption for an extended period, and samples of their livers have been taken. Subsequently, they were given to drink 4 cans of beer per day, and after one month, new liver tests were conducted. The following liver fat values were obtained:
+
+|                       |      |      |      |       |      |      |      |      |      |      |      |      |
+|-----------------------|------|------|------|-------|------|------|------|------|------|------|------|------|
+| Person nr             | 1    | 2    | 3    | 4     | 5    | 6    | 7    | 8    | 9    | 10   | 11   | 12   |
+| Before                | 0.25 | 0.19 | 0.13 | 0.23  | 0.15 | 0.14 | 0.24 | 0.23 | 0.17 | 0.15 | 0.10 | 0.17 |
+| After                 | 0.50 | 0.28 | 0.18 | 0.18  | 0.34 | 0.41 | 0.33 | 0.26 | 0.35 | 0.42 | 0.22 | 0.29 |
+|Difference After-Before| 0.25 | 0.09 | 0.05 | -0.05 | 0.19 | 0.27 | 0.09 | 0.03 | 0.18 | 0.27 | 0.12 | 0.12 |
+
+:::
+
+**Model:** $X=\text{"Change in fat level"} \sim N(\mu,\sigma)$
+
+This looks like a reasonable model when we compare theoretical to empirical quantiles:
+
+```{r}
+diff <- c(0.25, 0.09, 0.05, -0.05, 0.19, 0.27, 0.09, 0.03, 0.18, 0.27, 0.12, 0.12)
+qqnorm(diff)
+qqline(diff)
+```
+
+Specify suitable hypotheses and test if the data supports the suspicion of increased liver fat from alcohol consumption.
+
+**Hypotheses:**
+
+$H_0: \mu = 0$ (Alcohol does not influence liver fat)
+
+$H_1: \mu > 0$ (Alcohol influence liver fat)
+
+### Test quantity with critical area
+
+-   If $\sigma$ is known, we create $z = \frac{\bar{x}-0}{\sigma/\sqrt{12}}$
+
+Reject $H_0$ at the significance level $\alpha = 0.05$ if $z > \lambda_{\alpha}$
+
+-   If $\sigma$ is unknown, create $t = \frac{\bar{x}-0}{s/\sqrt{12}}$
+
+Reject $H_0$ at the significance level  $\alpha = 0.05$ if $t > t_{\alpha}(n-1)$
+
+In this example, the standard deviation is unknown. We reject  $H_0$ since  $t = \frac{ 0.1342-0}{0.1008/\sqrt{12}} = `r round(mean(diff)/sd(diff)*sqrt(length(diff)),2)` > `r round(qt(0.95,length(diff)-1),2)`$
+
+### Test with confidence interval
+
+We create a confidence for the expected value bounded from below.
+
+$\begin{split} I_\mu: & (\bar{x} - t_{\alpha}(n-1)\frac{s}{\sqrt{n}},\infty) = \\ & (0.1342 - 1.796 \frac{0.1008}{\sqrt{12}}, \infty) = (0.082,\infty) \end{split}$
+
+We reject $H_0$ at a significance level $\alpha = 0.05$ because the  95% confidence interval does not cover 0.
+
+### Test with the direct method
+
+If $H_0$ is true it holds that $t=\frac{\bar{x}-0}{s/\sqrt{n}} \sim t(n-1)$ (t-distributed).
+
+$P(\text{"what we got or worse"}|H_0) = P(t > 4.61) =$ 
+$1 - P(t \leq 4.61) = 1 - `r round(pt(4.61,11),4)` = `r 1-round(pt(4.61,11),4)`$
+
+We reject $H_0$ at the significance level $\alpha = 0.05$ because the $p$-value $< \alpha$.
+
+## Why use p-values
+
+-   p-value is often included in print outs from statistical programs
+
+-   it is handy in situations when it is not possible to make a normal approximation
+
+::: callout-tip
+### Example. Disease Cases
+
+In an area located near a refinery, during a 5-year period, there were 9 cases of leukemia compared to an "expected" 4.3 cases. Is the area more affected than the rest of the country? For a "rare" disease, the variation in the number of disease cases can often be described by a Poisson distribution.
+
+**Model:** $X = \text{"number of leukemia cases in the area"} \sim Po(\lambda)$
+
+**Hypotheses:**
+
+$H_0: \lambda = 4.3$
+
+$H_1: \lambda > 4.3$
+
+If $H_0$ is true it holds that $X\sim Po(4.3)$
+
+We observed  $x = 9$ cases. How likely is it under the $H_0$-distribution?
+
+```{r}
+#| echo: false
+#| warning: false
+
+library(ggplot2)
+
+df <- data.frame(xx = 0:16, px = dpois(0:16,4))
+
+ggplot(df,aes(x=xx,y=px)) +
+  geom_col(fill="#5897c7", width = 0.5) +
+  geom_col(data=data.frame(xx=9:16,px = dpois(9:16,4)),fill="#9e2510", width = 0.5) +
+  labs(y=expression(f(x)),x=expression(X)) 
+```
+:::
+
+### Use the p-value when it is not possible to do normal approximation
+
+Test the hypotheses with a significance level at $\alpha=0.05$.
+
+$\begin{split} p\text{-value} & = P(\text{"what we got or worse"}) = P(X\geq 9) = \\& 1-P(X\leq 8) = `r round(1-ppois(8,4.3),3)` \end{split}$
+
+We can reject $H_0$ because the $p$-value \< 0.05.
+
+If we instead had chosen a significance level of $\alpha = 0.01$, then we would not have been able to reject $H_0$ because the $p$-value \> 0.01.
+
+::: callout-warning
+-   the $p$-value is not the probability that the null-hypothesis is true
+
+-   one have to choose a significance level even if you use the direct method
+
+- the $p$-value does not say anything about how large the difference is
+:::
+
+### What would it look like if we could do a normal approximation
+
+We can do a normal approximation of a Poisson distribution when the expected value $\lambda > 15$. What happens if we instead had a more common disease?
+
+**Model:** $Y = \text{"number of flu cases in the area"} \sim Po(\lambda)$
+
+**Hypotheses:**
+
+$H_0: \lambda = 16$
+
+$H_1: \lambda > 16$
+
+If $H_0$ is true then $X\sim Po(16)$
+
+We observed $x = 30$ cases. How likely is it under the $H_0$-distribution?
+
+Test the hypotheses with a significance level of $\alpha=0.05$.
+
+$\begin{split} p\text{-value} & = P(\text{"what we got or worse"}) = P(Y\geq 30) = \\& 1-P(Y\leq 29) = 1 - P(\frac{Y-\lambda}{\sqrt{\lambda}} \leq \frac{29-16}{4}) = \\ & 1 - P(Z \leq 3.25) \overset{A} = 1 -\Phi(3.25) = `r round(1-pnorm((29-16)/4),3)` \end{split}$
+
+We can reject $H_0$ because the $p$-value \< 0.05.
+
+# Two independent samples
+
+::: callout-tip
+### Example. Compare treatments
+
+To investigate whether a certain medicine has a primary side effect of altering a specific liver value, this is measured - partly on 50 people who have not been treated with the medicine and partly on 25 people who have been treated with the medicine. Results:
+
+| Treatment          | Mean       |Standard deviation | $n$ number|
+|--------------------|------------|-------------------|-----------|
+|Without the medicine| 148.2      | 10.0              | 50        |
+| With the medicine  | 151.7      | 8.0               | 25        |
+
+Is it possible to make a conclusion if the medicine has an impact on the liver fat?
+:::
+
+## Test the difference in expected values
+
+**Model:**
+
+$X = \text{"liver fat without the medicine"} \sim N(\mu_x,\sigma_x)$
+
+$Y = \text{"lever fat with the medicine"} \sim N(\mu_y,\sigma_y)$
+
+We assume that the variances are equal $\sigma^2_x=\sigma^2_y=\sigma^2$
+
+**Hypotheses:** We want to test
+
+$H_0: \mu_x = \mu_y$
+
+$H_1: \mu_x \neq \mu_y$
+
+This is the same thing as 
+
+$H_0: \mu_x - \mu_y = 0$
+
+$H_1: \mu_x - \mu_y \neq 0$
+
+**Estimation:** We estimate the expected values with the sample means $\hat{\mu}_x = \bar{x}= 148.2$ and $\hat{\mu}_y = \bar{y}= 151.7$
+
+**Test rule:** We test the hypotheses at a significance level $\alpha$ by creating a $(1-\alpha)\cdot 100$% confidence interval for the difference in the expected values.
+
+The confidence interval we create shall have the form *estimation* plus/minus *a suitable quantile* multiplied with the *standard deviation for the estimate based on the sampling distributions*.
+
+$$I_{\mu_x - \mu_y} = \hat{\mu}_x-\hat{\mu}_y \pm \text{quantile}\cdot\sqrt{V(\hat{\mu}_x-\hat{\mu}_y)}$$
+
+## The variance for the estimate of the difference in the expected values
+
+$\begin{split} & V(\hat{\mu}_x-\hat{\mu}_y) = V(\bar{x}-\bar{y}) \underset{assume \\ independence} = V(\bar{x})+V(\bar{y}) = \\ & \frac{\sigma_x^2}{n_x} + \frac{\sigma_y^2}{n_y} \underset{equal \\ variance} = \frac{\sigma^2}{n_x} + \frac{\sigma^2}{n_y} = \sigma^2 (\frac{1}{n_x} + \frac{1}{n_y}) \end{split}$
+
+-  How to estimate the variance with two samples? By combining (*pool*) the squared distances to respective sample mean.
+
+$$s^2_{pooled}=\frac{\sum (x_i-\bar{x})^2 + \sum (y_i-\bar{y})^2}{n_x+n_y-2} = \frac{(n_x-1)s_x^2 + (n_y-1)s_y^2}{n_x+n_y-2}$$
+
+where $s_x^2 = \frac{\sum (x_i-\bar{x})^2}{n-1}$ and $s_y^2$ can be found by running a routine on a hand calculator or a computer.
+
+$s^2_x = 10.0^2$, $s^2_y = 8.0^2$
+
+$n_x = 50$, $n_y = 25$
+
+```{r}
+#| echo: false
+#| results: false
+
+s3pool = round((49* 10.0^2 + 24* 8.0^2)/(50+25-2),1)
+```
+
+$s^2_{pooled} = \frac{49\cdot 10.0^2 + 24\cdot 8.0^2}{50+25-2} = `r s3pool`$
+
+## Sampling distribution for the estimate of the difference in the expected values
+
+Because both $X$ and $Y$ are normally distributed, so will both sampling distributions for the sample means $\bar{x}$ och $\bar{y}$. So will also the difference between these, i.e. 
+$$\bar{x} - \bar{y} \sim N(\mu_x - \mu_y, \sqrt{\sigma^2 (\frac{1}{n_x} + \frac{1}{n_y})})$$
+
+## Confidence interval of the difference in expected values
+
+Because the variance $\sigma^2$ is unknown and estimated with the samples, we will use a t-distribution with $n_x+n_y-2$ degrees of freedom when we create the confidence interval.
+
+$$I_{\mu_x - \mu_y} = \bar{x}-\bar{y} \pm t_{\alpha/2}(n_x+n_y-2)\cdot\sqrt{s^2_{pooled}(\frac{1}{n_x} + \frac{1}{n_y})}$$
+
+::: callout-tip
+### Example. Compare treatements (cont.)
+
+$$\begin{split} I_{\mu_x - \mu_y} & = 148.2-151.7 \pm \underbrace{t_{0.05/2}(50+25-2)}_{`r round(qt(1-0.05/2,50+25-2),2)`}\sqrt{`r s3pool`(\frac{1}{50} + \frac{1}{25})}   = \\ & (`r round(148.2-151.7 -1.99*sqrt(s3pool*(1/50+1/25)),2)`,`r round(148.2-151.7+1.99*sqrt(s3pool*(1/50+1/25)),2)`) \end{split}$$
+We do not reject $H_0$ at the significance level 5% because the 95%-th confidence interval covers zero.
+:::
+
+# Equal and non-equal variance
+
+When comparing two expected values using two independent samples, the following alternatives are available for estimating the variance in the sampling distribution for the difference in sample means:
+
+-   Assume equal variance
+
+$\sigma_x^2 = \sigma_y^2 = \sigma^2$
+
+Estimate the variance with the pooled sample variance and use that in the equation for the estimation of the variance for the difference in expected values:
+
+$\hat{V}(\hat{\mu}_x-\hat{\mu}_y) = \hat{\sigma}^2 (\frac{1}{n_x} + \frac{1}{n_y}) = s^2_{pooled} (\frac{1}{n_x} + \frac{1}{n_y})$
+
+Use t-quantiles with $n_x+n_y-2$ degrees of freedom.
+
+-   Assume unequal variance
+
+$\sigma_x^2 \neq \sigma_y^2$
+
+Estimate each variance with the corresponding sample variance and use them in the formula for the estimated variance of the difference:
+
+$\hat{V}(\hat{\mu}_x-\hat{\mu}_y) = \frac{\hat{\sigma_x}^2}{n_x} + \frac{\hat{\sigma_y}^2}{n_y} = \frac{s_x^2}{n_x} + \frac{s_y^2}{n_y}$
+
+::: callout-note
+### Degrees of freedom
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+Difficult! Not included in the material for the course, but useful to have heard about. 
+:::
+::: {.column width="50%"}
+
+![](img/skriet.jpg)
+:::
+::::
+
+The number of degrees of freedom for the sampling distribution is challenging, but it is approximately equal to
+
+$$f = \frac{(s_x^2/n_x +s_y^2/n_y)^2}{\frac{(s_x^2/n_x)^2}{n_x-1}+\frac{(s_y^2/n_y)^2}{n_y-1}}$$
+
+If both $n_x$ and $n_y$ are large, this can be simplified to $f = min(n_x-1,n_y-1)$
+:::
+
+If $n_x$ and $n_y$ are large, use the t-quantile with $min(n_x-1,n_y-1)$ degrees of freedom.
+
+## Test if equal variance
+
+It will be a stronger test if one can assume equal variance in the populations (e.g. $X$ and $Y$). It is often not enough to assume equal variance, and then one has to test this assumption.
+
+**Hypotheses:**
+
+$H_0: \sigma^2_x = \sigma^2_y$
+
+$H_1: \sigma^2_x \neq \sigma^2_y$
+
+## Sampling distribution for  the ratio between sample variances
+
+**F-distribution**
+
+An F-distribution is, like the t-distribution, a (by Fisher) constructed sampling distribution, that has shown to be useful in many situations. It is the distribution for the ratio between two $\chi^2$-distributed random variables.
+
+$$\frac{\chi_1^2/\nu_1}{\chi_2^2/\nu_2} \sim F(\nu_1,\nu_2)$$
+
+where $\nu_1$ and $\nu_2$ are the degrees of freedom for the F-distribution.
+
+## The ratio between two sample variances
+
+Let us create the following ratio and use what we showed in @eq-kvot
+
+$$\frac{s^2_x/\sigma_x^2}{s^2_y/\sigma_y^2}=\frac{\frac{(n_x-1)s^2_x/\sigma_x^2}{n_x-1}}{\frac{(n_y-1)s^2_y/\sigma_y^2}{n_y-1}} \sim F(n_x-1,n_y-1)$$
+
+If the populations $X$ and $Y$ are normally distributed, or if $n_x$ and $n_y$ are sufficiently large to apply the Central Limit Theorem, both the nominator and the denominator will be ratios of $\chi^2$-distributed random variables and their corresponding degrees of freedom. This implies that the ratio follows a F-distribution with  $n_x-1$ and $n_y-1$ degrees of freedom.
+
+But we do not know the variances!
+
+## The ratio under $H_0$
+
+The variances are equal under $H_0$, and we can simplify the ratio since the true variances cancels each other out. The F-distribution is the sampling distribution for the ratio $F$ of the sample variances under the null hypothesis.
+
+$$F = \frac{s^2_x/\sigma^2}{s^2_y/\sigma^2} = \frac{s^2_x}{s^2_y} \sim F(n_x-1,n_y-1)$$
+
+## Test rule
+
+We reject $H_0$ with a chosen significance level $\alpha$ by comparing the test quantity $F$ with a quantile from the F-distribution:
+
+$$F = \frac{s^2_x}{s^2_y} > F_{\alpha}(n_x-1,n_y-1)$$
+
+where the quantile is defined based on the probability area above the quantile.
+
+---
+
+![](img/f_tab.png)
+
+::: callout-tip
+## Comparison between treatments (cont.)
+
+Let us test on a significance level $\alpha=0.05$ if the assumption of equal variances is holds.
+
+$F = \frac{s^2_x}{s^2_y} = \frac{10.0^2}{8.0^2} = `r 10^2/8^2`$
+
+$H_0$ is not rejected because the test quantity is inside the sampling distribution under $H_0$, i.e. $F < F_{0.025}(n_x-1,n_y-1) = `r round(qf(1-0.025,50-1,25-1),2)`$
+
+> If you cannot calculate exactly or the degrees of freedom are missing from the table, then from the degrees of freedom that are the closest. In this case $f_1 = 50$ and $f_2=24$ for $\alpha=0.05$
+
+![](img/f_tab_2.png)
+
+> Tip - The F-distribution is not symmetric. You can still compare to just one quantile even if you have a two-sided hypothesis, by making sure the largest sample variance is in the nominator and that you have the correct order of the degrees of freedom.
+:::
+
+## Summary comparing two samples
+
+We have observations from two statistical populations defined by the random variables $X$ and $Y$, where we are interested in comparing the expected values between the populations
+
+(1) Are the observations paired samples?
+
+-  If yes, form pairwise differences $\Delta_i = X_i - Y_i$, discard the old samples, and continue only with the sample of differences. Formulate a model for the difference and set up hypotheses for the expected value of the difference. Since we discard the old ones, we can call the random variable for the differences whatever we want, such as $X$. In the table, you see different ways to test for the random variable $X$ with expected value $\mu$ and standard deviation $\sigma$.
+
+> Select an appropriate quantile depending on whether the differences are normally distributed or not, whether you can use the Central Limit Theorem or not, and whether the variance of the difference is known or not.
+
+
++------------------------------+--------------------------------------------------------+-------------------------------------------+
+|                              | Confidence interval for $\mu$                          | Test quantity                             |
++==============================+========================================================+===========================================+
+| Population normal            | $\bar{x}\pm \lambda_{\alpha/2}\frac{\sigma}{\sqrt{n}}$ | $z = \frac{\bar{x}-\mu}{\sigma/\sqrt{n}}$ |
+|                              |                                                        |                                           |
+| $\sigma$ is known            |                                                        |                                           |
++------------------------------+--------------------------------------------------------+-------------------------------------------+
+| Population normal            | $\bar{x}\pm t_{\alpha/2}(n-1)\frac{s}{\sqrt{n}}$       | $t = \frac{\bar{x}-\mu}{s/\sqrt{n}}$      |
+|                              |                                                        |                                           |
+|$\sigma$ is unknown, $n$ small|                                                        |                                           |
++------------------------------+--------------------------------------------------------+-------------------------------------------+
+| No assumption that pop normal| $\bar{x}\pm \lambda_{\alpha/2}     \frac{s}{\sqrt{n}}$ | $z = \frac{\bar{x}-\mu}{s/\sqrt{n}}$      |
+|                              |                                                        |                                           |
+|$\sigma$ is unknown, $n$ large|                                                        |                                           |
++------------------------------+--------------------------------------------------------+-------------------------------------------+
+
+
+-  If no (the observations are **not** from paired samples), specify a model for $X$ and $Y$ separately and formulate hypotheses for the difference in expected values. 
+
+> The minimal way to specify a model is to define $X$ and $Y$ and describe that the expected value and standard deviation for $X$ is $\mu_x$ and $\sigma_x$, and that the expected value and standard deviation for $Y$ is $\mu_y$ and $\sigma_y$. 
+
+(2) Are the variances equal?
+
+-   If yes, use a normal quantile and continue with the hypotheses testing.
+
+-   If not, make assumptions about the variances and estimate based on the assumption.
+
+(3) Can we assume equal variance?
+
+-   If yes, estimate the variance by pooling the sample variances $s^2_{pooled}$. If normally distributed populations, then use a suitable quantile from a normal distribution i the testing. Test if the variances are equal with an F-test.
+
+-   If no, estimate the variances separately. If normally distributed populations or if sample sizes are large enough to apply the Central Limit Theorem, use a suitable quantile from a t-distribution in the testing.
+
+
++------------------------------------------------+------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------+
+|                                                | Confidence interval for $\mu_x-\mu_y$                                                    | Test quantity                                                                                     |
++================================================+==========================================================================================+===================================================================================================+
+| Both pop. normal                               |$\bar{x}-\bar{y}\pm\lambda_{\alpha/2}\sqrt{\frac{\sigma_x^2}{n_x}+\frac{\sigma_y^2}{n_y}}$|$z = \frac{(\bar{x}-\bar{y})-(\mu_x-\mu_y)}{\sqrt{\frac{\sigma_x^2}{n_x}+\frac{\sigma_y^2}{n_y}}}$ |
+|                                                |                                                                                          |                                                                                                   |
+| $\sigma_x$ and $\sigma_y$ are known            |                                                                                          |                                                                                                   |
++------------------------------------------------+------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------+
+| Both pop. normal                               |$\bar{x}-\bar{y}\pm t_{\alpha/2}(n_x+n_y-2)s_{pooled}\sqrt{\frac{1}{n_x}+\frac{1}{n_y}}$  |   $t = \frac{(\bar{x}-\bar{y})-(\mu_x-\mu_y)}{s_{pooled}\sqrt{\frac{1}{n_x}+\frac{1}{n_y}}}$      |
+|    $\sigma_x$ and $\sigma_y$ are unknown,      |                                                                                          |                                                                                                   |
+|$n_x$ and $n_y$ small                           |                                                                                          |                                                                                                   |
++------------------------------------------------+------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------+
+| No assumption of pop. normal                   |$\bar{x}-\bar{y}\pm\lambda_{\alpha/2}\sqrt{\frac{s_x^2}{n_x}+\frac{s_y^2}{n_y}}$          | $z = \frac{(\bar{x}-\bar{y})-(\mu_x-\mu_y)}{\sqrt{\frac{s_x^2}{n_x}+\frac{s_y^2}{n_y}}}$          |
+|  $\sigma_x$ and $\sigma_y$ are unknown,        |                                                                                          |                                                                                                   |
+| $n_x$ and $n_y$ large                          |                                                                                          |                                                                                                   |
++------------------------------------------------+------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------+
+
+$s^2_{pooled} = \frac{(n_x-1)s_x^2 + (n_y-1)s_y^2}{n_x+n_y-2}$
+
+(4) If normal distribution does not apply or normal approximation with CLT is not justified:
+
+- Make an appropriate transformation to achieve faster convergence to normal distribution.
+  
+- Use the direct method and calculate the p-value without normal approximation.

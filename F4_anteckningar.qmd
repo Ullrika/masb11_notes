@@ -1,0 +1,480 @@
+---
+title: "F4. Kontinuerliga slumpvariabler, linjärkombination och summor av slumpvariabler"
+author: "Ullrika Sahlin"
+format:
+  html:
+    embed-resources: true
+---
+
+
+# Normalkvantil
+
+Kvantilen fås genom att läsa fördelningsfunktionen baklänges. Figuren visar $z_{.25}$ (röd) och $z_{.90}$ för en standardiserad normalfördelning $Z \sim N(0,1)$. 
+
+```{r}
+#| echo: false
+#| warnings: false
+#| message: false
+
+library(ggplot2)
+pp = ppoints(100)
+df <- data.frame(pp = pp, xx = qnorm(pp))
+ggplot(df,aes(x=xx,y=pp)) +
+  geom_line() +
+  xlab("x") +
+  ylab("F(x)") +
+  annotate("segment",x=-2.5,xend=qnorm(0.25),y=0.25,yend=0.25,colour = "red") +
+  annotate("segment",x=qnorm(0.25),xend=qnorm(0.25),y=0.25,yend=0,colour = "red") + 
+  annotate("segment",x=-2.5,xend=qnorm(0.9),y=0.9,yend=0.9,colour = "blue") +
+  annotate("segment",x=qnorm(0.9),xend=qnorm(0.9),y=0.9,yend=0,colour = "blue")
+
+```
+
+I R beräknar vi kvantil från en normalfördelning med funktionen `qnorm(p)`, där `p` är sannolikheten som är nedanför det sökta kvantilvärdet.
+
+Kvantiler erhålls för fördelningar på samma sätt genom att sätta q framför namnet på fördelningen, t.ex. `qexp` eller `qt`.
+
+
+## Kvantil-kvantil-plot
+
+Ett sätt att undersöka modellanpassning är att jämföra teoretiska kvantiler (från modellen) med empiriska kvantiler (från stickprovet).
+
+::: callout-note
+### Empirisk fördelningsfunktion
+
+Den empiriska fördelningsfunktionen kan skapas genom följande steg: 
+
+- sortera de $n$ värdena i stickprovet - detta är värden på x-skalan 
+
+- dela in intervallet 0 till 1 i $n$ lika stora bitar 
+
+- motsvarande värdet på y-skalan börjar i noll och för varje värde på x-skalan (börja med det minsta), öka med en bit i taget
+
+```{r}
+load("data/lab1_filer/jordprov.Rdata")
+x <- sort(jordprov$al) # sortera
+n <- length(x) # antal värden i stickprovet
+eFx <- (1:n)/n # steg
+plot(x,eFx,main="Empirisk fördelningsfunktion") # rita eFx mot x
+```
+
+Det är detta som görs, fast med en snyggare layout, med functionen `plot.ecdf()`
+
+```{r}
+plot.ecdf(jordprov$al)
+```
+
+[Empirisk fördelningsfunktion på wiki](https://en.wikipedia.org/wiki/Empirical_distribution_function)
+:::
+
+### Teoretisk fördelning
+
+Låt oss säga att vi vill undersöka om en stickprov kan tänkas komma från en normalfördelning.
+
+-   Den teoretiska fördelningen är då en normalfördelning med parametrar skattade från stickprovet.
+
+```{r}
+m = mean(jordprov$al)
+s = sd(jordprov$al)
+```
+
+-   Vi beräknar kvantiler givet den teoretiska fördelningen som motsvarar den empiriska fördelningsfunktionens y-skala
+
+```{r}
+tFx <- qnorm(eFx,m,s)
+```
+
+-   Sen ritar vi de teoretiska kvantilerna mot de sorterade värdena i stickprovet. De borde ligga på en rak linje om den teoretiska modellen är en bra fördelning för stickprovet.
+
+```{r}
+plot(tFx,x)
+abline(0,1) # lägg till en 1:1-linje
+```
+
+Samma sak görs med funktionerna `qqnorm` och `qqline` men med lite snyggare layout
+
+```{r}
+qqnorm(jordprov$al)
+qqline(jordprov$al)
+```
+
+# Väntevärde
+
+## Väntevärdet av slumpvariabeln $X$
+
+$X$ är diskret: $E(X) = \sum_{alla \ x}xf(x)$
+
+$X$ är kontinuerlig: $E(X) = \int_{-\infty}^{\infty}xf(x)dx$
+
+::: callout-note
+### Väntevärdet för en likformig fördelning
+
+$X \sim U(a,b)$
+
+$$f(x) = \left\{ \begin{array}{lr}
+        \frac{1}{b-a} & \text{om }a \leq x \leq b\\
+        0 & \text{annars}
+        \end{array}\right.$$
+
+
+
+$$\begin{split} E(X)  =\int_{-\infty}^{\infty}xf(x)dx = & \\ \int_{a}^{b}\frac{x}{b-a}dx = [\frac{x^2}{2(b-a)}]_{x=a}^{b}  = & \\ \frac{b^2-a^2}{2(b-a)} = \frac{(b+a)(b-a)}{2(b-a)} = \frac{a+b}{2}  \end{split}$$
+
+Väntevärdet av $X \sim U(0,10)$ är $E(X)=\frac{0+10}{2} = 5$
+:::
+
+## Väntevärdet av en funktion $g$ av $X$
+
+$X$ är diskret: $E(g(X)) = \sum_{alla \ x}g(x)f(x)$
+
+$X$ är kontinuerlig: $E(g(X)) = \int_{-\infty}^{\infty}g(x)f(x)dx$
+
+::: callout-note
+### Väntevärdet för en funktion av en likformig fördelning
+
+fortsättning på $X \sim U(0,10)$
+
+$g(x) = x^2$
+
+$$\begin{split}  E(g(X)) = \int_{-\infty}^{\infty}g(x)f(x)dx = \int_{0}^{10}x^2\frac{1}{10}dx = & \\  [\frac{x^3}{3\cdot 10}]_{x=0}^{10} = \frac{10^3}{30} = \frac{100}{3} \end{split}$$
+:::
+
+# Väntevärde och varians av en linjärkombination av en slumpvariabel
+
+Generellt gäller följande:
+
+$a\cdot x+b$ är en linjär transformation av $x$
+
+$E(a\cdot X+b) = a\cdot E(X)+b$
+
+$V(a\cdot X+b) = a^2\cdot V(X)$
+
+> Dessa regler gäller för ALLA slumpvariabeler oavsett fördelning!
+
+## Väntevärde av en linjärkombination av en diskret slumpvariabel
+
+$X$ är en diskret slumpvariabel
+
+-   Vad är väntevärdet $E(X + b)$?
+
+$$\begin{split} E(X+b)=\sum_{alla \ x}(x+b)f(x) = \sum_{alla \ x}xf(x) + \sum_{alla \ x}bf(x) = & \\ E(X) + b\sum_{alla \ x}f(x) = E(X) + b \end{split}$$
+
+-   Vad är väntevärdet $E(aX + b)$?
+
+$$\begin{split} E(aX+b)=\sum_{alla \ x}(ax+b)f(x) = & \\ \sum_{alla \ x}axf(x) + \sum_{alla \ x}bf(x) = & \\ a\sum_{alla \ x}xf(x) + b\sum_{alla \ x}f(x) = aE(X) + b \end{split}$$
+
+## Varians av en linjärkombination av en diskret slumpvariabel
+
+::: callout-notes
+### Varians på minst tre sätt
+
+$E(X) = \mu$
+
+$$\begin{split} & V(X) =  \underbrace{E[(X-E(X))^2]}_{\text{sätt } I} =   \underbrace{\sum (x-\mu)^2f(x)}_{\text{sätt }II} = \\ & \sum (x^2 - 2x\mu + \mu^2)f(x) = \sum x^2f(x) - \sum 2x\mu f(x) + \sum \mu^2 f(x) = \\ &  E(X^2) - 2\mu \sum xf(x) + \mu^2 \sum f(x) = E(X^2)-2(E(X))^2+(E(X))^2 =  \\ &  \underbrace{E(X^2)-[E(X)]^2}_{\text{sätt }III} \end{split}$$
+:::
+
+$X$ är en diskret slumpvariabel
+
+-   Vad är variansen $V(X + b)$?
+
+$$\begin{split} & V(X + b) = E[(X+b-E(X+b))^2] = \\ & E[(X+b-E(X)-b)^2] = E[(X-E(X))^2] = V(X) \end{split}$$
+
+> En konstant $b$ flyttar fördelningen men ändrar inte dess spridning.
+
+-   Vad är variansen $V(a \cdot X + b)$?
+
+$$\begin{split} & V(a \cdot X + b) = E[(aX+b-aE(X)-b)^2] = E[(aX-aE(X))^2]= \\ & E[a^2(X-E(X))^2] = a^2E[(X-E(X))^2] = a^2V(X) \end{split}$$
+
+
+# Standardised normalfördelning
+
+Förra gången sa vi att: 
+
+- Om $X \sim N(\mu,\sigma)$ så är $Z = \frac{X-\mu}{\sigma} \sim N(0,1)$
+
+När vi tillämpar regler om väntevärde och varians för en linjärkombination får vi: 
+
+$E(Z) = E(\frac{X-\mu}{\sigma}) =  \frac{1}{\sigma}(E(X) - \mu) = \frac{1}{\sigma}(\mu - \mu) = 0$
+
+$V(Z) = V(\frac{X-\mu}{\sigma}) =  \frac{1}{\sigma^2}[V(X-\mu)] = \frac{1}{\sigma^2}V(X) = \frac{1}{\sigma^2}\sigma^2 = 1$
+
+
+# Exempel. Starar
+
+Efter att ha studerat ett stort antal häckande starar har man kommit fram till att variablen $X = \text{"antal ägg/kull"}$ kan beskrivas följande sannolikhetsfunktion:
+
+|                   |      |      |      |      |      |
+|-------------------|------|------|------|------|------|
+|Antal ägg/kull x   | 4    | 5    | 6    | 7    | 8    |
+| $P(X = x)$        | 0.10 | 0.20 | 0.30 | 0.20 | 0.20 |
+
+::: callout-note
+## Starar 1 
+
+Beräkna E(X) och V(X)!
+
+```{r}
+#| echo: false
+#| results: false
+4*0.1 + 5*0.2 + 6*0.3 + 7*0.2 + 8*0.2
+4^2*0.1 + 5^2*0.2 + 6^2*0.3 + 7^2*0.2 + 8^2*0.2
+6.2^2
+40-38.44
+```
+
+$$\begin{split} \mu = & E(X) = \sum_{\text{alla x}} xP(X=x) = \\ & 4\cdot 0.10 + 5 \cdot 0.20+ 6 \cdot 0.30+ 7 \cdot 0.20+ 8 \cdot 0.20 = 6.2 \end{split}$$
+
+
+$$\begin{split} V(X) = & E(X^2) - [E(X)]^2  = \sum_{\text{alla x}} x^2P(X=x) - \mu^2 = \\ & 4^2\cdot 0.10 + 5^2 \cdot 0.20+ 6^2 \cdot 0.30+ 7^2 \cdot 0.20+ 8^2 \cdot 0.20 - 6.2^2=  \\ & 40 - 38.44 = 1.56 \end{split}$$
+
+:::
+
+::: callout-note
+## Starar  2 
+
+Vi väljer slumpmässigt 10 kullar. Vad är sannolikhetent att minst en av dem har 8 ägg?
+
+Låt $Y = \text{"antal kullar med 8 ägg"}$. Vi antar att antalet ägg i olika kullar är oberoende. 
+
+Följande modell är rimlig: $Y \sim Bin(10,P(X=8)=0.2)$ 
+
+```{r}
+#| echo: false
+#| results: false
+1 - (1-0.2)^10
+```
+
+
+$P(\text{"minst en kull med 8 ägg"}) = P(Y \geq 1) = 1 - P(Y = 0) = 1 - (1-0.2)^{10} = 0.89$ 
+
+:::
+
+::: callout-note
+## Starar 3 
+
+Vi väljer slumpmässigt två kullar. Beräkna sannolikheten att det är minst 15 ägg i de båda kullarna tillsammans.
+
+Låt $X_i = \text{"antal ägg i kull } i$ där $i = 1,2$
+
+Sannolikheten vi söker är $P(X_1 + X_2 \geq 15) = \dots $
+
+
+```{r}
+#| echo: false
+#| results: false
+
+0.2*0.2 + 0.2*0.2 + 0.2*0.2
+```
+
+Detta kan ske på tre sätt 
+$$ \begin{split} & P(X_1 = 7)P(X_2=8) + P(X_1 = 8)P(X_2=7) + P(X_1 = 8)P(X_2=8) = \\ & 0.2\cdot 0.2 + 0.2\cdot 0.2 + 0.2\cdot 0.2 = 0.12 \end{split} $$
+
+> Det är vanligt att man är intresserad av sannolikhetsfördelning för summor av slumpvariabler. 
+:::
+
+
+# Väntevärde och varians för summor av slumpvariabler
+
+Låt $X$ och $Y$ vara två slumpvariabler. Då gäller
+
+$E(X + Y)=E(X)+E(Y)$
+
+Om $X$ och $Y$ är oberoende så gäller även att $V(X+Y) = V(X) + V(Y)$
+
+::: callout-note
+## Väntevärde och varians för en summa av många slumpvariabler
+
+Låt $X_1, X_2, ..., X_n$ vara $n$ slumpvariabler. Då gäller att
+
+$E(\sum_{i=1}^n X_i) = \sum_{i=1}^n E(X_i)$
+
+Om de är oberoende gäller även att
+
+$V(\sum_{i=1}^n X_i) = \sum_{i=1}^n V(X_i)$
+:::
+
+::: callout-note
+## Väntevärde och varians för en summa av många likfördelade slumpvariabler
+
+Låt $X_1, X_2, ..., X_n$ vara $n$ slumpvariabler där alla har väntevärde $\mu$ och varians $\sigma^2$.
+
+Då gäller att
+
+$E(\sum_{i=1}^n X_i) = \sum_{i=1}^n E(X_i) = n \cdot \mu$
+
+Om de är oberoende gäller även att
+
+$V(\sum_{i=1}^n X_i) = \sum_{i=1}^n V(X_i) = n \cdot \sigma^2$
+:::
+
+
+# Fördelningen för en summa av normalfördelade slumpvariabler
+
+- Summan av normalfördelade slumpvariabler är också normalfördelad
+
+Låt $X_i \sim N(\mu_i,\sigma_i)$
+
+Då är $\sum_{i=1}^n X_i \sim N$ 
+
+med väntevärde $E(\sum_{i=1}^n X_i) = \sum_{i=1}^n \mu_i \underbrace{=}_{\text{om alla }\mu_i=\mu} = n\cdot \mu$
+
+och varians $V(\sum_{i=1}^n X_i) \underbrace{=}_{\text{om oberoende}} \sum_{i=1}^n \sigma^2_i  \underbrace{=}_{\text{om alla }\sigma_i=\sigma} = n\cdot \sigma^2$
+
+- Medelvärdet av normalfördelade slumpvariabler är också normalfördelad
+
+Ett (aritmetiskt) medelvärde är också en summa
+
+Låt $\bar{X} = \frac{\sum_{i=1}^n X_i}{n}$ vara ett medelvärde av $n$ likafördelade och oberoende slumpvariabler
+
+Då gäller:
+
+$E(\bar{X}) = \frac{E(\sum X_i)}{n} = \frac{n\mu}{n} = \mu$
+
+$V(\bar{X}) = \frac{V(\sum X_i)}{n^2} = \frac{n\sigma^2}{n^2} = \frac{\sigma^2}{n}$
+
+
+## Viktiga specialfall
+
+### Fördelning för en summa av oberoende likafördelade normalfördelningar
+
+$\sum_{i=1}^n X_i \sim N(n\mu,\sqrt{n}\sigma)$
+
+### Fördelning för ett medelvärde av oberoende likafördelade normalfördelningar
+
+$\bar{X} \sim N(\mu,\frac{\sigma}{\sqrt{n}})$
+
+::: callout-note
+## Exempel 1
+
+Låt $X \sim N(0,1)$ och $Y=3X+2$
+
+Beräkna $E(Y)$ och $D(Y)$
+
+$E(Y)=E(3X+2)=3E(X)+2=3\cdot 0 + 2 = 2$
+
+$V(Y)=V(3X+2)=3^2V(X)=3^2\cdot 1$
+
+$D(Y)=\sqrt{V(Y)}=\sqrt{3^2} = 3$
+
+:::
+
+
+::: callout-note
+## Exempel 2
+
+Låt $X \sim N(1,1)$ och $Y \sim N(-1,2)$ vara oberoende slumpvariabler
+
+- Vilken fördelning har $X+Y$?
+
+Det kommer vara en normalfördelning med väntevärde
+
+$E(X+Y) = E(X) + E(Y) = 1 + (-1) = 0$
+
+och varians
+
+$V(X+Y)=V(X)+V(Y)=1^2+2^2=5$
+
+- Vilken fördelning har $X-Y$?
+
+Det kommer vara en normalfördelning med väntevärde
+
+$E(X-Y) = E(X) + E(-Y) = E(X) + (-1)\cdot E(Y) = 1 + (-1)\cdot(-1) = 1 + 1 = 2$
+
+och varians
+
+$V(X-Y)=V(X)+V(-Y)=V(X)+(-1)^2\cdot V(Y)= V(X)+V(Y) = 1^2+2^2 = 5$
+
+:::
+
+::: callout-note
+## Exempel 3
+
+De oberoende slumpvariabeln $X_1$ och $X_2$ tillhör båda $N(1,2)$
+
+-   Ange fördelning för $\frac{X_1+X_2}{2}$
+
+Detta är ett medelvärde av två oberoende och normalfördelade slumpvariabler med samma väntevärde $\mu=1$ och varians $\sigma^2=2$
+
+$\bar{X}=\frac{X_1+X_2}{2}$
+
+Enligt regler för linjärkombination av slumpvariabler och kännedom att "summa av normal är normal" blir
+
+$\bar{X} \sim N(\mu,\frac{\sigma}{\sqrt{2}})$
+
+Men låt oss härleda väntevärde och varians
+
+$$E(\bar{X}) = E(\frac{X_1+X_2}{2}) = \frac{1}{2}E(X_1+X_2) = \frac{1}{2} (1 + 1) = 1$$
+
+$$V(\bar{X}) = V(\frac{X_1+X_2}{2}) = \frac{1}{2^2}V(X_1+X_2)=\frac{1}{2^2}(2^2+2^2)=2$$
+
+> Notera att summan har lägre varians än respektive s.v.! Orsaken är att de två s.v. "tar ut varandra" vilket bidrar till lägre variation i summan. 
+
+:::
+
+# Population/parametrar – Stickprov/statistiska (stickprovsmått)
+
+Statistisk inferens handlar om att dra slutsatser om parametrar som ingår i modeller för populationer (det man vill säga något om) baserat på de observationer man har (oftast bör det vara ett slumpmässigt stickprov från populationen för att de statistiska metoderna ska fungera). 
+
+Man kan även dra slutsater om framtida observationer ur populationen (prediktiv inferens). 
+
+Håll koll på följande: 
+
+- Population, modell och parametrar
+
+- Stickprov, antagande om oberoende m.m., sammanfattande mått av stickprovet (statistiska) som kan användas för att skatta parametrar i modellen för populationen.
+
+- Parametrisk inferens - drar en slutsats om populationen genom att studera skattning av parametrar
+
+- Prediktiv inferens - drar en slutsats om populationen genom att studera prediktioner av framtida observationer 
+
+![](img/popstick.png)
+
+
+
+# Lognormalfördelning
+
+$X$ är lognormalfördelad om $log(X)$ är normalfördelad
+
+> lognormalfördelning finns egentligen inte - det är en normalfördelning på logskalan
+
+$log(X) \sim N(\mu_{logX}, \sigma_{logX})$
+
+Lognormalfördelning är lämplig för s.v. som bara antar positiva värden. Exempel är koncentrationer eller andra storheter som är resultat av en kvot. 
+
+:::callout-warning 
+
+Notera att parametern $\mu_{logX}$ inte väntevärdet för $X$, d.v.s. $E(X) \neq \mu_{logX}$. Däremot är det väntevärdet för $log(X)$
+
+:::
+
+```{r}
+#| echo: false
+pp <- ppoints(100)
+
+df <- data.frame(cdf = c(pp,pp), xx = c(qnorm(pp),qlnorm(pp)), pdf = c(dnorm(qnorm(pp)),dlnorm(qlnorm(pp))),typ = rep(c("logx","x"), each = 100))
+
+ggplot(df,aes(x = xx, y = pdf, col=typ)) + 
+  geom_line() +
+  facet_wrap(~typ, scales="free") +
+  xlab("") +
+  ylab("f()")
+
+
+```
+
+
+:::callout-note 
+## Anpassa en lognormalfördelning till data
+
+Logga data och gör beräkningar på "log-skalan"!
+
+Från $\{x_1,x_2,...,x_n\}$ till $\{log(x_1), log(x_2), ..., log(x_n)\}$
+
+Skatta parametrarna i modellen ovan, $\mu_{logX}$ och $\sigma_{logX}$, med det "loggade" stickprovet.
+
+$\hat{\mu}_{logX} = \frac{\sum_{i=1}^n logx_i}{n} = \bar{logx}$ och
+
+$\hat{\sigma}_{logX} = \sqrt{\frac{\sum_{i=1}^n (logx_i-\bar{logx})^2}{n-1}} = s_{logx}$
+
+Tänk på att detta gäller: $P(X\leq a) = P(log(X) \leq log(a))$
+:::

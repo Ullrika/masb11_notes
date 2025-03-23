@@ -1,0 +1,506 @@
+---
+title: "F9. Statistical inference on discrete and categorical data"
+author: "Ullrika Sahlin"
+format: 
+  html:
+    embed-resources: true
+editor: source
+---
+
+# Parametric and non-parametric tests
+
+Test by assuming or not assuming a distribution for the population
+
+::: callout-tip
+## Example. Energy consumption
+
+One wants to investigate whether energy expenditure at rest differs between individuals affected by cystic fibrosis compared to healthy individuals. Ten pairs were matched, with one individual in each pair having the disease while the other was healthy. Otherwise, the individuals in each pair were similar in terms of gender, age, weight, and height. Results in energy expenditure (kcal/day):
+
+|                       |      |      |      |      |      |      |      |      |      |      |
+|--------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|
+| Pair                  | 1    | 2    | 3    | 4    | 5    | 6    | 7    | 8    | 9    | 10   |
+| CF                    | 1153 | 1132 | 1165 | 1460 | 1634 | 1493 | 1358 | 1453 | 1185 | 1824 |
+| Healthy               | 996  | 1080 | 1182 | 1452 | 1162 | 1619 | 1140 | 1123 | 1113 | 1463 |
+| Difference CF-Healthy | 157  | 52   | -17  | 8    | 427  | -126 | 218  | 330  | 72   | 361  |
+
+The sample size $n=10$ is to small for using the Central Limit Theorem to approximate to a normal distribution.
+
+(a) What do we do if it is reasonable to assume that the differences come from a normal distribution?
+
+(b) What do we do without the assumption of a distribution?
+:::
+
+## (a) Assume that the sample is from a normal distribution
+
+Let us check if that assumption seems correct by making a quantile-quantile plot for the sample of differences with the normal distribution.
+
+```{r}
+x = c(157, 52, -17, 8, 427, -126, 218, 330, 72, 361)
+qqnorm(x)
+qqline(x)
+```
+
+Yes, it seems to be ok.
+
+**Model:** $X = \text{"Difference in energy consumption within pairs"} \sim N(\mu,\sigma)$
+
+**Hypothesis:** $H_0: \mu = 0$ against $H_1: \mu \neq 0$
+
+**Test rule:** We choose a significance level of $\alpha=0.05$ and test by making a 95% two-sided confidence interval for the expected value and reject $H_0$ if the interval does not cover zero.
+
+$$I_{\mu}: \bar{x} \pm t_{\alpha/2}(n-1)\frac{s}{\sqrt{n}}$$
+
+We derive the following $\bar{x} = `r mean(x)`$ and $s = `r round(sd(x),1)`$ from the sample and get the interval $(`r round(mean(x)-qt(1-0.05/2,10-1)*sd(x)/sqrt(length(x)),2)`,`r round(mean(x)+qt(1-0.05/2,10-1)*sd(x)/sqrt(length(x)),2)`)$
+ 
+⇒ $H_0$ is rejected on the significance level 5%.
+
+## (b) Assume no distribution for the sample
+
+We are looking for a test where we do not assume any distribution about the sample. Such a test is also called a non-parametric test.
+
+An example is a $\chi^2$-test, Mann-Whitney U-test.
+
+### Non-parametric test: Wilcoxons sign test
+
+We note how many of the differences that are positive and how many that are negative.
+
+::: callout-tip
+### Example. Energy consumption (cont.)
+
+|                 |     |     |     |     |     |      |     |     |     |     |
+|-----------------|-----|-----|-----|-----|-----|------|-----|-----|-----|-----|
+| Pair            | 1   | 2   | 3   | 4   | 5   | 6    | 7   | 8   | 9   | 10  |
+| Diff CF-Healthy | 157 | 52  | -17 | 8   | 427 | -126 | 218 | 330 | 72  | 361 |
+| Sign            | \+  | \+  | \-  | \+  | \+  | \-   | \+  | \+  | \+  | \+  |
+:::
+
+**Model:** $W = \text{"Number of positive differences out of 10 possible"}\sim Bin(10,p)$ where $p$ is the probability to have a positive difference.
+
+We observe $w = 8$
+
+**Hypotheses:**
+
+$H_0: p = 0.5$ (it is as likely to get + as -)
+
+$H_1: p > 0.5$ (it is more likely to get + than -)
+
+**Test rule:** We choose a significance level to be $\alpha = 0.05$.
+
+Under $H_0$, then $W\sim Bin(10,0.5)$
+
+We test with the direct method:
+
+$p$-value $=P(W\geq 8|H_0) = 1 -P(W\leq 7|H_0) = 1 - `r round(pbinom(7,10,0.5),3)` = `r round(1-pbinom(7,10,0.5),3)`$
+
+⇒ $H_0$ cannot be rejected because the $p$-value \> $\alpha$.
+
+## Rang sum test
+
+::: callout-tip
+### Example. Physio at a school
+
+In a school, a small pilot study was conducted to see if a different type of sports training could affect the physical performance of schoolchildren in a short period. Sixteen children, similar in terms of physical capacity, were selected. The children were randomly divided into two groups. For one month, half of the children (Group A) followed the normal curriculum in Physical Education and Health, while the other children (Group B) also participated in the special training. After one month, the children collectively ran a short cross-country track, and their times were recorded. Two children in Group A were sick on the day of the test. Results (seconds):
+
+|         |     |     |     |     |     |     |     |     |
+|---------|-----|-----|-----|-----|-----|-----|-----|-----|
+| Group A | 64  | 62  | 73  | 54  | 66  | 71  |     |     |
+| Group B | 53  | 74  | 70  | 59  | 42  | 38  | 48  | 60  |
+:::
+
+If one does not want to assume a distribution for the two samples, instead, a non-parametric (or distribution-free) test can be conducted. The Mann-Whitney rank sum test involves ranking the values in both samples and calculating the sum of ranks for each, then creating a test statistic and comparing it to a critical region for the test statistic. Below, I have replaced the observations with their ranks and calculated the rank sum for each group.
+
+```{r}
+#| echo: false
+#| results: false
+
+df <- data.frame(x = c(64, 62, 73, 54, 66, 71, 53, 74, 70, 59, 42, 38, 48, 60),  
+group = c(rep("A",6), rep("B",8)))
+df$rank = rank(df$x)
+(rankvalue_A = sum(df$rank[df$group=="A"]))
+(rankvalue_B = sum(df$rank[df$group=="B"]))
+```
+
+|         |     |     |     |     |     |     |     |     | Rank sum |
+|---------|-----|-----|-----|-----|-----|-----|-----|-----|:--------:|
+| Group A | 9   | 8   | 13  | 5   | 10  | 12  |     |     |    57    |
+| Group B | 4   | 14  | 11  | 6   | 2   | 1   | 3   | 7   |    48    |
+
+: Ranks
+
+We won't go into detail about non-parametric tests. However, it's important to be aware that non-parametric tests exist and understand their advantages and disadvantages.
+
+## Overview of tests for continuous data
+
++-----------------------------+------------------------------------+--------------------------------+
+| Situation                   | Assumes normal distribution        | Distribution free              |
+|                             |                                    |                                |
+|                             | Parametric test                    | Non-parametric test            |
++=============================+====================================+================================+
+| One sample                  | t-test                             | sign test                      |
++-----------------------------+------------------------------------+--------------------------------+
+| Two paired samples          | t-test on differences              | sign test on differences       |
++-----------------------------+------------------------------------+--------------------------------+
+| Two independent samples     | t-test for two independent samples | rank sum test (Mann-Whitney)   |
++-----------------------------+------------------------------------+--------------------------------+
+| Several independent samples | one way analysis of variance       | rank sum test (Kruskal-Wallis) |
++-----------------------------+------------------------------------+--------------------------------+
+
+## Advantages and disadvantages of non-parametric tests:
+
+(+) Do not require assumptions about data distribution.
+
+(+) Work for small samples.
+
+(+) Robust against outliers.
+
+(-) Not as "sensitive" (have lower power) as tests based on normal distribution.
+
+(-) The null hypothesis is usually not as precisely specified as in "traditional" tests.
+
+(-) Do not utilise all information about the distribution provided in the data - often based on ranks, not the actual values.
+
+# Inference on a proportion
+
+A proportion indicates the percentage of individuals possessing a certain characteristic.
+
+-   The proportion of eligible voters who voted in the last election
+
+-   The proportion of students who pass a skills test on the first attempt
+
+Let $X$ be the number out of $n$ who have the characteristic, where $p$ is the proportion with the characteristic. We estimate the proportion as
+
+$$\hat{p}=\frac{x}{n}$$
+
+The following model is reasonable: $$X\sim Bin(n,p)$$
+
+where we know that $E(X) = n\cdot p$ and $V(X) = n\cdot p\cdot (1-p)$
+
+## Expected value and variance for the estimate of the proportion
+
+Show that the estimate of the proportion is unbiased and derive its variance.
+
+$E(\hat{p})=E(\frac{X}{n}) = \frac{E(X)}{n} = \frac{n\cdot p}{n} = p$ ⇒ Unbiased!
+
+$V(\hat{p})=V(\frac{X}{n}) = \frac{V(X)}{n^2} = \frac{n\cdot p \cdot (1-p)}{n^2} = \frac{p \cdot (1-p)}{n}$
+
+The variance for the estimate of the proportion becomes smaller when increasing $n$!
+
+## Normal approximation of the estimate of the proportion
+
+If $n\cdot p \cdot (1-p) > 10$ then we can apply normal approximation of the binomial distribution into a normal distribution
+
+$$X \overset{A} \sim N(np,\sqrt{np(1-p)})$$
+
+We can with the same way of reasoning, say that the sampling distribution for the estimate of the proportion is approximately normal
+
+$$\frac{X}{n} \overset{A} \sim N(p,\sqrt{\frac{p(1-p)}{n}})$$ where $\hat{p} = \frac{x}{n}$.
+
+## Hypoteses test for a propotion
+
+This is how the hypotheses for a proportion looks like when we have a two-sided alternatvie hypothesis.
+
+$H_0: p = p_0$
+
+$H_1: p \neq p_0$
+
+> Note that it is rare to test if a proportion is zero. Instead, one may be interested in whether it is equal to a certain value $p_0$.
+
+### Confidence interval for an estimate of a proportion
+
+When we perform a normal approximation, we can proceed to create a two-sided confidence interval by inserting the proportion estimate into the margin of error:
+
+$$I_p: \hat{p} \pm \lambda_{\alpha/2}\sqrt{\frac{\hat{p}(1-\hat{p})}{n}}$$
+
+The interval $I_p$ can be used for hypotheses testing. We reject $H_0$ at the significance level $\alpha$ if $p_0$ is not in the range of the interval.
+
+### Test quantity for an estimate of a proportion
+
+We can also test the hypotheses with a test quantity that we compare to a critical area.
+
+If $H_0$ is true, then $X \sim Bin(n,p_0)$
+
+Here we can examine if is possible to do normal approximation by checking if $n\cdot p_0 \cdot (1-p_0) > 10$.
+
+The test quantity is
+
+$$z = \left|  \frac{\hat{p}-p_0}{\sqrt{\frac{p_0(1-p_0)}{n}}} \right|$$
+
+> Note that this time we specify the error of the sample mean by $p_0$ and not with $\hat{p}$.
+
+We reject $H_0$ if $z > \lambda_{\alpha/2}$.
+
+::: callout-note
+### Example. Pollen allergy
+
+In 1990, a survey was conducted in Stockholm County to investigate the prevalence of pollen allergy among certain sensitive groups. 500 individuals aged 20-64 years were randomly selected, and among these, 23% had pollen allergy.
+
+-   What can we say about the proportion of pollen allergy sufferers in the population?
+:::
+
+$X = \text{"number if persons allergic to pollen"} \sim Bin(500,p)$
+
+Can we do normal approximation? Yes, since $500\cdot 0.23 \cdot (1-0.23) = `r 500*0.23*(1-0.23)` > 10$
+
+We create a 95% confidence interval for the proportion of people allergic to pollen:
+
+```{r}
+#| echo: false
+#| results: false
+0.23-qnorm(0.975)*sqrt(0.23*(1-0.23)/500)
+0.23+qnorm(0.975)*sqrt(0.23*(1-0.23)/500)
+round(qnorm(1-0.025),2)
+```
+
+$$I_p: 0.23 \pm 1.96\sqrt{\frac{0.23(1-0.23)}{500}} = (0.19, 0.27)$$
+
+# Inference about a difference between two proportions
+
+::: callout-note
+### Example. Pollen allergy (cont.)
+
+In 1990, a survey was conducted in Stockholm County to investigate the prevalence of pollen allergy among certain sensitive groups. 500 individuals aged 20-64 years were randomly selected, and among these, 23% had pollen allergy.
+
+In 1994, a similar survey was conducted, and 500 new individuals were selected. At that time, 29% had pollen allergy.
+
+-   Can it be reasonably stated that there has been a change in the propensity for this type of allergy during the period between 1990 and 1994?
+:::
+
+## Two proportions
+
+**Model:**
+
+$X = \text{"number of individuals allergic to pollen 1990"} \sim Bin(500,p_x)$
+
+$Y = \text{"number of individuals allergic to pollen 1994"} \sim Bin(500,p_y)$
+
+**Hypotheses:**
+
+$H_0: p_x = p_y$
+
+$H_1: p_x \neq p_y$
+
+This is the same thing as
+
+$H_0: p_x - p_y = 0$
+
+$H_1: p_x - p_y \neq 0$
+
+## Test with a confidence interval for the difference in proportions
+
+Can we do normal approximation? We have already shown it for $X$. We can do normal approximation for $Y$ since $500\cdot 0.29 \cdot (1-0.29) = `r 500*0.29*(1-0.29)` > 10$
+
+```{r}
+#| echo: false
+#| results: false
+0.23-0.29-qnorm(0.975)*sqrt(0.23*(1-0.23)/500+0.29*(1-0.29)/500)
+0.23-0.29+qnorm(0.975)*sqrt(0.23*(1-0.23)/500+0.29*(1-0.29)/500)
+
+```
+
+$$I_{p_x-p_y}: \hat{p}_x-\hat{p}_y \pm \underbrace{\lambda_{\alpha/2}}_{\alpha=0.05}\sqrt{\frac{\hat{p}_x(1-\hat{p}_x)}{500}+\frac{\hat{p}_y(1-\hat{p}_y)}{500} } = (-0.114,-0.006)$$
+
+$H_0$ is rejected at the significance level 0.05 since the interval does not cover zero.
+
+## Test with test quantity and critical area
+
+When $H_0$ is true, then $p_x = p_y = p_0$
+
+We estimate $p_0$ by combining the information from 1990 and 1994 (pooled estimation)
+
+$$\hat{p}_0 = \frac{x + y}{n_x + n_y} = \frac{0.23\cdot 500 + 0.29\cdot 500}{500 + 500} = `r (0.23*500 + 0.29*500)/(500 + 500)`$$
+
+Can we do normal approximation? Yes, since $500\cdot \hat{p}_0 \cdot (1-\hat{p}_0) = `r 500*0.26*(1-0.26)` > 10$
+
+Test quantity
+
+$$z = \left| \frac{\hat{p}_x - \hat{p}_y - 0}{\sqrt{\hat{p}_0 (1-\hat{p}_0)(\frac{1}{n_x}+\frac{1}{n_y})}} \right| = 2.1628$$
+
+Reject $H_0$ at significance level 0.05 since $z > \lambda_{\alpha/2} = 1.96$.
+
+⇒ There has been a change in the proportion of individuals with allergy to pollen during the period 1990 to 1994.
+
+# Summary of proportions
+
+|                                                                           |                                                                           |
+|:-------------------------------------------------------------------------:|:-------------------------------------------------------------------------:|
+| If $np(1-p)\geq 10$                                                       | If $np_0(1-p_0)\geq 10$                                                   |
+| Confidence interval for $p$                                               | Test quantity                                                             |
+| $\hat{p} \pm \lambda_{\alpha/2}\sqrt{\frac{\hat{p}(1-\hat{p})}{n}}$       | $z = \left|  \frac{\hat{p}-p_0}{\sqrt{\frac{p_0(1-p_0)}{n}}} \right|$     |
+
+
+
+If $n_xp_x(1-p_x)\geq 10$ and $n_yp_y(1-p_y)\geq 10$
+
+|                                                                                                                             |                                                                                                                      |
+|:---------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------:|
+                                                       |
+| Confidence interval for $p_x-p_y$                                                                                           | Test quantity                                                                                                        |
+| $\hat{p}_x-\hat{p}_y \pm \lambda_{\alpha/2}\sqrt{\frac{\hat{p}_x(1-\hat{p}_x)}{n_x}+\frac{\hat{p}_y(1-\hat{p}_y)}{n_y} }$   | $z = \left| \frac{\hat{p}_x - \hat{p}_y - 0}{\sqrt{\hat{p}_0 (1-\hat{p}_0)(\frac{1}{n_x}+\frac{1}{n_y})}} \right|$   |
+|                                                                                                                             |                                                                                                                      |
+
+where $\hat{p}_0 = \frac{n_x\hat{p}_x + n_y\hat{p}_y}{n_x + n_y} =\frac{x + y}{n_x + n_y}$
+
+# Analysis of categorical data
+
+## Categorical data
+
+A random experiment has $k$ different outcomes. Make $n$ independent experiments, and count the number of times an experiment ends up in each category.
+
+::: callout-note
+### Example. Genetics
+
+Each individual in a population belongs in one out of four gene categories $K_1$,$K_2$,$K_3$ och $K_4$. A study included 160 randomly chosen individuals that were examined and categorised. The results were :
+
+|           |       |       |       |       |
+|-----------|-------|-------|-------|-------|
+| category  | $K_1$ | $K_2$ | $K_3$ | $K_4$ |
+| frequency | 78    | 42    | 27    | 13    |
+:::
+
+## Two situations with categorical data
+
+We will go through two common situations for hypotheses testing with categorical data using $\chi^2$-tests.
+
+1)  Test fit of a model
+
+2)  Contingency table analysis (Homogeneity or independence tests)
+
+## Test of model fit
+
+::: callout-note
+### Example. Genetics (cont.)
+
+Each individual in a population belongs in one out of four gene categories $K_1$,$K_2$,$K_3$ och $K_4$. A study included 160 randomly chosen individuals that were examined and categorised. The results were :
+
+|           |       |       |       |       |
+|-----------|-------|-------|-------|-------|
+| category  | $K_1$ | $K_2$ | $K_3$ | $K_4$ |
+| frequency | 78    | 42    | 27    | 13    |
+
+: Observation-table
+
+-   According to a theoretical model, the sizes of the four categories should have the following relation 9:3:3:1. Do the observed data confirm the theory?
+:::
+
+Let $O_i$ be the observations for category $i=1,\dots,r$. In total we have $n$ observations.
+
+**Hypotheses:**
+
+$H_0: p_1=\frac{9}{16}, p_2=\frac{3}{16}, p_3=\frac{3}{16}, p_4=\frac{1}{16}$ (the theoretical model)
+
+$H_1: \text{some of these probabilities are wrong}$ (the theoretical model is not correct)
+
+**Test rule:**
+
+Let $E_i=n\cdot p_i$ be the expected number of outcomes for category $i$ when $H_0$ is true.
+
+|           |                      |       |       |       |
+|-----------|----------------------|-------|-------|-------|
+| category  | $K_1$                | $K_2$ | $K_3$ | $K_4$ |
+| frequency | $160\frac{9}{16}=90$ | 30    | 30    | 10    |
+
+: E-table
+
+We create a test quantity that when $H_0$ is true becomes
+
+$$\chi^2=\sum_{i=1}^r \frac{(O_i-E_i)^2}{E_i} \sim \chi^2(r-1)$$
+
+Reject $H_0$ if the test quantity $\chi^2 > \chi^2_{\alpha}$
+
+In the example, the test quantity is $\chi^2 = \sum_{i=1}^r \frac{(O_i-E_i)^2}{E_i} = \frac{(78-90)^2}{90} +\frac{(42-30)^2}{30}$+$\frac{(42-30)^2}{30}$+$\frac{(13-10)^2}{10} = 7.6$
+
+The quantile from the $\chi^2$-distribution with 4-1 degrees of freedom is `r qchisq(0.95,3)`
+
+⇒ $H_0$ can not be rejected at significance level 0.05
+
+## Contingency table
+
+::: callout-note
+### Example. Ulcer and blood type
+
+Is there a correlation between blood type and the risk of stomach ulcers? Blood type was determined for 1655 stomach ulcer patients and for a control group of 10,000 individuals from the same city. Results:
+
++---------------------+---------------+---------------+---------------+--------------+----------------+
+|                     | 0             | A             | B             | AB           | Total          |
++=====================+===============+===============+===============+==============+================+
+| Patients with ulcer | 911           | 59            | 124           | 41           | $n_{1.}$=1655  |
++---------------------+---------------+---------------+---------------+--------------+----------------+
+| Control group       | 4578          | 4219          | 890           | 313          | $n_{2.}$=10000 |
++---------------------+---------------+---------------+---------------+--------------+----------------+
+| Total               | $n_{.1}$=5489 | $n_{.2}$=4798 | $n_{.3}$=1014 | $n_{.4}$=354 | $n$ = 11655    |
++---------------------+---------------+---------------+---------------+--------------+----------------+
+
+: O-table
+:::
+
+Let $p_{i.}$ and $p_{.j}$ be the probabilities that an observation belong to the category on row $i$ or column $j$, respectively.
+
+We can estimate $p_{i.}$ with $n_{i.}$, the number of observations in row $i$, divided by the the total number of observations $n$:
+
+$$p_{i.} = \frac{n_{i.}}{n}$$
+
+**Hypotheses:**
+
+$H_0: p_{ij} = p_{i.}p_{.j}$ for all $i$ and $j$ (blood group and ulcer are independent)
+
+$H_1: H_0 \text{ is not true}$
+
+**Test rule:** When $H_0$ is true the expected number of observations in each combination of categories r are $E_{ij}=np_{ij}=np_{i.}p_{.j}$, which when we consider the estimated probabilities become $n\frac{n_{i.}}{n}\frac{n_{.j}}{n} = \frac{n_{i.}n_{.j}}{n}$
+
+E.g. $E_{11}=\frac{n_{1.}n_{.1}}{n} = \frac{1655 \cdot 5489}{11655} = `r 1655*5489/11655`$
+
+|                     | 0      | A      | B     | AB    |
+|---------------------|--------|--------|-------|-------|
+| Patients with ulcer | 779.4  | 681.3  | 144.0 | 50.3  |
+| Control group       | 4709.6 | 4116.7 | 870.0 | 303.7 |
+
+: E-table
+
+Under $H_0$ the sampling distribution for the test quantity
+
+$$\chi^2=\sum_{i=1}^r \sum_{j=1}^c \frac{(O_{ij}-E_{ij})^2}{E_{ij}} \sim \chi^2((r-1)(c-1))$$
+
+where $r$ is the number of categories distributed over the rows and $c$ is the number distributed over the columns.
+
+$\chi^2=\frac{(911-779.4)^2}{779.4} + \frac{(579-681.3)^2}{681.3} \dots = 49.0153$
+
+We reject $H_0$ since the test quantity is larger than the quantile $\chi^2_{\alpha}((2-1)(4-1)) = `r qchisq(0.95,3)`$
+
+### Test of independence or homogeneity
+
+A contingency table test can be done to test
+
+-   independence, if we want to show that the occurrences of two categories are independent of each other
+
+-   homogeneity, if we want to show that two samples come from the same distribution.
+
+## Contingency table test (Test for homogeneity)
+
+We have $c$ categories and $r$ samples.
+
+|          |          | categories |         |          |          |
+|:---------|----------|------------|---------|----------|:--------:|
+|**sample**| 1        | 2          | $\dots$ | c        |   sum    |
+| 1        | $O_{11}$ | $O_{12}$   |         | $O_{1c}$ | $n_{1.}$ |
+| 2        | $O_{21}$ |            |         |          |          |
+| $\vdots$ |          |            |         |          |          |
+| r        | $O_{r1}$ |            |         | $O_{rc}$ | $n_{r.}$ |
+| sum      | $n_{.1}$ |            |         | $n_{.c}$ |   $n$    |
+
+: O-table
+
+The null hypothesis when we make a homogeneity test is that the probability to fall into a category (e.g. $j$) is the same regardless of which sample one belong to ($i = 1, \dots, r$).
+
+$H_0: p_{1j} = p_{2j} = \dots = p_{rj}\text{ for all categories }j$
+
+$H_1: H_0 \text{ does not hold}$
+
+Estimation of probabilities, test quantity and test rule is the same as for an independence test.
+
+# Conditions for the $\chi^2$-tests
+
+Since the $\chi^2$ tests rely on the test statistic, given that $H_0$ is true, can be regarded as a sum of squared standardized normal distributed random variables, it is reasonable to assume that it is possible to make a normal approximation for each category.
+
+A rule of thumb is that the expected value in each category should not be too small, for example, $E_{ij} > 5$.
+
+If this is not the case, categories can be combined.

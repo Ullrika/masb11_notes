@@ -1,0 +1,458 @@
+---
+title: "F2. Discrete random variables"
+author: "Ullrika Sahlin"
+format:
+  html:
+    embed-resources: true
+---
+
+# Random variables
+
+A random variable describes a random experiment by specifying the probability for every outcome in the outcome space. 
+
+::: callout-tip
+## Example: Role of an n-sided dice
+
+$X$ = "number of dots"
+
+The probability for $X=1$ is $\frac{1}{n}$
+
+Curiosity - there is a dice that can be flipped like a coin
+[The First Dice You Flip Like A Coin](https://yarrostudios.com/pages/flipdie-1)
+
+:::
+
+::: callout-tip
+## Example: Blood sugar level
+
+$X$ = "blood sugar level (mmol/l) measured on an individual randomly chosen from a population"
+
+:::
+
+## Random variables - discrete and continuous
+
+There are two types of random variables: 
+
+- Discrete r.v. taking specific values such as numbers, natural numbers or categories
+
+- Continuous r.v. taking real numbers
+
+::: callout-note
+### Is the following r.v. discrete or continuous? 
+
+(A) A toss of a coin resulting in heads or tail
+
+(B) The number of stars in the universe
+
+(C) The time (in seconds) it takes for the winner to reach the finish line in vasaloppet
+
+(D) The measured weight of an ant in milligram
+:::
+
+## From qualitative to quantitative description of an event 
+
+The outcome space for a toss of a coin is {heads, tails}
+
+Let us define a discrete random variable for this random experiments by 
+
+$$X = \left\{ \begin{array}{lr}
+        1 & \text{if the outcome is heads}\\
+        0 & \text{if the outcome is tails}
+        \end{array}\right.$$
+        
+
+::: callout-tip
+
+An outcome of the random variable $X$ is denoted by a lowercase $x$. 
+
+:::
+
+        
+# Discrete r.v. - probability function
+
+A r.v. is defined with probabilities for the outcomes. This is for a discrete r.v. done with the probability function $f_X(x) = P(X=x)$
+
+::: callout-tip
+It is possible to simplify the description of the probability function by writing $f(x)$. 
+
+The probability function can also be denoted $p(x)$.
+
+:::
+
+
+# Discrete r.v. - Distribution function
+
+All random variables can be described by a cumulative distribution function (CDF)
+
+$F_X(x) = P(X \leq x)$
+
+For a discrete r.v. the CDF is the sum of all probabilities for all outcomes that are less or equal than $x$: 
+
+$F_X(x) = \sum_{x_i\leq x} P(X=x_i) = \sum_{x_i\leq x} f_X(x_i)$
+
+The following holds
+
+- $0\leq F_X(x) \leq 1$
+
+- $F_X(-\infty) = 0$
+
+- $F_X(\infty) = 1$
+
+::: callout-tip
+It is possible to simplify the notation of the distribution function by writing $F(x)$. 
+
+:::
+
+# Probability distributions
+
+A probability distribution (or just distribution) for a random variable makes it possible to calculated probabilities for outcomes or events.
+
+Some probability distributions have names. 
+
+It is good to be familiar with common distributions.  
+
+# Uniform discrete distribution
+
+::: callout-tip
+## The classical dice
+
+The random variable for tossing a six-sided dice
+
+![](img/dice.jpg){width=20%}
+
+Probability function: 
+
+$P(\text{the dice shows  }x\text{ dots})=\frac{1}{6}$ where $x=1,...,6$
+
+A different way to write it
+
+$f(x)=P(X=x)=\frac{1}{6}$ where $x=1,...,6$
+
+- Draw the distribution function!
+
+- What is the probability to get at least five dots?
+
+- What is the probability to get at most two dots?
+
+- What number of dots do we expect in average? 
+
+:::
+
+## Simulation of 20 rolls with the dice
+
+```{r}
+#| warning: false
+#| echo: false 
+
+iter = 20
+prickar = sample.int(6,size = iter, replace = TRUE)
+plot(prickar,ylim=c(1,6),ylab="prickar",xlab="kast",col='gray',
+     title='genomsnittsvärde sett över kast')
+lines(cumsum(sample.int(6,size = iter, replace = TRUE))/1:iter,col='darkred')
+```
+
+## Simulation of 150 rolls with the dice
+
+```{r}
+#| warning: false
+#| echo: false 
+
+iter = 150
+prickar = sample.int(6,size = iter, replace = TRUE)
+plot(prickar,ylim=c(1,6),ylab="prickar",xlab="kast",col='gray',
+     title='genomsnittsvärde sett över kast')
+lines(cumsum(sample.int(6,size = iter, replace = TRUE))/1:iter,col='darkred')
+```
+
+# Poisson distribution
+
+We use the Poisson distribution to describe how many times something is happening during a time interval
+
+- The number of cars passing during an hour
+
+
+:::: {.columns}
+::: {.column width="60%"}
+![](img/bilar.png){width="80%"}
+
+- The number of volcanic eruptions under 100 years
+
+- The number of birds you see when walking along a transect
+:::
+
+::: {.column width="40%"}
+![](img/fågel.jpg)
+:::
+::::
+
+## Requirements for a Poisson distribution
+
+In order for a random variable to follow a Poisson distribution the following must hold:
+
+- The average amount of events is the same for different time intervals 
+
+- The number of events in non-overlapping time intervals are independent 
+
+- Two events cannot occur at the same time
+
+::: callout-tip
+## Volcanic eruptions
+
+Note that the number of volcanic eruptions under 100 years might not comply with these requirements - which one?
+:::
+
+## Poisson distribution - Probability function
+
+$X \sim Po(\lambda)$
+
+(the symbol $\sim$ ("tilde") and what comes after is read out as "*is distributed as a Poisson distribution*")
+
+$\lambda$ (greek letter "lambda") is a parameter in the probability function
+
+$f_X(x) = P(X = x)=\frac{e^{-\lambda}\cdot \lambda^x}{x!}$
+
+where the outcome space consists of non-negative numbers $x \in \{0,1,2,3,...\}$
+
+[Poisson distribution on wikipedia](https://en.wikipedia.org/wiki/Poisson_distribution)
+
+## Poisson distribution
+
+::: callout-tip
+### Example. Poisson distribution
+
+A few years ago, a dermatologist raised an alarm that in an area in Lund, located near a chemical industry, the number of cases of a rare cancer disease was unusually high. In the particular area, **nine people** (six women and three men) had been affected by the disease over a five-year period. When the doctor studied the nationwide cancer registry, he saw that in a population similar to that in the particular area, one would have expected the number of cases to be four during this five-year period.
+
+**Model:** $X=$ "number of disease cases in the area under the five year period
+
+$X\sim Po(\lambda=4)$
+
+$P(\text{exactly } x \text{ cases}) = P(X=x) = f(x) =  \frac{e^{-4} 4^x}{x!}$
+
+```{r}
+#| echo: false
+#| warning: false
+
+library(ggplot2)
+
+df <- data.frame(xx = 0:16, px = dpois(0:16,4))
+
+
+
+ggplot(df,aes(x=xx,y=px)) +
+  geom_col(fill = '#5897c7', width = 0.5) +
+  labs(y=expression(f(x)),x=expression(X))
+```
+
+
+- What is the probability for exactly 5 cases? 
+
+- What is the probability for at most 2 cases? 
+
+-  What is the probability for at least 9 cases? 
+
+### Example. Poisson distribution
+
+- What is the probability for exactly 5 cases? 
+
+```{r}
+#| echo: false
+#| warning: false
+
+ggplot(df,aes(x=xx,y=px)) +
+  geom_col(fill="#5897c7", width = 0.5) +
+  geom_col(data=data.frame(xx=5,px = dpois(5,4)),fill="#9e2510", width = 0.5) +
+  labs(y=expression(f(x)),x=expression(X)) +
+  ggtitle("P(X=5)")
+
+```
+
+### Example. Poisson distribution
+
+- What is the probability for at most 2 cases? 
+
+$P(X\leq 2) = P(X=0) + P(X = 1) + P(X = 2)$
+
+```{r}
+#| echo: false
+#| warning: false
+
+ggplot(df,aes(x=xx,y=px)) +
+  geom_col(fill="#5897c7", width = 0.5) +
+  geom_col(data=data.frame(xx=c(0,1,2),px = dpois(c(0,1,2),4)),fill="#9e2510", width = 0.5) +
+  labs(y=expression(f(x)),x=expression(X)) 
+
+```
+
+### Example. Poisson distribution
+
+- What is the probability for at least 9 cases?  
+
+$P(X\geq 9) = P(X=9) + P(X = 10) + ....$
+
+can also be written as 
+
+$P(X\geq 9) = 1 - P(X \leq 8)$
+
+
+```{r}
+#| echo: false
+#| warning: false
+
+ggplot(df,aes(x=xx,y=px)) +
+  geom_col(fill="#5897c7", width = 0.5) +
+  geom_col(data=data.frame(xx=9:16,px = dpois(9:16,4)),fill="#9e2510", width = 0.5) +
+  labs(y=expression(f(x)),x=expression(X)) 
+
+```
+:::
+
+## Derive the value on the probability using a probability table
+
+A table for the distribution function for different parameter values
+
+$P(X \leq 8) = 0.97864$
+
+$P(X \geq 9) = 1- P(X \leq 8) = 1 - 0.97864 = 0.02136$ 
+
+![](img/tabpo.png)
+
+# Binomial distribution
+
+The binomial distribution exists when making $n$ independent trails and then counting the number of times the trial was successful 
+
+::: callout-tip
+## Example. Binomial distribution
+
+- You make 10 attempts to hit a paper bin with a paper ball
+
+![](img/bin.jpg){fig-align="center" width=40%}
+
+- You toss a coin 20 times and count how many times you got heads
+:::
+
+## Binomial distribution - an attempt to derive the formula for it's probability function
+
+We make $n=10$ trials where the probability to succeed in one trial is $p$
+
+$X=$ "number of successful trials"
+
+$P(X=0) = P(\text{failur in all 10 trials}) = (1-p)(1-p)\cdots (1-p) = (1-p)^{10}$
+
+$P(X=1)$? 
+
+$X=1$ correspond to one successful trial and nine failed trials, where the order does not matter
+
+Success in the first trial: $p(1-p)\dots (1-p) = p(1-p)^{9}$
+
+can happen in 10 ways, which gives $P(X=1) = 10\cdot p(1-p)^{9}$
+
+By a similar reasoning: $P(X=2) = \frac{10\cdot 9}{2}\cdot p^2(1-p)^8$
+
+## Binomial distribution - probability function
+
+$X \sim Bin(n,p)$ 
+
+The parameters are $n$, number of trials, and $p$, the probability to succeed in a trial.
+
+$f_X(x) = P(X = x)== \frac{n!}{x!(n-x)!}p^x\cdot (1-p)^{n-x}$ where the outcome space consists of whole numbers between 0 and $n$, i.e. $x \in \{0,1,2,3,...,n\}$
+
+[Binomial distribution on wikipedia](https://en.wikipedia.org/wiki/Binomial_distribution)
+
+## Binomial distribution
+
+::: callout-tip
+### Example: We role a four-sided dice 7 times
+
+$X=$ "the number of times the dice shows one dot" 
+
+$X \sim Bin(n,p)$ where $n=7$ and $p=\frac{1}{4}$
+
+![](img/f4.png){fig-align="center" width=20%}
+
+- What is the probability to one dot 4 times?
+
+$P(X=4) = \binom{n}{x}p^x\cdot (1-p)^{n-x} = \binom{7}{4}\frac{1}{4}^4\cdot (1-\frac{1}{4})^{3}$
+
+- What is the probability to have one dot at the most four times?
+
+$P(X\leq 4) = \sum_{x = 0}^4 P(X=x) = \sum_{x = 0}^4 \binom{7}{x}\frac{1}{4}^{x}\cdot (\frac{3}{4})^{7-x}$
+
+Tedious to calculate
+:::
+
+## Derive the value on the probability using a probability table
+
+A table for the distribution function for different parameter values
+
+$P(X\leq 4) = 0.98712$
+
+
+![](img/tabbin.png)
+
+# Expected value and variance 
+
+There are several ways to summarise the random variation for a random variable $X$
+
+Measure of central tendency: 
+
+- **Expected value** ”the value that $X$ takes in average”
+
+- $E(X)$ 
+
+- $\mu$ 
+
+Measure of spread:  
+
+- **Variance** - ”how the values of $X$ spread around the expected value”
+
+- $V(X)$
+
+- $\sigma^2$ 
+
+- **Standard deviation** - $\sqrt{V(X)}$
+
+- $\sigma$
+
+::: callout-tip
+All random variables have expected values and variance denoted as $\mu$ and $\sigma^2$ no matter what probability distribution they belong to. 
+
+E.g. the expected value and variance for r.v. $X$ is $\mu_X$ and $\sigma^2_X$
+
+The expected value and variance for r.v. $Y$ is $\mu_Y$ and $\sigma^2_Y$
+
+:::
+
+# Expected value for a discrete random variable 
+
+$E(X) = \sum_{\text{all  }x} x\cdot P(X=x) = \sum_{\text{all }x} x\cdot f(x)$ 
+
+::: callout-tip
+## Expected value for a discrete uniform distribution
+
+$E(X)=\sum_{x=1}^6 x\cdot \frac{1}{6} = \frac{1}{6} \cdot (1 + 2+ 3 +4+5+6) = 3.5$
+
+*Fits well to the simulations we made earlier*
+:::
+
+## Expected value for a Poisson distribution
+
+$X \sim Po(\lambda)$
+
+$E(X) = \lambda$
+
+In the formula sheet the parameter for the Poisson distribution is $\mu$
+
+## Expected value for a Binomial distribution
+
+$X \sim Bin(n,p)$
+
+$E(X) = n\cdot p$
+
+# Expected value of a function of a random variable
+
+$g(x)$ is a function 
+
+$E(g(X)) = \sum_{\text{all }x} g(x)\cdot f(x)$
+
+*the probability function does not change when values are transformed*
+

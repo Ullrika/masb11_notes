@@ -1,0 +1,720 @@
+---
+title: "F3. Kontinuerliga slumpvariabler"
+author: "Ullrika Sahlin"
+format:
+  html:
+    embed-resources: true
+---
+
+```{r}
+#| echo: false
+#| warning: false
+
+library(ggplot2)
+library(dplyr)
+```
+
+
+# (fort F2) Varians
+
+Låt $\mu$ vara väntevärdet för slumpvariabeln $X$
+
+Variansen beskriver spridningen runt väntevärdet. Mer specifikt är variansen det föräntade kvadratiska avståndet från väntevärdet.
+
+$V(X) = E((X-E(X))^2)$
+
+eller
+
+$V(X) = E((X-\mu)^2)$
+
+::: callout-note
+Orsaken till att man kvadrerar avstånden är att det kommer vara både negativa och positiva avstånd, och att de kan "ta ut varandra" om man summerar direkt.
+
+Standardavvikelsen är $\sqrt{V(X)}$ och får ner spridningsmåttet på samma skala som slumpvariabeln $X$.
+:::
+
+# (fort F2)  Variansen för en diskret slumpvariabel
+
+$X$ är en diskret slumpvariabel
+
+$V(X)=\sum_{\text{alla x}} (x-\mu)^2P(X=x)$
+
+::: callout-note
+## Exempel: Tärningskast
+
+Låt $X=$ "antal prickar
+
+Vi har tidigare visat att $E(X)=3.5$
+
+$$\begin{split} & V(X)=\sum_{x=1}^6(x-3.5)^2\cdot \frac{1}{6} = \\ & \frac{1}{6} ((1-3.5)^2+(2-3.5)^2+(3-3.5)^2+(4-3.5)^2+(5-3.5)^2+(6-3.5)^2) = \\ & \frac{1}{6} ((-2.5)^2 + (-1.5)^2+ (-0.5)^2+ (0.5)^2+ (1.5)^2+ (2.5)^2) = \frac{17.5}{6} \end{split}$$
+:::
+
+```{r}
+#| echo: false
+#| results: false 
+((1-3.5)^2+(2-3.5)^2+(3-3.5)^2+(4-3.5)^2+(5-3.5)^2+(6-3.5)^2)
+17.5/6
+```
+
+:::callout-note
+## (fort F2) Tentauppgift på väntevärde
+
+På en speciell vägsträcka gäller att slumpvariabeln $X = \text{antal olyckor på en vecka}$ har följande fördelning
+
+| Utfall (x) | 0    | 1    | 2    | 3    |
+|------------|------|------|------|------|
+| $P(X = x)$ | 0.70 | 0.20 | 0.06 | 0.04 |
+
+### Beräkna det förväntande antalet olyckor under en vecka
+
+$$\begin{split} & E(X) = \sum_{x=0}^3 x\cdot P(X=x) = \\ & 0\cdot 0.70 + 1 \cdot 0.20 + 2\cdot 0.06+ 3\cdot 0.04 
+= 0.44 \end{split}$$
+
+$\therefore E(X)=\mu = 0.4$
+
+> Symbolen $\therefore$ står för *därför är min slutsats att* 
+
+```{r}
+#| echo: false
+#| results: false
+0* 0.70 + 1 * 0.20 + 2* 0.06+ 3* 0.04
+```
+
+### Vad är variansen? (var inte en tentauppgift)
+
+$$\begin{split} & V(X)=\sum_{x=0}^3 (x-\mu)^2\cdot P(X=x) =\sum_{x=0}^3 (x-0.44)^2\cdot P(X=x)=\\ & (0-0.44)^2\cdot 0.70 + (1-0.44)^2 \cdot 0.20 + (2-0.44)^2\cdot 0.06+ (3-0.44)^2\cdot 0.04 =\\ & 0.6064 \end{split}$$
+
+```{r}
+#| echo: false
+#| results: false
+(0-0.44)^2* 0.70 + (1-0.44)^2 * 0.20 + (2-0.44)^2* 0.06+ (3-0.44)^2* 0.04  
+```
+
+:::
+
+<!-- :::callout-notes -->
+<!-- ### Snabbformel för varians -->
+<!-- En alternativt sätt att beräkna varians för en s.v. med känd sannolikhetsfunktion är,  -->
+
+<!-- $$\frac{\sum_{\text{alla x}} x^2 - \frac{(\sum x)^2}{n}}{n}$$ -->
+<!-- där man har $n$ olika utfall.  -->
+
+<!-- ::: -->
+
+# (fort F2) Sannolikhets och fördelningsfunktion diskreta slumpvariabler
+
+Para ihop $f(x)$ med $F(X)$
+
+```{r}
+#| echo: false
+pa <- rep(1,5)/5
+pb <- c(2,0,1,2,1)/6
+pc <- c(2,1,0,1,2)/6
+
+nf <- layout( matrix(c(1,2,3,4,5,6), ncol=3, byrow = TRUE) )
+barplot(pa,names.arg = 1:5,ylim=c(0,1),ylab="f(x)",xlab="x")
+barplot(pb,names.arg = 1:5,ylim=c(0,1),ylab="f(x)",xlab="x")
+barplot(pc,names.arg = 1:5,ylim=c(0,1),ylab="f(x)",xlab="x")
+plot(c(1,1:5),c(0,cumsum(pb)),ylim=c(0,1),type='s',ylab="F(x)",xlab="x")
+plot(c(1,1:5),c(0,cumsum(pc)),ylim=c(0,1),type='s',ylab="F(x)",xlab="x")
+plot(c(1,1:5),c(0,cumsum(pa)),ylim=c(0,1),type='s',ylab="F(x)",xlab="x")
+```
+
+:::callout-note
+## Exempel. Poissonfördelningen
+$X=\text{"antal spam per timme"}$
+
+Modell: $X \sim Po(\lambda_X)$ där $\lambda_X=0.5$
+
+Vad är sannolikheten att få minst 6 spam på ett dygn? 
+
+Det första vi behöver göra är att omvandla modellens intensitets-parameter så den ger antal över rätt tidsenhet. Från per timme till per dygn. 
+
+1 spam per dygn motsvarar 24 spam per timme
+
+$Y=\text{antal spam per dygn}$
+
+Modell: $Y \sim Po(\lambda_Y)$ där $\lambda_Y=24\cdot 0.5 = 12$
+
+```{r}
+#| echo: false
+#| results: false
+ppois(5,12)
+1-ppois(5,12)
+```
+
+
+$$\begin{split} & P(Y\geq 6) = P(Y\geq 6) = \\  & 1-P(Y\leq 5) = 1 - F_Y(5) = \\  & 1- 0.0203 = 0.9797 \end{split}$$
+
+![](img/tabpo_2.png)
+
+![](img/potab2.png)
+
+Alternativt kan man beräkna värdet på fördelningsfunktionen direkt 
+
+$$\begin{split} F_Y(5) = & P(Y=0)+P(Y=1)+ \dots P(Y=5) =\\ & \frac{2^0e^{-2}}{0!} + \frac{2^1e^{-2}}{1!} +\dots +\frac{2^5e^{-2}}{5!} \end{split}$$
+:::
+
+# (fort F2) Väntevärde för en Poissonfördelning 
+
+:::: {.columns}
+
+::: {.column width="20%"}
+
+Överkurs
+:::
+::: {.column width="80%"}
+
+![](img/skriet.jpg)
+:::
+::::
+
+$X \sim Po(\lambda)$ and 
+$f(x) = \frac{\lambda^xe^{-\lambda}}{x!}$
+
+$$\begin{split} & E(X) = \sum_{x=0}^{\infty}x\cdot f(x) = \sum_{x=1}^{\infty}x\cdot f(x) = \\ & 
+\sum_{x=1}^{\infty}x\cdot \frac{\lambda^xe^{-\lambda}}{x!} = \sum_{x=1}^{\infty}\frac{\lambda^xe^{-\lambda}}{(x-1)!} = \\& e^{-\lambda} \sum_{x=1}^{\infty}\frac{\lambda^x}{(x-1)!} = \\ & 
+\lambda \cdot e^{-\lambda} \sum_{x=1}^{\infty}\frac{\lambda^{x-1}}{(x-1)!} = \\ & 
+\lambda \cdot e^{-\lambda} \sum_{x=0}^{\infty}\frac{\lambda^x}{x!} = \lambda\cdot e^{-\lambda}\cdot e^{\lambda} = \lambda \end{split}$$
+
+> I näst sista steget använde vi det matematiska resultatet att $\sum_{x=0}^{\infty}\frac{\lambda^x}{x!} = e^{\lambda}$
+
+
+# Kontinuerliga slumpvariabler
+
+- En kontinuerlig slumpvariabel $X$ antar oändligt många värden. Det betyder att 
+
+$$P(X =x) = 0$$ 
+
+- Istället studerar man sannolikheten för intervall, t.ex. intervallet $[a,b]$: 
+
+$$P(a \leq X \leq b)$$
+
+- Fördelning av en kontinuerlig s.v $X$ kan beskrivas med hjälp av en täthetsfunktion (*på engelska: probability density function, PDF*)
+
+$$f_X(x) \geq 0$$
+
+
+
+# Täthetsfunktion för en kontinuerlig s.v.
+
+:::callout-note
+## Exempel. Likformig fördelning
+
+*På engelska: Uniform distribution*
+
+$$f(x) = \left\{ \begin{array}{lr}
+        \frac{1}{b-a} & a \leq x \leq b\\
+        0 & \text{annars}
+        \end{array}\right.$$
+
+> Eftersom täthetsfunktionen ser ut som en rektangen kallas denna fördelning även **rektangelfördelning**
+
+En likformig fördelning lämpar sig för s.v. som antar värden i ett intervall med lika stor sannolikhet. 
+
+:::
+
+:::callout-note
+## Exempel. Exponentialfördelning
+
+$$f(x) = \left\{ \begin{array}{lr}
+        \lambda\cdot e^{-\lambda x} & x \geq 0\\
+        0 & \text{annars}
+        \end{array}\right.$$
+        
+Exponentialfördelning antar icke-negativa värden $x \geq 0$.
+
+Det är en lämplig fördelning för att beskriva tiden det tar till en händelse, t.ex. väntetid på en buss eller att få komma in till doktorn. 
+
+:::
+
+:::callout-note
+## Exempel. Normalfördelning
+
+$f(x) = \frac{1}{\sigma \sqrt{2\pi}}e^{-\frac{(x-\mu)^2}{2\sigma^2}}$ där $-\infty < x < \infty$
+
+> En normalfördelning har två parametrar, $\mu$ och $\sigma^2$ som också är fördelningens väntevärde och varians
+:::
+
+# Fördelningsfunktion för en kontinuerlig s.v.
+
+- Sannolikhet motsvarar en area under täthetsfunktionen 
+
+- Fördelningsfunktionen är arean upp till utfallet $x$
+
+$$F(x)=\int_{-\infty}^{x} f(v)dv$$
+
+- Totala arean under täthesfunktionen är alltid 1 
+
+$$\int_{-\infty}^{\infty} f(x)dx$$
+
+- $P(X < x) = P(X\leq x)$ för kontinuerliga s.v. (inte för diskreta)
+
+:::callout-note
+## Exempel. Likformig fördelning
+Slumpvariabeln $X$ är likformigt fördelat i intervallet 0 till 10.
+
+Då vet vi att täthetsfunktionen är 
+$$f(x) = \left\{ \begin{array}{lr}
+        \frac{1}{10} & 0 \leq x \leq 10\\
+        0 & \text{annars}
+        \end{array}\right.$$
+
+Vad är sannolikheten att $X$ är mindre eller lika med 7?
+
+$$\begin{split} & P(X \leq 7) = F(7) = \int_{-\infty}^7 f(x)dx = \\ & \int_0^7 \frac{1}{10}dx = [\frac{x}{10}]_{x=0}^{7} = \\ &  \frac{7}{10} - \frac{0}{10} = \frac{7}{10}   \end{split}$$
+:::
+
+:::callout-note
+## Exempel. Exponentialfördelning
+Slumpvariabeln $X$ är exponentialfördelad med parametern $\lambda = \frac{3}{2}$
+
+Vi vet att 
+$$f(x) = \left\{ \begin{array}{lr}
+        \lambda\cdot e^{-\lambda x} & x \geq 0\\
+        0 & \text{annars}
+        \end{array}\right.$$
+
+Vad är sannolikheten att $X$ är mindre eller lika med 2?
+
+$$\begin{split} & P(X \leq 2) = F(2) = \int_{-\infty}^2 f(x)dx = \\ & \int_{-\infty}^2 \lambda\cdot e^{-\lambda x}dx =\int_{0}^2 \frac{3}{2}\cdot e^{-\frac{3}{2} x}dx = \\ & [-e^{-\frac{3}{2} x}]_{x=0}^{2} =  -e^{-\frac{3}{2}\cdot 2} - -e^{-\frac{3}{2} \cdot 0} = \\ &
+-e^{-3} + 1 = 1 - e^{-3} \end{split}$$ 
+
+:::
+
+## Fördelningsfunktion för en exponentialfördelning
+
+Fördelningsfunktionen för en exponentialfördelad slumpvariabel är 
+
+ $$F(x) = 1 - e^{-\lambda x}$$
+
+# Komplementhändelse för en kontinuerlig s.v.
+
+$P(X \geq x) = 1 - P(X < x) \underbrace{ =}_{P(X=x)=0} 1 - P(X \leq x)$
+
+
+# Sannolikhet över ett intervall 
+
+$P(a < X \leq b) = P(X \leq b) - P(X \leq a)$ 
+
+:::callout-note
+## Exempel: Intervall
+
+$P(-2 < X \leq 1)$
+
+```{r, fig.height=3}
+#| echo: false
+prob1 = pnorm(-2)
+prob2 = pnorm(1)
+fill = paste0(round(100*(prob2-prob1),0),"% sannolikhet för intervallet")
+data.frame(pp = ppoints(1000)) %>%
+  mutate(x = qnorm(pp)) %>%
+  mutate(y = dnorm(x)) %>%
+  ggplot(aes(x=x,y=y)) +
+  geom_line() +
+  geom_ribbon(data=. %>% filter(pp <= prob2 & pp > prob1), 
+              aes(ymin=0, ymax=y, fill=fill)) +
+  theme_bw() + 
+  xlab("x") + 
+  ylab("täthet") 
+```
+:::
+
+
+# Väntevärde och varians för en kontinuerlig s.v.
+
+$X$ är en kontinuerlig slumpvariabel
+
+$\mu= E(X) = \int_{-\infty}^{\infty} xf(x)dx$
+
+$\sigma^2 = V(X) = \int_{-\infty}^{\infty} (x-\mu)^2f(x)dx$
+
+:::callout-note
+## Exempel: Exponentialfördelning
+$X \sim Exp(\lambda)$
+
+$E(X) = \frac{1}{\lambda}$
+
+$V(X) = \frac{1}{\lambda^2}$
+
+[Exponential distribution on wiki](https://en.wikipedia.org/wiki/Exponential_distribution)
+
+:::
+
+
+# Diskreta och kontinuerliga s.v. 
+
+![](img/dccomp.png)
+
+# Normalfördelning
+
+- Normalfördelningen är otroligt användbar och uppkommer ofta man vill beskriva olika naturliga fenomen
+
+- Normalfördelningen är en bra beskrivning av fördelningen för summor av oberoende och likafördelade slumpvariabler
+
+- Vi kommer lägga ner mycket tid på normalfördelningen i denna kurs
+
+- Det finns en del trick för att ta fram ett värde på fördelningsfunktionen för vilka parametervärden som helst
+
+## Täthetsfunktion för normalfördelning
+
+$X \sim N(\mu,\sigma)$
+
+:::callout-warning
+### standardavvikelse eller varians
+Vissa textböcker och program använder varians i formeln $N(\mu,\sigma^2)$
+:::
+
+- Täthetsfunktionen för en normalfördelning ser ut som en kyrk-klocka
+
+- Normalfördelningen är symmetrisk 
+
+$F(x) = 1 - F(-x)$
+
+- Typvärde, median och väntevärde sammanfaller i en normalfördelning
+
+![](img/norm1.png){width=50%}
+
+## Fördelningsfunktion för en normalfördelning
+
+$X \sim N(\mu,\sigma)$
+
+$$\begin{split}  P(X \leq 0.1) & = F(0.1) = \int_{-\infty}^{0.1}f(x)dx = \\  & \int_{-\infty}^{0.1}\frac{1}{\sigma \sqrt{2\pi}}e^{-\frac{(x-\mu)^2}{2\sigma^2}}dx \end{split}$$
+
+Låt oss anta att $\mu=0$ och $\sigma=1$
+
+$$=\int_{-\infty}^{0.1}\frac{1}{\sqrt{2\pi}}e^{-x^2}dx = \dots\text{går att lösa men svårt}$$
+
+## Fördelningsfunktion för en normalfördelning - tabell
+
+Istället för att beräkna integralen kan vi använda
+
+- tabeller
+- miniräknare/datorprogram
+
+I de fall vi har en tabell - hur gör man för alla möjliga värden på väntevärdet $\mu$ och variansen $\sigma^2$? 
+
+Lösningen är att standardisera fördelningen
+
+# Standardiserad normalfördelning 
+
+$X \sim N(3,4)$
+
+Skapa en ny s.v. $Z = \frac{X-3}{4}$
+
+Man kan visa att $Z \sim N(0,1)$, en standardiserad normalfördelning. 
+
+Följande gäller $X = 3 + 4\cdot Z$ 
+
+
+```{r, fig.height=3}
+#| echo: false
+
+mu = 3
+sigma = 4
+
+pp = ppoints(100)
+xx = qnorm(pp,mu,sigma)
+df=data.frame(xx=xx, dx = dnorm(xx,mu,sigma),dz = dnorm(xx))
+ggplot(df, aes(x=xx,y=dx)) +
+         geom_line() + 
+  geom_line(aes(x = xx, y = dz),col = 'darkred') +
+  annotate("text",x=5,y = 0.3,label="Z",colour = 'darkred') +
+  annotate("text",x=6,y = 0.15,label="X",colour = 'black') +
+  xlab("") +
+  ylab("täthet")
+               
+```
+
+> Fördelningsfunktionen för en standardiserad normalfördelning kan betecknas $\Phi(x)$ och finns i tabell
+
+```{r}
+#| echo: false
+#| results: false
+
+pnorm(0.25)
+```
+
+
+$$\begin{split} & P(X \leq 4) = P(\frac{X-3}{4} \leq \frac{4-3}{4}) = \\ & 
+P(Z \leq 0.25) = \Phi(0.25) \underbrace{= 0.5987}_{\text{ur tabell}} \end{split}$$
+
+
+![](img/normtab.png)
+
+## Standardiserad normalfördelning och normalfördelning
+
+Låt $Z \sim N(0,1)$
+
+Då är $X = \mu + \sigma \cdot Z$ också normalfördelad med väntevärde $\mu$ och varians $\sigma^2$, d.v.s. 
+$$X \sim N(\mu,\sigma)$$
+
+:::callout-note
+## Exempel. Normalfördelning
+
+Låt $X \sim N(5,2)$
+
+$$\begin{split} & P(X \geq 0)  = 1 - P(X < 0) = 1 - P(X \leq 0) = \\ & 1 - P(\frac{X-5}{2} \leq \frac{0-5}{2}) = 1 - \Phi(\frac{-5}{2}) = \\ & 1 - (1-\Phi(\frac{5}{2})) \end{split}$$
+
+![](img/normtab.png)
+
+:::
+
+:::callout-note
+## Tentauppgift 
+Vikten hos en alpin skidåkare med utrustning anses normalfördelad med väntevärde 80 kg och varians 36 kg^2. Skidåkaren Kim åker ensam i karbinen. Vad är sannolikheten att hens vikt överstiger 90 kg? 
+
+Låt $X = \text{"vikt i kg"}$
+
+Modell: $X \sim N(80,6)$ 
+
+$$\begin{split} & P(X > 90) = 1 - P(X \leq 90) = \\ & 1 - P(\frac{X-80}{6} \leq \frac{90-80}{6}) = 1 - \Phi(\frac{10}{6}) \end{split}$$
+
+```{r}
+#| echo: false
+#| results: false
+
+pnorm(10/6)
+1-pnorm(10/6)
+```
+
+:::
+
+
+# Kvantil
+
+En kvantil delar en sannolikhetsfördelning i två delar. 
+
+$$P(X  \leq x_{.98}) = 0.98$$
+
+
+```{r, fig.height=3}
+#| echo: false
+prob = pnorm(2)
+fill = paste0(round(100*(prob),0),"% sannolikhet")
+data.frame(pp = ppoints(1000)) %>%
+  mutate(x = qnorm(pp)) %>%
+  mutate(y = dnorm(x)) %>%
+  ggplot(aes(x=x,y=y)) +
+  geom_line() +
+  geom_ribbon(data=. %>% filter(pp < prob), 
+              aes(ymin=0, ymax=y, fill=fill)) +
+  theme_bw() + 
+  xlab("x") + 
+  ylab("täthet") 
+```
+
+eller 
+
+$$P(X  > \lambda_{.02}) = 0.02$$
+
+
+```{r, fig.height=3}
+#| echo: false
+prob = pnorm(2)
+fill = paste0(round(100*(1-prob),0),"% sannolikhet")
+data.frame(pp = ppoints(1000)) %>%
+  mutate(x = qnorm(pp)) %>%
+  mutate(y = dnorm(x)) %>%
+  ggplot(aes(x=x,y=y)) +
+  geom_line() +
+  geom_ribbon(data=. %>% filter(pp >= prob), 
+              aes(ymin=0, ymax=y, fill=fill)) +
+  theme_bw() + 
+  xlab("x") + 
+  ylab("täthet") 
+```
+
+## Exempel på kvantiler
+
+- **Median** – den kvantil som delar in fördelningen i två delar, med 50% sannolikhet i varje
+
+- **Kvartiler** – de kvantiler som delar in fördelningen i fyra delar som har lika stor sannolikhet: 
+
+  - Första kvartilen (Q1)
+  - Andra kvartilen = Medianen
+  - Tredje kvartilen (Q3)
+  
+- **Percentil** – den p:te percentilen är det värde för en slumpvariabel som är högre än p% av alla möjliga värden
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| fig-width: 7
+#| fig-height: 7
+library(tidyverse)
+library(patchwork)
+library(scales)
+
+qntls <- c(0.5, 0.05, 0.95, 0.25, 0.75)
+xqntls <- qnorm(qntls, 3, 2)
+qntls_e <- c(0.01, 0.99, 0.5, 0.05, 0.95, 0.25, 0.75)
+xqntls_e <- qnorm(qntls_e, 3, 2)
+#qntls <- c(0.5)
+
+dist_df <- tibble::tibble(
+  p=c(qntls_e, ppoints(300)),
+  q=qnorm(p, 3, 2),
+  d=dnorm(q, 3,2)
+) %>%  tibble::rowid_to_column() 
+
+dist_w_df <- dist_df %>% select(rowid, p,q) %>% 
+  filter(p %in% qntls_e) %>%
+  pivot_longer(-c(rowid, p)) %>% 
+  mutate(p_name=paste0("p_", str_pad(p*100,2, pad="0"))) %>% 
+  select(-p,-name) %>% 
+  pivot_wider(-rowid, values_from="value", names_from="p_name") 
+
+p1 <- dist_df %>% ggplot(aes(x=q, y=p)) +
+  #geom_ribbon(data=. %>% filter(p<0.5), 
+  #            aes(ymin=0, ymax=p, fill="50% probability"),
+  #            show.legend=FALSE)+
+  geom_ribbon(data=. %>% filter(p >= 0.25 & p<0.75), 
+              aes(ymin=0, ymax=p, fill="50% probability"),
+              show.legend = FALSE)+
+  geom_linerange(data=. %>% filter(p %in% qntls),
+                 aes(xmin=-3, xmax=q), linewidth=0.25, 
+                 linetype=2, color="grey70")+
+  geom_linerange(data=. %>% filter(p %in% qntls),
+                 aes(ymin=0, ymax=p), linewidth=0.25, 
+                 linetype=2, color="grey70")+
+  geom_line()+
+  geom_point(data=. %>% filter(p %in% qntls))+
+  scale_fill_brewer(palette = "Pastel1")+
+  scale_y_continuous(labels=scales::percent)+
+  scale_x_continuous(breaks = xqntls, 
+                     labels = paste0("P",qntls*100))+
+  coord_cartesian(xlim = c(-3,9), ylim=c(0,1), expand = FALSE)+
+  labs(y="Probability", fill=NULL, x=NULL)+
+  theme_minimal()+
+  theme(panel.grid = element_blank())
+
+p2 <- dist_df %>% ggplot(aes(x=q, y=d)) +
+  #geom_ribbon(data=. %>% filter(p<0.5), 
+  #            aes(ymin=0, ymax=d, fill="50% probability"))+
+  #geom_ribbon(data=. %>% filter(p >= 0.05 & p<0.95), 
+  #            aes(ymin=0, ymax=d, fill="90% probability"))+
+  geom_ribbon(data=. %>% filter(p >= 0.25 & p<0.75), 
+              aes(ymin=0, ymax=d, fill="50% probability"))+
+  geom_linerange(data=. %>% filter(p==0.5),
+                 aes(ymin=0, ymax=d), linewidth=0.25, 
+                 linetype=2, color="grey70")+
+  geom_line()+
+  geom_point(data=. %>% filter(p %in% qntls), aes(y=0))+
+  scale_fill_brewer(palette = "Pastel1")+
+  scale_x_continuous(breaks = xqntls, 
+                     labels = paste0("P",qntls*100))+
+  coord_cartesian(xlim = c(-3,9), ylim=c(0,0.3), expand = FALSE)+
+  labs(y="Density", fill=NULL, x=NULL)+
+  theme_minimal()+
+  theme(panel.grid = element_blank())
+
+p3 <-  dist_w_df %>% 
+  ggplot() + 
+  geom_boxplot(stat="identity", 
+               aes(y="one", fill="50% probability",
+                   xlower  = p_25, xupper  = p_75, xmiddle = p_50,
+                   xmin   = p_01, 
+                   xmax   = p_99), 
+               show.legend = FALSE, fatten=1,
+               linetype=2, linewidth=0.25, color="grey70")+ 
+  geom_boxplot(stat="identity", 
+               aes(y="one", 
+                   xlower  = p_25, xupper  = p_75, xmiddle = p_50,
+                   xmin   = p_01, 
+                   xmax   = p_99), 
+               show.legend = FALSE, fatten=0, alpha=0)+
+  scale_x_continuous(breaks = xqntls_e, 
+                     labels = paste0("P",qntls_e*100))+
+  coord_cartesian(xlim = c(-3,9), ylim=c(0,2), expand = FALSE)+
+  scale_fill_brewer(palette = "Pastel1")+
+  labs(fill=NULL)+
+  theme_minimal()+
+  theme(axis.line.y = element_blank(),
+        axis.title.y  = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y  = element_blank(),
+        panel.grid = element_blank())
+#patchwork::wrap_plots(p1,p2,p3, ncol=1, guides="collect") &
+#theme(legend.position = "bottom")
+
+#ggsave("prob_dist.png", width=5, height = 7)
+```
+
+## Kvantiler illustrerade med en fördelningsfunktion 
+
+```{r}
+#| echo: false
+p1
+```
+
+## Kvantiler illustrerade med en täthetsfunktion 
+
+```{r}
+#| echo: false
+p2
+```
+
+## Kvantiler illustrerade med en boxplot 
+
+
+```{r}
+#| echo: false
+p3
+```
+
+
+# Normalfördelningens kvantiler 
+
+Vi kommer använda kvantiler från en standardiserad normalfördelning för att skapa statistiska tester och konfidensintervall
+
+Tabell-bladet innehåller några vanligt förekommande kvantiler 
+
+![](img/kvantiler.png)
+
+# Extrauppgifter 
+
+Låt $X \sim N(5,2)$
+
+(a) $P(X \leq 6) =  P(\frac{X-5}{2} \leq \frac{6-5}{2}) = \Phi(\frac{1}{2})$
+
+```{r}
+#| echo: false
+#| results: false 
+(7.2-5)/2
+(1.8-5)/2
+pnorm(1.1)
+pnorm(1.6)
+pnorm(1.1) - (1- pnorm(1.6))
+pnorm(7.2,5,2)-pnorm(1.8,5,2)
+```
+
+(b) 
+
+$$\begin{split} & P(1.8 < X < 7.2) =  P(X < 7.2) - P(X \leq 1.8) = \\ & \Phi(\frac{7.2-5}{2})-\Phi(\frac{1.8-5}{2}) = \Phi(1.1) - \Phi(-1.6) = \\ & \Phi(1.1) - (1 - \Phi(1.6)) = 0.864 - (1 - 0.945) = 0.810 \end{split}$$
+
+(c) Hitta $a$ så att $P(X \leq a) = 0.05$
+
+Låt $Z$ vara den standardiserade normalfördelningen $Z \sim N(0,1)$
+
+Vi vet följande: 
+$P(X \leq a) = P(Z \leq \frac{a-5}{2})$ 
+
+Om vi kan hitta kvantilen för $Z$ så kan vi ta fram kvantilen för $X$
+
+Från kvantiltabellen ser vi att $P(Z \leq z_{.05}) = 0.05$ när $z_{.05} = -1.645$
+
+> utnyttja att $\lambda_{1-\alpha} = -\lambda_{\alpha}$
+
+Då blir $x_{.05} = 5 + 2 \cdot z_{.05} = 5 + 2 \cdot (-1.645) =  1.71$
+
+```{r}
+#| echo: false
+#| results: false 
+
+5 + 2*(-1.645)
+qnorm(0.05,5,2)
+```
+
+

@@ -1,0 +1,426 @@
+---
+title: "F6. Skattningar och konfidensintervall"
+author: "Ullrika Sahlin"
+format: 
+  html:
+    embed-resources: true
+---
+
+
+```{r}
+#| echo: false
+#| warning: false
+
+
+library(latex2exp)
+library(dplyr)
+library(ggplot2)
+```
+# Skattning och stickprovsfördelningar för känd och okänd varians
+
+## Population och Stickprov 
+
+- Population
+
+Alla slumpvariabler (oavsett fördelning) har väntevärde och varians 
+$$\mu = E(X)$$
+$$\sigma^2 = V(X)=E((X-\mu)^2) = E(X^2)-\mu^2$$
+
+- Stickprov
+
+Stickprovsmedelvärde och stickprovsvarians är mått som sammanfattar läge och spridning i ett prov med slumpmässigt gjorda observationer från en population 
+
+$$\bar{x} = \frac{\sum x_i}{n}$$
+
+$$s^2 = \frac{\sum (x_i-\bar{x})^2 }{n-1} = \frac{\sum x^2 - n(\bar{x})^2 }{n-1}$$
+
+
+## Väntevärdesriktiga skattningar av väntevärde och varians 
+
+- VVR:a estimatorer för väntevärde och varians är
+
+$$\hat{\mu} = \frac{\sum_{i=1}^n x_i}{n} = \bar{x}$$
+
+$$\hat{\sigma}^2 = \frac{\sum_{i=1}^n (x_i - \bar{x})^2}{n-1} = s^2$$ 
+
+## Samplingsfördelning för $\bar{x}$ när variansen är känd 
+
+$$\bar{x} \sim N(\mu,\frac{\sigma}{\sqrt{n}})$$
+
+Vilket när vi **standardiserar** är samma sak som att 
+
+$$\frac{\bar{x} - \mu}{\sigma / \sqrt{n}} \sim N(0,1)$$
+
+
+## Samplingsfördelning för $\bar{x}$ när variansen är okänd och skattas med $s^2$ 
+
+Student-t fördelningen är samplingsfördelningen för kvoten 
+$$\frac{\bar{x}-\mu}{s/\sqrt{n}} \sim t(n-1)$$
+
+
+Väntevärde och varians i en Student t-fördelning är alltid 0 respektive 1. Utseendet på täthetsfunktionen styrs med fördelningens frihetsgrader, vilket för denna kvot är $n-1$. 
+
+:::.callout-note
+### Simulering av t-fördelning
+
+```{r}
+mu = 3.3
+sigma = 2
+
+n = 5
+
+t_sample <- replicate(1000,{
+  x <- rnorm(n,mu,sigma)
+  m <- mean(x)
+  s <- sd(x)
+  (m-mu)/(s/sqrt(n))})
+```
+
+
+```{r}
+tt = seq(min(t_sample),max(t_sample),by=0.01)
+pdf_norm = dnorm(tt)
+pdf_t = dt(tt,n-1)
+hist(t_sample,prob=TRUE,ylim=c(0,max(pdf_norm)),breaks = 20)
+lines(tt,pdf_norm,col='red')
+lines(tt,pdf_t,col='blue')
+
+```
+
+:::: {.columns}
+::: {.column width="50%"}
+
+
+```{r}
+qqnorm(t_sample, main = "")
+qqline(t_sample, col='red')
+title('QQ-plot för Normal')
+```
+
+:::
+
+::: {.column width="50%"}
+
+
+```{r}
+plot(qt(ppoints(1000),n-1),sort(t_sample))
+abline(0,1,col='blue')
+title('QQ-plot för Student-t')
+
+```
+
+:::
+::::
+
+
+
+```{r}
+t = seq(-6,6,by=0.01)
+pdf_norm = dnorm(tt)
+plot(tt,pdf_norm,type = 'l',xlab='t',ylab='täthet',col='red')
+n = 5
+pdf_t_5 = dt(tt,n-1)
+lines(tt,pdf_t_5,col = 'blue')
+n = 10
+pdf_t_10 = dt(tt,n-1)
+lines(tt,pdf_t_10,col = 'green')
+title('Student-t går mot en normalfördelning när n ökar')
+```
+
+
+:::
+
+## Kvantil i t-fördelningen
+
+På samma sätt som vi kan skapa en kvantil i en normalfördelning baserat på kvantilen i en normalfördelning
+
+$$\bar{x}_{1-\alpha} = \mu + \lambda_{\alpha} \cdot \frac{\sigma}{\sqrt{n}}$$
+
+kan vi skapa en kvantil i samplingsfördelningen för stickprovsmedelvärdet när variansen är okänd och skattas med $s^2$ 
+
+$$\bar{x}_{1-\alpha} = \mu + t_{\alpha}(n-1) \cdot \frac{s}{\sqrt{n}}$$
+
+där $t_{\alpha}(n-1)$ är kvantil i t-fördelning med $n-1$ frihetsgrader 
+
+![](\img\ttabhela.png)
+
+# Konfidensintervall
+
+::: callout-note
+## Exempel: radon
+
+Gränsen för radon i ett hus är 200 $Bq/m^3$. Vi gör 10 mätningar med medelvärdet 195 $Bq/m^3$. Kan vi vara säkra på att radon-nivån i huset är under gränsvärdet?  
+
+För att svara på frågan kan vi göra ett konfidensintervall. 
+:::
+
+> Ett konfidensintervall ett område där en estimator/skattare förväntas hamna om man skulle upprepa mätningar och skattningar baserat på nya stickprov flera gånger. Det används för att sammanfatta en samplingsfördelning för en skattning. 
+
+$$\bar{x} \pm k$$
+
+Hur väljer vi ett bra värde på $k$? 
+
+Ett sätt är att välja $k$ så att intervallet motsvarar ett visst sannolikhetsområde i samplingsfördelningen, t.ex. 95%'s sannolikhet.
+
+:::: {.columns}
+::: {.column width="50%"}
+
+```{r, fig.height=4}
+#| echo: false
+
+prob = 0.90
+
+fill = paste0(round(100*(prob),0),"% sannolikhet")
+data.frame(pp = ppoints(1000)) %>%
+  mutate(x = qnorm(pp)) %>%
+  mutate(y = dnorm(x)) %>%
+  ggplot(aes(x=x,y=y)) +
+  geom_ribbon(data=. %>% filter(pp > ((1-prob)/2) & pp < (1-(1-prob)/2)), 
+              aes(ymin=0, ymax=y, fill=fill), alpha = 0.75) +
+  geom_line() +
+  theme_bw() + 
+  xlab("") + 
+  ylab("täthet") +
+  theme(legend.position="bottom")+
+  scale_x_continuous(breaks = c(qnorm((1-prob)/2),0,qnorm(1-(1-prob)/2)), 
+                   labels = c(TeX("$\\bar{x}-k$"),TeX("$\\bar{x}$"),TeX("$\\bar{x}+k$"))) 
+```
+
+
+:::
+
+::: {.column width="50%"}
+
+```{r, fig.height=4}
+#| echo: false
+
+
+fill = paste0(round(100*(1-prob),0),"% sannolikhet")
+data.frame(pp = ppoints(1000)) %>%
+  mutate(x = qnorm(pp)) %>%
+  mutate(y = dnorm(x)) %>%
+  ggplot(aes(x=x,y=y)) +
+  geom_ribbon(data=. %>% filter(pp < ((1-prob)/2)), 
+              aes(ymin=0, ymax=y, fill=fill)) +
+  geom_ribbon(data=. %>% filter(pp > (1-(1-prob)/2)), 
+              aes(ymin=0, ymax=y, fill=fill)) +
+  geom_line() +
+  theme_bw() + 
+  xlab("") + 
+  ylab("täthet") +
+  theme(legend.position="bottom") +
+  scale_x_continuous(breaks = c(qnorm((1-prob)/2),0,qnorm(1-(1-prob)/2)), 
+                   labels = c(TeX("$\\bar{x}-k$"),TeX("$\\bar{x}$"),TeX("$\\bar{x}+k$")))
+```
+
+:::
+::::
+
+
+::: callout-note
+## Exempel: radon fortsättning
+
+Låt $X_i = \text{"radonmätning nr i"}$. 
+
+Antag att varje radonmäntning är oberoende, likafördelade och att de följer en normalfördelning: 
+
+$X_i \sim N(\mu, \sigma)$ där $i=1,\dots,n$ och $n=10$
+
+Vi vill uttala oss om värdet för den verkliga radonhalten vilket är väntevärdet $\mu$.
+
+Vi skattar väntevärdet med stickprovsmedelvärdet $\hat{\mu} = \bar{x}$ där $x_1,\dots,x_{10}$ är vårt stickprov. 
+
+Antag att vi känner till mätfelet och kan säga att standardavvikelsen är $\sigma=3$. 
+
+Samplingsfördelning för $\bar{x}$: 
+
+$$\bar{x} \sim N(\mu,\frac{\sigma}{\sqrt{n}})$$
+
+Ett 95%-igt intervall fås genom att ta bort 2.5% på varje sida i samplingsfördelningen för $\bar{x}$
+
+$$I_{\mu}: \bar{x} \pm \lambda_{.025} \frac{\sigma}{\sqrt{n}} = 195 \pm 1.96 \frac{3}{\sqrt{10}} = (`r round(195-1.96*3/sqrt(10),1)`, `r round(195+1.96*3/sqrt(10),1)` )$$
+:::
+
+Denna typ av intervall kallas ett konfidensintervall med konfidensnivå 95%
+
+##  Tolking av konfidensintervall 
+
+Konfidensintervall förekommer inom frekventistisk statistisk inferens. De tolkas som hur ofta konfidensintervall beräknade på samma sätt täcker det sanna värdet om man skulle gå ut och samla in nya stickprov. 
+
+Nedan illustrerar vi ett 95%-igt konfidensintervall när man har 10 respektive 20 mätningar, där vi ser att intervallen blir smalare ju fler mätningar man har. 
+
+De röda intervallen motsvarar de intervall som inte täcker det sanna väntevärdet. Det bör ske i $1-0.95 = 5\%$ av fallen.
+
+
+
+```{r}
+
+source("kod/funktioner_raknamedvariation_light.R")
+
+skattningar(mu=195, sigma=3, n1=10, n2=20, alternativ = 'konfint') 
+```
+
+
+::: callout-note
+## Exempel: radon fortsättning
+
+Gränsen för radon i ett hus är 200 $Bq/m^3$. Vi gör 10 mätningar med medelvärdet 195 $Bq/m^3$. Kan vi vara säkra på att radon-nivån i huset är under gränsvärdet?  
+
+Efter att ha räknat ut konfidensintervallet  $I_{\mu}: (193.1, 196.9)$, är vi färdiga att påstå att vi är ganska säkra på att radonhalten är under gränsvärdet. 
+
+:::
+
+
+::: callout-warning
+## Var kommer ordet konfidens ifrån och varför använder man inte ordet sannolikhet? 
+
+Enkelt uttryckt, var termen sannolikhet upptagen av Bayesiansk inferens. Sannolikhetsintervall används inom Bayesiansk statistisk inferens och har tolkningen *hur säkra vi är att det sanna värdet på parameter är i intervallet*. Det är vanligt att konfidensintervall tolkas på samma sätt. 
+
+En annan orsak är att de som kom på konfidensintervall också ville att det skulle inte missuppfattas att vara en sannolikhet för det sanna värdet på parametern $\mu$, vilket enligt frekventistik sätt att tänka inte i sig själv är en slumpvariabel och därför inte kan ha en fördelning. 
+
+Notera att alla intervall inte är konfidensintervall, även om det är vanligt att man kallar dem det. För att det ska bli ett konfidensintervall behöver man ha satt upp en modell för populationen och härlett samplingsfördelning för den skattade parametern. 
+
+:::
+
+# Konfidensintervall känd och okänd varians 
+
+Konfidensintervallet för väntevärdet när variansen är känd är fås genom att ta en kvantil från den standardiserade normalfördelningen multiplicerad med standardfelet $\frac{\sigma}{\sqrt{n}}$
+
+$$I_{\mu}: \bar{x} \pm \lambda_{\alpha/2} \frac{\sigma}{\sqrt{n}}$$
+
+Vi vill att konfidensintervall ska vara så smala som möjligt. Intervallet blir smalare om 
+
+- konfidensnivå $1-\alpha$ minskar 
+
+- antal mätvärden $n$ ökar
+
+- spridningen i mätvärden $\sigma$ minskar 
+
+
+## Okänd varians
+
+När variansen $\sigma_2$ är okänd skattar vi den med stickprovsvariansen $s^2$
+
+Eftersom vi skattar variansen använder vi en kvantil från samplingsfördelningen för kvoten $t$ och standardfelet $\frac{s}{\sqrt{n}}$
+
+$$I_{\mu}: \bar{x} \pm t_{\alpha/2}(n-1) \frac{s}{\sqrt{n}}$$
+
+::: callout
+
+### Uppgift 1
+
+Man har ett slumpmässigt stickprov från $X\sim N(\mu,2)$
+
+44.3 45.1 46.1 45.3
+
+Stickprovsmedelvärdet beräknas till $\bar{x} = 45.2$
+
+- Ange ett 95%-igt konfidensintervall för väntevärdet $\mu$
+
+$\alpha = 0.05$
+
+Standardavvikelse $\sigma=2$ är känd
+
+$$I_{\mu}: \bar{x} \pm \lambda_{0.05/2} \frac{\sigma}{\sqrt{n}} = 45.2 \pm 1.96 \frac{2}{\sqrt{4}} = (`r 45.2-1.96`, `r 45.2+1.96`)$$
+
+- Hur ser ett 99%-igt konfidensinterall ut? 
+
+$$I_{\mu}: \bar{x} \pm \lambda_{0.01/2} \frac{\sigma}{\sqrt{n}} = 45.2 \pm 2.58 \frac{2}{\sqrt{4}} = (`r 45.2-2.58`, `r 45.2+2.58`)$$
+:::
+
+
+::: callout
+### Uppgift 2
+
+Man mäter 10 gånger från $X\sim N(\mu,\sigma)$
+
+7.3 7.2 7.8 7.1 8.0 6.9 7.5 8.1 7.7 7.5 
+
+```{r}
+x = c(7.3, 7.2, 7.8, 7.1, 8.0, 6.9, 7.5, 8.1, 7.7, 7.5)
+m = mean(x)
+s = sd(x)
+```
+
+
+Beräkna ett 95%-igt konfidensintervall för väntevärdet $\mu$!
+
+Stickprovsmedelvärdet är $\bar{x} = `r round(m,2)`$
+
+$\alpha = 0.05$
+
+Standardavvikelse för populationen $\sigma$ är okänd och skattas med stickprovsstandardavvikelsen $s = `r round(s,3)`$ 
+
+$$I_{\mu}: \bar{x} \pm t_{0.05/2}(n-1) \frac{s}{\sqrt{n}} = `r round(m,2)` \pm 2.26 \frac{`r round(s,3)`}{\sqrt{10}} = (`r round(m-2.26*s/sqrt(10),2)`,`r round(m+2.26*s/sqrt(10),2)`)$$
+
+:::
+
+# Ensidiga konfidensintervall
+
+Konfidensintervall kan specificeras med en begränsning uppåt eller nedåt
+
+- Känd varians, uppåt begränsat 
+
+$$I_{\mu} = (-\infty, \bar{x} + \lambda_{\alpha} \frac{\sigma}{\sqrt{n}})$$
+
+- Känd varians, nedåt begränsat
+
+$$I_{\mu} = (\bar{x} - \lambda_{\alpha} \frac{\sigma}{\sqrt{n}}, \infty)$$
+
+- Okänd varians, uppåt begränsat 
+
+$$I_{\mu} = (-\infty, \bar{x} + t_{\alpha}(n-1)  \frac{s}{\sqrt{n}})$$
+
+- Okänd varians, nedåt begränsat
+
+$$I_{\mu} = (\bar{x} - t_{\alpha}(n-1)  \frac{s}{\sqrt{n}}, \infty)$$
+
+::: callout
+
+### Uppgift 1. Ensidigt intervall
+
+Man har ett slumpmässigt stickprov från $X\sim N(\mu,2)$
+
+44.3 45.1 46.1 45.3
+
+Stickprovsmedelvärdet beräknas till $\bar{x} = 45.2$
+
+- Ange ett 95%-igt konfidensintervall för ett lågt värde på $\mu$
+
+$\alpha = 0.05$
+
+Standardavvikelse  för populationen  $\sigma=2$ är känd
+
+Ett neråt begränsat ensidigt konfidensintervall för väntevärdet är 
+
+$$I_{\mu}: (\bar{x} - \lambda_{0.05} \frac{\sigma}{\sqrt{n}},\infty) = (45.2 - 1.64 \frac{2}{\sqrt{4}},\infty) = (`r 45.2-1.64`,\infty)$$
+
+:::
+
+# Konfidensintervall med normalapproximation
+
+Vad händer när mätvärden (populationen) inte kan anses vara normalfördelad? 
+
+Enligt centrala gränsvärdessatsen är stickprovsmedelvärdet approximativt normalfördelat under förutsättning att antal mätvärden $n$ är tillräckligt högt (samt att antagande om oberoende och likafördelade mätvärden stämmer). 
+- Känd varians
+
+Samplingsfördelning för stickprovsmedelvärdet approximeras med en normalfördelning: 
+
+$$\frac{\bar{x} - \mu}{\sigma / \sqrt{n}} \overset{A} \sim N(0,1)$$
+
+Ett tvåsidigt konfidensintervall blir: 
+
+$$I_{\mu}: \bar{x} \pm \lambda_{\alpha/2} \frac{\sigma}{\sqrt{n}}$$
+
+- Okänd varians som skattas med $s^2$
+
+Samplingsfördelning för stickprovsmedelvärdet approximeras med en normalfördelning, och man kan argumentera att så är även kvoten 
+
+$$\frac{\bar{x} - \mu}{s / \sqrt{n}} \overset{A} \sim N(0,1)$$
+
+Ett tvåsidigt konfidensintervall blir: 
+
+
+$$I_{\mu}: \bar{x} \pm \lambda_{\alpha/2} \frac{s}{\sqrt{n}}$$
+
+
