@@ -228,7 +228,7 @@ It is a suitable distribution for describing the time it takes for an event to o
 
 $f(x) = \frac{1}{\sigma \sqrt{2\pi}}e^{-\frac{(x-\mu)^2}{2\sigma^2}}$ där $-\infty < x < \infty$
 
-> a normal distribution has two parameters, $\mu$ and $\sigma^2$. The coincide with the expeted value and variacne of the distribution
+> a normal distribution has two parameters, $\mu$ and $\sigma^2$. The coincide with the expeted value and variance of the distribution
 :::
 
 # Distribution function for a continuous r.v. 
@@ -345,7 +345,7 @@ $V(X) = \frac{1}{\lambda^2}$
 
 - The normal distribution is useful and often appear when describing natural phenomena 
 
-- The normal distribution is a good description of random variation for sums of indepednent and equally distributed random variables
+- The normal distribution is a good description of random variation for sums of independent and equally distributed random variables
 
 - We will spend a lot of time on the normal distribution in this course
 
@@ -382,7 +382,7 @@ $$=\int_{-\infty}^{0.1}\frac{1}{\sqrt{2\pi}}e^{-x^2}dx = \dots\text{is possible 
 
 ## Distribution function for a normal distribution - table 
 
-Instad of calcluating the integral we can use 
+Instead of calcluating the integral we can use 
 
 - tables
 - calculators/computer programs
@@ -391,7 +391,7 @@ If we only have a table - how to do for all possible values on the expted value 
 
 The solution is to standardise the distribution
 
-# Standardiserad Normal distribution 
+# Standardised Normal distribution 
 
 $X \sim N(3,4)$
 
@@ -437,7 +437,7 @@ P(Z \leq 0.25) = \Phi(0.25) \underbrace{= 0.5987}_{\text{from table}} \end{split
 
 ![](img/normtab.png)
 
-## Standardissed normal distribution and normal distribution
+## Standardised normal distribution and normal distribution
 
 Let $Z \sim N(0,1)$
 

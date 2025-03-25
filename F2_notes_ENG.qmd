@@ -336,7 +336,7 @@ We make $n=10$ trials where the probability to succeed in one trial is $p$
 
 $X=$ "number of successful trials"
 
-$P(X=0) = P(\text{failur in all 10 trials}) = (1-p)(1-p)\cdots (1-p) = (1-p)^{10}$
+$P(X=0) = P(\text{failure in all 10 trials}) = (1-p)(1-p)\cdots (1-p) = (1-p)^{10}$
 
 $P(X=1)$? 
 
