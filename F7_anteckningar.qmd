@@ -158,7 +158,7 @@ $H_1: \text{det är inte en häst}$
 
 # Hypotesprövning med teststorhet och kritiskt område
 
-**Modell:** $X$ är en slumpvariabel med okänt väntevärde $\mu$ och känd standardavvikelse $\sigma$
+**Modell:** $X$ är en Normalfördelad slumpvariabel med okänt väntevärde $\mu$ och känd standardavvikelse $\sigma$
 
 **Observationer:** Stickprov $x_1, \dots, x_n$
 
@@ -183,7 +183,7 @@ $z$ är en teststorhet
 
 ### Illustrering av kritiskt område 
 
-Man kan illustrera testet med funktionen hypotes som finns i räknamedvariation. Där jämför man medelvärdet med ett kritiskt område som styrs av k.
+Man kan illustrera testet med funktionen hypotes som finns i räknamedvariation. Där jämför man medelvärdet med ett kritiskt område som styrs av $k$.
 
 ```{r}
 source("kod/funktioner_raknamedvariation_light.R")
@@ -406,11 +406,11 @@ library(ggplot2)
 ```{r}
 df <- data.frame(mu = seq(0.1,0.4,by=0.005)) # möjliga mu-värden
 n = 3
-teststorhet = 0.2+1.64*0.07/sqrt(n)
-df$styrka_mu_n3 <- 1 - pnorm((teststorhet-df$mu)/(0.07/sqrt(n))) #styrka då n=3
+k = 0.2+1.64*0.07/sqrt(n)
+df$styrka_mu_n3 <- 1 - pnorm((k-df$mu)/(0.07/sqrt(n))) #styrka då n=3
 n = 6
-teststorhet = 0.2+1.64*0.07/sqrt(n)
-df$styrka_mu_n6 <- 1 - pnorm((teststorhet-df$mu)/(0.07/sqrt(n)))
+k = 0.2+1.64*0.07/sqrt(n)
+df$styrka_mu_n6 <- 1 - pnorm((k-df$mu)/(0.07/sqrt(n)))
 
 ggplot(df,aes(x=mu,y=styrka_mu_n3)) +
   geom_line() +

@@ -412,7 +412,7 @@ $$V(\bar{X}) = V(\frac{X_1+X_2}{2}) = \frac{1}{2^2}V(X_1+X_2)=\frac{1}{2^2}(2^2+
 
 :::
 
-# Population/parameter – Sample/stastistica
+# Population/parameter – Sample/statistica
 
 Statistical inference is about making conclusions about parameters within models for populations (what you want to say something about) based on observations (often a random sample from the population to ensure that the statistical methods works). 
 

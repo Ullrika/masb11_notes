@@ -67,13 +67,14 @@ Väntevärde och varians i en Student t-fördelning är alltid 0 respektive 1. U
 mu = 3.3
 sigma = 2
 
-n = 5
+n = 50
 
 t_sample <- replicate(1000,{
   x <- rnorm(n,mu,sigma)
   m <- mean(x)
   s <- sd(x)
   (m-mu)/(s/sqrt(n))})
+hist(t_sample)
 ```
 
 

@@ -5171,7 +5171,7 @@ Warning
 </section>
 <section id="hypotesprövning-med-teststorhet-och-kritiskt-område" class="level1">
 <h1>Hypotesprövning med teststorhet och kritiskt område</h1>
-<p><strong>Modell:</strong> <span class="math inline">\(X\)</span> är en slumpvariabel med okänt väntevärde <span class="math inline">\(\mu\)</span> och känd standardavvikelse <span class="math inline">\(\sigma\)</span></p>
+<p><strong>Modell:</strong> <span class="math inline">\(X\)</span> är en Normalfördelad slumpvariabel med okänt väntevärde <span class="math inline">\(\mu\)</span> och känd standardavvikelse <span class="math inline">\(\sigma\)</span></p>
 <p><strong>Observationer:</strong> Stickprov <span class="math inline">\(x_1, \dots, x_n\)</span></p>
 <p><strong>Skattning:</strong> Väntevärdet skattas med stickprovsmedelvärdet <span class="math inline">\(\hat{\mu} = \bar{x}\)</span></p>
 <p><strong>Hypoteser:</strong> <span class="math inline">\(H_0: \mu = \mu_0\)</span> och <span class="math inline">\(H_1: \mu \neq \mu_0\)</span></p>
@@ -5188,7 +5188,7 @@ Warning
 <p><span class="math inline">\(z\)</span> är en teststorhet</p>
 <section id="illustrering-av-kritiskt-område" class="level3">
 <h3 class="anchored" data-anchor-id="illustrering-av-kritiskt-område">Illustrering av kritiskt område</h3>
-<p>Man kan illustrera testet med funktionen hypotes som finns i räknamedvariation. Där jämför man medelvärdet med ett kritiskt område som styrs av k.</p>
+<p>Man kan illustrera testet med funktionen hypotes som finns i räknamedvariation. Där jämför man medelvärdet med ett kritiskt område som styrs av <span class="math inline">\(k\)</span>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;kod/funktioner_raknamedvariation_light.R&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -5417,11 +5417,11 @@ Exempel: Rattonykterhet
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">mu =</span> <span class="fu">seq</span>(<span class="fl">0.1</span>,<span class="fl">0.4</span>,<span class="at">by=</span><span class="fl">0.005</span>)) <span class="co"># möjliga mu-värden</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>n <span class="ot">=</span> <span class="dv">3</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>teststorhet <span class="ot">=</span> <span class="fl">0.2+1.64</span><span class="sc">*</span><span class="fl">0.07</span><span class="sc">/</span><span class="fu">sqrt</span>(n)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>styrka_mu_n3 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">pnorm</span>((teststorhet<span class="sc">-</span>df<span class="sc">$</span>mu)<span class="sc">/</span>(<span class="fl">0.07</span><span class="sc">/</span><span class="fu">sqrt</span>(n))) <span class="co">#styrka då n=3</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>k <span class="ot">=</span> <span class="fl">0.2+1.64</span><span class="sc">*</span><span class="fl">0.07</span><span class="sc">/</span><span class="fu">sqrt</span>(n)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>styrka_mu_n3 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">pnorm</span>((k<span class="sc">-</span>df<span class="sc">$</span>mu)<span class="sc">/</span>(<span class="fl">0.07</span><span class="sc">/</span><span class="fu">sqrt</span>(n))) <span class="co">#styrka då n=3</span></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>n <span class="ot">=</span> <span class="dv">6</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>teststorhet <span class="ot">=</span> <span class="fl">0.2+1.64</span><span class="sc">*</span><span class="fl">0.07</span><span class="sc">/</span><span class="fu">sqrt</span>(n)</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>styrka_mu_n6 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">pnorm</span>((teststorhet<span class="sc">-</span>df<span class="sc">$</span>mu)<span class="sc">/</span>(<span class="fl">0.07</span><span class="sc">/</span><span class="fu">sqrt</span>(n)))</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>k <span class="ot">=</span> <span class="fl">0.2+1.64</span><span class="sc">*</span><span class="fl">0.07</span><span class="sc">/</span><span class="fu">sqrt</span>(n)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>styrka_mu_n6 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">pnorm</span>((k<span class="sc">-</span>df<span class="sc">$</span>mu)<span class="sc">/</span>(<span class="fl">0.07</span><span class="sc">/</span><span class="fu">sqrt</span>(n)))</span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df,<span class="fu">aes</span>(<span class="at">x=</span>mu,<span class="at">y=</span>styrka_mu_n3)) <span class="sc">+</span></span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>

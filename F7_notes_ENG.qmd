@@ -158,7 +158,7 @@ $H_1: \text{it is not a horse}$
 
 # Hypothesis testing with test quantity and critical region
 
-**Model:** $X$ is a random variable with unknown expected value $\mu$ and known standard deviation $\sigma$
+**Model:** $X$ is a normally distributed random variable with unknown expected value $\mu$ and known standard deviation $\sigma$
 
 **Observations:** Random sample $x_1, \dots, x_n$
 
@@ -183,7 +183,7 @@ $z$ is a test quantity
 
 ### Illustration of critical area 
 
-One can illustrate the test with the hypothesis function found in Räknamedvariation. There, the average value is compared with a critical area controlled by k.
+One can illustrate the test with the hypothesis function found in Räknamedvariation. There, the average value is compared with a critical area controlled by $k$.
 
 ```{r}
 source("kod/funktioner_raknamedvariation_light.R")
@@ -409,11 +409,11 @@ library(ggplot2)
 ```{r}
 df <- data.frame(mu = seq(0.1,0.4,by=0.005)) # possible mu-values
 n = 3
-test_quantity = 0.2+1.64*0.07/sqrt(n)
-df$styrka_mu_n3 <- 1 - pnorm((test_quantity-df$mu)/(0.07/sqrt(n))) # power when n=3
+k = 0.2+1.64*0.07/sqrt(n)
+df$styrka_mu_n3 <- 1 - pnorm((k-df$mu)/(0.07/sqrt(n))) # power when n=3
 n = 6
-test_quantity = 0.2+1.64*0.07/sqrt(n)
-df$styrka_mu_n6 <- 1 - pnorm((test_quantity-df$mu)/(0.07/sqrt(n)))
+k = 0.2+1.64*0.07/sqrt(n)
+df$styrka_mu_n6 <- 1 - pnorm((k-df$mu)/(0.07/sqrt(n)))
 
 ggplot(df,aes(x=mu,y=styrka_mu_n3)) +
   geom_line() +

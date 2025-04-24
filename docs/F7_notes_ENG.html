@@ -5171,7 +5171,7 @@ Warning
 </section>
 <section id="hypothesis-testing-with-test-quantity-and-critical-region" class="level1">
 <h1>Hypothesis testing with test quantity and critical region</h1>
-<p><strong>Model:</strong> <span class="math inline">\(X\)</span> is a random variable with unknown expected value <span class="math inline">\(\mu\)</span> and known standard deviation <span class="math inline">\(\sigma\)</span></p>
+<p><strong>Model:</strong> <span class="math inline">\(X\)</span> is a normally distributed random variable with unknown expected value <span class="math inline">\(\mu\)</span> and known standard deviation <span class="math inline">\(\sigma\)</span></p>
 <p><strong>Observations:</strong> Random sample <span class="math inline">\(x_1, \dots, x_n\)</span></p>
 <p><strong>Estimation:</strong> The expected value is estimated with the sample mean <span class="math inline">\(\hat{\mu} = \bar{x}\)</span></p>
 <p><strong>Hypotheses:</strong> <span class="math inline">\(H_0: \mu = \mu_0\)</span> and <span class="math inline">\(H_1: \mu \neq \mu_0\)</span></p>
@@ -5188,7 +5188,7 @@ Warning
 <p><span class="math inline">\(z\)</span> is a test quantity</p>
 <section id="illustration-of-critical-area" class="level3">
 <h3 class="anchored" data-anchor-id="illustration-of-critical-area">Illustration of critical area</h3>
-<p>One can illustrate the test with the hypothesis function found in Räknamedvariation. There, the average value is compared with a critical area controlled by k.</p>
+<p>One can illustrate the test with the hypothesis function found in Räknamedvariation. There, the average value is compared with a critical area controlled by <span class="math inline">\(k\)</span>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;kod/funktioner_raknamedvariation_light.R&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -5417,11 +5417,11 @@ Example: Drunk driving
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">mu =</span> <span class="fu">seq</span>(<span class="fl">0.1</span>,<span class="fl">0.4</span>,<span class="at">by=</span><span class="fl">0.005</span>)) <span class="co"># possible mu-values</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>n <span class="ot">=</span> <span class="dv">3</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>test_quantity <span class="ot">=</span> <span class="fl">0.2+1.64</span><span class="sc">*</span><span class="fl">0.07</span><span class="sc">/</span><span class="fu">sqrt</span>(n)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>styrka_mu_n3 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">pnorm</span>((test_quantity<span class="sc">-</span>df<span class="sc">$</span>mu)<span class="sc">/</span>(<span class="fl">0.07</span><span class="sc">/</span><span class="fu">sqrt</span>(n))) <span class="co"># power when n=3</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>k <span class="ot">=</span> <span class="fl">0.2+1.64</span><span class="sc">*</span><span class="fl">0.07</span><span class="sc">/</span><span class="fu">sqrt</span>(n)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>styrka_mu_n3 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">pnorm</span>((k<span class="sc">-</span>df<span class="sc">$</span>mu)<span class="sc">/</span>(<span class="fl">0.07</span><span class="sc">/</span><span class="fu">sqrt</span>(n))) <span class="co"># power when n=3</span></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>n <span class="ot">=</span> <span class="dv">6</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>test_quantity <span class="ot">=</span> <span class="fl">0.2+1.64</span><span class="sc">*</span><span class="fl">0.07</span><span class="sc">/</span><span class="fu">sqrt</span>(n)</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>styrka_mu_n6 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">pnorm</span>((test_quantity<span class="sc">-</span>df<span class="sc">$</span>mu)<span class="sc">/</span>(<span class="fl">0.07</span><span class="sc">/</span><span class="fu">sqrt</span>(n)))</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>k <span class="ot">=</span> <span class="fl">0.2+1.64</span><span class="sc">*</span><span class="fl">0.07</span><span class="sc">/</span><span class="fu">sqrt</span>(n)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>styrka_mu_n6 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">pnorm</span>((k<span class="sc">-</span>df<span class="sc">$</span>mu)<span class="sc">/</span>(<span class="fl">0.07</span><span class="sc">/</span><span class="fu">sqrt</span>(n)))</span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df,<span class="fu">aes</span>(<span class="at">x=</span>mu,<span class="at">y=</span>styrka_mu_n3)) <span class="sc">+</span></span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
