@@ -467,7 +467,7 @@ p = pnorm(z)
 pnorm(-z)
 ```
 
-(b) Vad är testets styrka när grumligheten är 3.8? 
+(b) Vad är testets styrka när grumligheten är 4.3? 
 
 $\begin{split} & S(\mu) = P(\text{Reject }H_0|\mu = `r mu`) = \\ & P(\bar{x} > 4.104|\mu = `r mu`) = P(\frac{\bar{x}-\mu}{\sigma/\sqrt{n}} > \frac{4.104-`r mu`}{0.2/\sqrt{10}}) = \\ &  P(Z >`r round((4.104- mu)/(0.2/sqrt(10)),2)`) = 1-\Phi(`r round(z,2)`) = \Phi(`r -round(z,2)`) = `r round(1 - p,3)` \end{split}$
 
