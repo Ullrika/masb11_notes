@@ -424,7 +424,7 @@ Väntevärde och varians för s.v. $Y$ är $\mu_Y$ och $\sigma^2_Y$
 
 # Väntevärde för en diskret slumpvariabel 
 
-$E(X) = \sum_{\text{alla }x} x\cdot P(X=x) = \sum_{\text{alla }x} x\cdot f(x) $ 
+$E(X) = \sum_{\text{alla }x} x\cdot P(X=x) = \sum_{\text{alla }x} x\cdot f(x)$ 
 
 ::: callout-tip
 ## Väntevärde för en likformig fördelning
