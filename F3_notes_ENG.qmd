@@ -129,7 +129,7 @@ What is the probability of receiving at least 6 spams in one day?
 
 The first thing we need to do is convert the model's intensity parameter so that it gives the number over the correct time unit. From per hour to per day.
 
-1 spam per day corresponds to 24 spams per hour.
+1 spam per hour corresponds to 24 spams per day.
 
 $Y=\text{"number of spams per day (24 hours)"}$
 

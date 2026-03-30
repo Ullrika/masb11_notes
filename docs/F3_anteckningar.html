@@ -5075,7 +5075,7 @@ Exempel. Poissonfördelningen
 <p>Modell: <span class="math inline">\(X \sim Po(\lambda_X)\)</span> där <span class="math inline">\(\lambda_X=0.5\)</span></p>
 <p>Vad är sannolikheten att få minst 6 spam på ett dygn?</p>
 <p>Det första vi behöver göra är att omvandla modellens intensitets-parameter så den ger antal över rätt tidsenhet. Från per timme till per dygn.</p>
-<p>1 spam per dygn motsvarar 24 spam per timme</p>
+<p>1 spam per timme motsvarar 24 spam per dygn</p>
 <p><span class="math inline">\(Y=\text{antal spam per dygn}\)</span></p>
 <p>Modell: <span class="math inline">\(Y \sim Po(\lambda_Y)\)</span> där <span class="math inline">\(\lambda_Y=24\cdot 0.5 = 12\)</span></p>
 <p><span class="math display">\[\begin{split} &amp; P(Y\geq 6) = P(Y\geq 6) = \\  &amp; 1-P(Y\leq 5) = 1 - F_Y(5) = \\  &amp; 1- 0.0203 = 0.9797 \end{split}\]</span></p>

@@ -130,7 +130,7 @@ Vad är sannolikheten att få minst 6 spam på ett dygn?
 
 Det första vi behöver göra är att omvandla modellens intensitets-parameter så den ger antal över rätt tidsenhet. Från per timme till per dygn. 
 
-1 spam per dygn motsvarar 24 spam per timme
+1 spam per timme motsvarar 24 spam per dygn
 
 $Y=\text{antal spam per dygn}$
 

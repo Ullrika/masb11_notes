@@ -5075,7 +5075,7 @@ Example. Poisson distribution
 <p>Model: <span class="math inline">\(X \sim Po(\lambda_X)\)</span> where <span class="math inline">\(\lambda_X=0.5\)</span></p>
 <p>What is the probability of receiving at least 6 spams in one day?</p>
 <p>The first thing we need to do is convert the model’s intensity parameter so that it gives the number over the correct time unit. From per hour to per day.</p>
-<p>1 spam per day corresponds to 24 spams per hour.</p>
+<p>1 spam per hour corresponds to 24 spams per day.</p>
 <p><span class="math inline">\(Y=\text{&quot;number of spams per day (24 hours)&quot;}\)</span></p>
 <p>Model: <span class="math inline">\(Y \sim Po(\lambda_Y)\)</span> where <span class="math inline">\(\lambda_Y=24\cdot 0.5 = 12\)</span></p>
 <p><span class="math display">\[\begin{split} &amp; P(Y\geq 6) = P(Y\geq 6) = \\  &amp; 1-P(Y\leq 5) = 1 - F_Y(5) = \\  &amp; 1- 0.0203 = 0.9797 \end{split}\]</span></p>
