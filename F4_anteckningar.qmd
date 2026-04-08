@@ -256,7 +256,7 @@ Vi väljer slumpmässigt två kullar. Beräkna sannolikheten att det är minst 1
 
 Låt $X_i = \text{"antal ägg i kull } i$ där $i = 1,2$
 
-Sannolikheten vi söker är $P(X_1 + X_2 \geq 15) = \dots $
+Sannolikheten vi söker är $P(X_1 + X_2 \geq 15) = \dots$
 
 
 ```{r}

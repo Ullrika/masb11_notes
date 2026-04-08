@@ -255,7 +255,7 @@ We randomly choose two broods. Calculate the probability that there are at least
 
 Let $X_i = \text{"number of eggs in brood } i$ where $i = 1,2$
 
-The probability that we seek is $P(X_1 + X_2 \geq 15) = \dots $
+The probability that we seek is $P(X_1 + X_2 \geq 15) = \dots$
 
 
 ```{r}
